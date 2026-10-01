@@ -1,0 +1,1282 @@
+Index · HTML
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Life Support</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #EDEADF;
+      --paper: #FBFAF5;
+      --ink: #24261F;
+      --soft: #6B6E5F;
+      --line: #DEDACA;
+      --teal: #33604E;
+      --teal-t: #E2ECE6;
+      --rust: #B04B29;
+      --rust-t: #F4E1D5;
+      --gold: #B5842A;
+      --gold-t: #F2E7CC
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Zen Kaku Gothic New', 'Hiragino Maru Gothic ProN', 'Yu Gothic', sans-serif;
+      line-height: 1.7
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px 60px
+    }
+
+    .hero {
+      margin-bottom: 24px
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: center;
+      gap: 14px
+    }
+
+    .badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex: none
+    }
+
+    h1 {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-weight: 900;
+      font-size: 32px;
+      margin: 0
+    }
+
+    .tagline,
+    .today {
+      margin: 2px 0 0;
+      color: var(--soft);
+      font-size: 14px
+    }
+
+    .today {
+      padding-left: 66px;
+      font-size: 13px;
+      margin-top: 12px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px
+    }
+
+    @media(min-width:820px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start
+      }
+
+      .full {
+        grid-column: 1/-1
+      }
+    }
+
+    @media(max-width:420px) {
+      h1 {
+        font-size: 26px
+      }
+
+      .today {
+        padding-left: 0
+      }
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 22px
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px
+    }
+
+    .icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: none
+    }
+
+    .i-t {
+      background: var(--teal-t)
+    }
+
+    .i-r {
+      background: var(--rust-t)
+    }
+
+    .i-g {
+      background: var(--gold-t)
+    }
+
+    h2 {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 17px;
+      margin: 0;
+      flex: 1
+    }
+
+    .label {
+      font-size: 13px;
+      color: var(--soft)
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 7px;
+      padding: 9px 14px;
+      min-height: 40px;
+      cursor: pointer;
+      border: 1px solid transparent
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    .b-out {
+      background: transparent;
+      border-color: var(--ink);
+      color: var(--ink)
+    }
+
+    .b-out:hover {
+      background: var(--ink);
+      color: var(--paper)
+    }
+
+    .b-pri {
+      background: var(--teal);
+      color: #fff
+    }
+
+    .b-pri:hover {
+      background: #294c3f
+    }
+
+    .b-gh {
+      background: var(--line);
+      color: var(--ink)
+    }
+
+    .b-gh:hover {
+      background: #d1cbb4
+    }
+
+    input,
+    select {
+      font-family: inherit;
+      font-size: 14px;
+      padding: 9px 10px;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink)
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 28px;
+      padding: 6px 10px 6px 4px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background-image: repeating-linear-gradient(var(--paper) 0 27px, var(--line) 27px 28px);
+      background-attachment: local;
+      color: var(--ink)
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--rust);
+      outline-offset: 2px
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap
+    }
+
+    .row input[type=text] {
+      flex: 1;
+      min-width: 110px
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0
+    }
+
+    .rows li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .rows li:last-child {
+      border: none
+    }
+
+    .tx {
+      flex: 1;
+      font-size: 15px
+    }
+
+    .tx.done {
+      color: var(--soft);
+      text-decoration: line-through
+    }
+
+    .tx small {
+      color: var(--rust)
+    }
+
+    .x {
+      background: none;
+      border: none;
+      color: var(--soft);
+      font-size: 18px;
+      cursor: pointer;
+      min-width: 40px;
+      min-height: 40px
+    }
+
+    .x:hover {
+      color: var(--rust)
+    }
+
+    .chk {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 2px solid var(--rust);
+      background: transparent;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0
+    }
+
+    .chk[aria-pressed=true] {
+      background: var(--rust)
+    }
+
+    .empty {
+      color: var(--soft);
+      font-size: 14px;
+      margin: 0
+    }
+
+    .big {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-weight: 900;
+      font-size: 42px;
+      color: var(--teal);
+      line-height: 1.2
+    }
+
+    .big.over {
+      color: var(--rust)
+    }
+
+    .big span {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--soft)
+    }
+
+    .sub {
+      font-size: 13px;
+      color: var(--soft);
+      margin: 4px 0 10px
+    }
+
+    .bar {
+      height: 8px;
+      background: var(--line);
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--teal);
+      width: 0
+    }
+
+    .bar.over i {
+      background: var(--rust)
+    }
+
+    .status {
+      font-size: 15px;
+      color: var(--soft);
+      margin: 0 0 12px
+    }
+
+    .status.ok {
+      color: var(--ink);
+      font-weight: 700
+    }
+
+    .sug li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      margin-top: 8px;
+      background: var(--teal-t);
+      border-radius: 8px
+    }
+
+    .sug div {
+      flex: 1;
+      font-size: 14px
+    }
+
+    .sug small {
+      display: block;
+      color: var(--soft)
+    }
+
+    .tl {
+      border-left: 2px solid var(--line);
+      padding-left: 6px
+    }
+
+    .tl li {
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 2px 0 8px 22px
+    }
+
+    .tl li::before {
+      content: "";
+      position: absolute;
+      left: -13px;
+      top: 12px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--teal);
+      border: 2px solid var(--paper)
+    }
+
+    .tl b {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      color: var(--teal);
+      font-size: 14px;
+      margin-right: 10px
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .chips li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold-t);
+      border-radius: 99px;
+      padding: 0 4px 0 14px;
+      font-size: 14px
+    }
+
+    .chips li.warn {
+      background: var(--rust-t)
+    }
+
+    .chips li.bad {
+      background: var(--rust);
+      color: #fff
+    }
+
+    .chips li.bad small,
+    .chips li.bad .x {
+      color: #fff
+    }
+
+    .chips small {
+      font-size: 12px;
+      color: var(--soft)
+    }
+
+    .chips li.warn small {
+      color: var(--rust);
+      font-weight: 700
+    }
+
+    .chips .x {
+      min-width: 32px;
+      min-height: 34px;
+      font-size: 15px
+    }
+
+    .foot {
+      text-align: center;
+      font-size: 12px;
+      color: var(--soft);
+      margin-top: 28px
+    }
+
+    .foot .btn {
+      margin: 0 4px 8px
+    }
+
+    .cat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      margin-top: 6px
+    }
+
+    .cat span {
+      width: 56px
+    }
+
+    .cat .bar {
+      flex: 1;
+      height: 6px
+    }
+
+    .cat b {
+      width: 84px;
+      text-align: right;
+      font-weight: 500
+    }
+
+    .sug .bt {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .tgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px
+    }
+
+    .tgrid label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px
+    }
+
+    .tgrid input {
+      flex: 1;
+      min-width: 0
+    }
+
+    .rows li b {
+      font-weight: 500
+    }
+
+    .rows small {
+      color: var(--rust)
+    }
+
+    .stq {
+      min-width: 22px;
+      text-align: center
+    }
+
+    #login {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px
+    }
+
+    .lbox {
+      width: 100%;
+      max-width: 380px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 26px
+    }
+
+    .lbox input {
+      width: 100%;
+      margin-top: 10px
+    }
+
+    .lbox .btn {
+      width: 100%;
+      margin-top: 10px
+    }
+
+    #authMsg {
+      color: var(--rust);
+      font-size: 13px;
+      min-height: 1.4em;
+      margin: 8px 0 0
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      padding: 8px 0;
+      margin: 0 0 14px
+    }
+
+    .tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 44px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--soft);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: pointer
+    }
+
+    .tab:hover {
+      border-color: var(--teal)
+    }
+
+    .tab[aria-selected=true] {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff
+    }
+
+    .off {
+      display: none !important
+    }
+
+    .rows li input[type=checkbox] {
+      width: 20px;
+      min-height: 20px;
+      flex: none
+    }
+
+    .rows li input.tx {
+      min-width: 0
+    }
+
+    @media(max-width:819px) {
+      .tabs {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        margin: 0;
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line)
+      }
+
+      .tab {
+        flex-direction: column;
+        gap: 0;
+        min-height: 52px;
+        font-size: 12px
+      }
+
+      .page {
+        padding: 24px 14px 110px
+      }
+
+      .card {
+        padding: 16px
+      }
+
+      .big {
+        font-size: 36px
+      }
+
+      .sug li {
+        flex-wrap: wrap
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="login" class="hidden" role="dialog" aria-labelledby="lt">
+    <div class="lbox">
+      <h2 id="lt" style="margin-bottom:4px">ログイン</h2>
+      <p class="label" style="margin:0 0 6px">ログインすると、スマホとパソコンで同じデータを使えます</p>
+      <form id="loginForm">
+        <input type="email" id="authMail" placeholder="メールアドレス" autocomplete="email" required>
+        <input type="password" id="authPass" placeholder="パスワード(6文字以上)" autocomplete="current-password" minlength="6"
+          required>
+        <p id="authMsg" role="alert"></p>
+        <button class="btn b-pri">ログイン</button>
+      </form>
+      <button class="btn b-out" id="signupBtn" type="button">新規登録</button>
+      <button class="btn b-gh" id="guestBtn" type="button">ログインせずに使う</button>
+    </div>
+  </div>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-top">
+        <div class="badge" aria-hidden="true">🏠</div>
+        <div>
+          <h1>Life Support</h1>
+          <p class="tagline">一人暮らしの毎日をラクにするダッシュボード</p>
+        </div>
+      </div>
+      <p class="today" id="today"></p>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="メニュー">
+      <button class="tab" type="button" role="tab" data-t="home"><span aria-hidden="true">🏠</span>ホーム</button>
+      <button class="tab" type="button" role="tab" data-t="meal"><span aria-hidden="true">🍚</span>ごはん</button>
+      <button class="tab" type="button" role="tab" data-t="shop"><span aria-hidden="true">🛒</span>買い物</button>
+      <button class="tab" type="button" role="tab" data-t="money"><span aria-hidden="true">💴</span>家計</button>
+    </nav>
+
+    <div class="grid">
+      <section class="card full" data-tab="home" aria-labelledby="h-money">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">💴</span>
+          <h2 id="h-money">今日使えるお金</h2>
+          <button class="btn b-gh" id="budgetBtn" type="button">今月の予算を設定</button>
+        </div>
+        <div class="big" id="moneyAmt"></div>
+        <p class="sub" id="moneySub"></p>
+        <div class="bar" id="bar"><i></i></div>
+        <form class="row" id="expForm">
+          <input type="number" id="expAmt" placeholder="金額(円)" min="1" inputmode="numeric" required style="width:120px">
+          <select id="expCat" aria-label="カテゴリ">
+            <option>食費</option>
+            <option>日用品</option>
+            <option>交通</option>
+            <option>娯楽</option>
+            <option>その他</option>
+          </select>
+          <input type="text" id="expMemo" placeholder="メモ(例:スーパー)">
+          <button class="btn b-pri">使った</button>
+        </form>
+        <div id="cats" style="margin-top:12px"></div>
+        <ul class="rows" id="expList" style="margin-top:8px"></ul>
+      </section>
+
+      <section class="card" data-tab="home" aria-labelledby="h-todo">
+        <div class="card-head"><span class="icon i-r" aria-hidden="true">✅</span>
+          <h2 id="h-todo">今日やること</h2><span class="label" id="todoProg"></span>
+        </div>
+        <ul class="rows" id="todoList"></ul>
+        <form class="row" id="todoForm">
+          <input type="text" id="todoIn" placeholder="やることを追加" required>
+          <select id="todoRep" aria-label="くりかえし">
+            <option value="">1回だけ</option>
+            <option value="daily">毎日</option>
+            <option value="weekly">毎週(今日の曜日)</option>
+          </select>
+          <button class="btn b-pri">追加</button>
+        </form>
+        <p class="label" style="margin:8px 0 0">未完了は翌日に持ち越されます</p>
+      </section>
+
+      <section class="card" data-tab="meal" aria-labelledby="h-meal">
+        <div class="card-head"><span class="icon i-g" aria-hidden="true">🍚</span>
+          <h2 id="h-meal">今日のご飯</h2>
+        </div>
+        <p class="status" id="mealStatus"></p>
+        <div class="row hidden" id="mealEdit" style="margin:0 0 12px"><input type="text" id="mealIn"
+            placeholder="例:カレー"><button class="btn b-pri" id="mealSave" type="button">保存</button></div>
+        <div class="row" style="margin-top:0">
+          <button class="btn b-out" id="mealBtn" type="button"></button>
+          <button class="btn b-gh hidden" id="mealClear" type="button">クリア</button>
+          <button class="btn b-pri" id="mealSug" type="button">冷蔵庫から提案</button>
+          <button class="btn b-out" id="mealOnly" type="button">食材だけで作れる料理</button>
+        </div>
+        <ul class="sug" id="sug"></ul>
+      </section>
+
+      <section class="card" data-tab="home" aria-labelledby="h-sch">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">🕒</span>
+          <h2 id="h-sch">予定</h2>
+        </div>
+        <ul class="tl" id="tl"></ul>
+        <form class="row" id="schForm">
+          <input type="date" id="schDate" required aria-label="日付">
+          <input type="time" id="schTime" required aria-label="時刻" style="width:110px">
+          <input type="text" id="schText" placeholder="予定" required>
+          <button class="btn b-pri">追加</button>
+        </form>
+      </section>
+
+      <section class="card" data-tab="meal" aria-labelledby="h-fr">
+        <div class="card-head"><span class="icon i-g" aria-hidden="true">🧊</span>
+          <h2 id="h-fr">冷蔵庫の中身</h2>
+        </div>
+        <ul class="chips" id="fridge"></ul>
+        <form class="row" id="frForm">
+          <input type="text" id="frName" placeholder="食材(例:卵)" required>
+          <input type="date" id="frExp" aria-label="賞味期限">
+          <button class="btn b-pri">追加</button>
+        </form>
+        <p class="label" style="margin:8px 0 0">賞味期限を入れると、近いものから使う献立を提案します</p>
+      </section>
+
+      <section class="card" data-tab="shop" aria-labelledby="h-shop">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">🛒</span>
+          <h2 id="h-shop">買い物リスト</h2>
+        </div>
+        <ul class="rows" id="shopList"></ul>
+        <form class="row" id="shopForm"><input type="text" id="shopIn" placeholder="買うものを追加" required><button
+            class="btn b-pri">追加</button></form>
+        <div class="row"><button class="btn b-out hidden" id="toFridge" type="button"
+            data-a="tofridge">購入済みを冷蔵庫・ストックへ移す</button></div>
+        <p class="label" style="margin:8px 0 0">献立提案の「足りない食材を追加」からも入れられます</p>
+      </section>
+
+      <section class="card" data-tab="shop" aria-labelledby="h-stock">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">🧻</span>
+          <h2 id="h-stock">日用品ストック</h2>
+        </div>
+        <ul class="rows" id="stockList"></ul>
+        <form class="row" id="stockForm"><input type="text" id="stName" placeholder="日用品(例:洗剤)" required><input
+            type="number" id="stQty" value="2" min="0" style="width:70px" aria-label="今の個数"><input type="number"
+            id="stMin" value="1" min="0" style="width:70px" aria-label="この数以下で買い足す"><button
+            class="btn b-pri">追加</button></form>
+        <p class="label" style="margin:8px 0 0">左:今の個数 / 右:この数以下になると買い物リストへ自動追加</p>
+      </section>
+
+      <section class="card" data-tab="home" aria-labelledby="h-trash">
+        <div class="card-head"><span class="icon i-g" aria-hidden="true">🗑️</span>
+          <h2 id="h-trash">ゴミ出し</h2><button class="btn b-gh" id="trashBtn" type="button">曜日を設定</button>
+        </div>
+        <p class="status" id="trashToday"></p>
+        <p class="label" id="trashNext" style="margin:0"></p>
+        <div class="hidden" id="trashEdit" style="margin-top:12px">
+          <div class="tgrid" id="trashGrid"></div>
+          <div class="row"><button class="btn b-pri" id="trashSave" type="button">保存</button></div>
+          <p class="label" style="margin:8px 0 0">ゴミがない曜日は空欄にします。設定した日は「やること」に自動で入ります</p>
+        </div>
+      </section>
+
+      <section class="card full" data-tab="money" aria-labelledby="h-rc">
+        <div class="card-head"><span class="icon i-g" aria-hidden="true">📷</span>
+          <h2 id="h-rc">レシート読み取り</h2>
+        </div>
+        <div class="row" style="margin-top:0">
+          <button class="btn b-pri" id="rcBtn" type="button">レシートを撮る・選ぶ</button>
+          <input type="file" id="rcFile" accept="image/*" class="hidden">
+        </div>
+        <p class="label" id="rcMsg" style="margin:8px 0 0">レシートの写真から、合計金額と買った品物を読み取ります</p>
+        <div class="hidden" id="rcRes">
+          <div class="row">
+            <input type="number" id="rcTotal" placeholder="合計(円)" min="1" inputmode="numeric" style="width:120px"
+              aria-label="合計金額">
+            <select id="rcCat" aria-label="カテゴリ">
+              <option>食費</option>
+              <option>日用品</option>
+              <option>交通</option>
+              <option>娯楽</option>
+              <option>その他</option>
+            </select>
+            <input type="text" id="rcMemo" placeholder="お店・メモ">
+            <button class="btn b-pri" id="rcAdd" type="button">今日の支出に登録</button>
+          </div>
+          <ul class="rows" id="rcItems" style="margin-top:10px"></ul>
+          <div class="row"><button class="btn b-out" id="rcFr" type="button">チェックした品を冷蔵庫へ</button></div>
+          <p class="label" style="margin:8px 0 0">読み間違いは入力欄で直せます。写真は端末の外へ送られません</p>
+        </div>
+      </section>
+
+      <section class="card full" data-tab="money" aria-labelledby="h-fix">
+        <div class="card-head"><span class="icon i-r" aria-hidden="true">🧾</span>
+          <h2 id="h-fix">固定費・サブスク</h2><span class="label" id="fixTotal"></span>
+        </div>
+        <ul class="rows" id="fixList"></ul>
+        <form class="row" id="fixForm"><input type="text" id="fixName" placeholder="名前(例:家賃)" required><input
+            type="number" id="fixAmt" placeholder="金額(円)" min="1" required style="width:110px"><input type="number"
+            id="fixDay" placeholder="支払日" min="1" max="31" required style="width:80px" aria-label="毎月の支払日"><button
+            class="btn b-pri">追加</button></form>
+        <p class="label" style="margin:8px 0 0">登録した固定費は今月の予算から引いて、「今日使えるお金」を計算します</p>
+      </section>
+
+      <section class="card full" data-tab="home" aria-labelledby="h-memo">
+        <div class="card-head"><span class="icon i-r" aria-hidden="true">📝</span>
+          <h2 id="h-memo">メモ</h2>
+        </div>
+        <textarea id="memo" placeholder="なんでもメモできます"></textarea>
+        <p class="label" style="margin:8px 0 0">入力すると自動で保存されます</p>
+      </section>
+    </div>
+
+    <footer class="foot">
+      <button class="btn b-gh" id="exportBtn" type="button">バックアップを書き出す</button>
+      <button class="btn b-gh" id="importBtn" type="button">バックアップを読み込む</button>
+      <input type="file" id="importFile" accept="application/json" class="hidden">
+      <p id="sync">この端末にのみ保存されています</p>
+      <button class="btn b-gh" id="loginBtn" type="button">ログイン(クラウド保存)</button>
+      <button class="btn b-gh hidden" id="logoutBtn" type="button">ログアウト</button>
+      <p>バックアップを取っておくと安心です</p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+      var $ = function (i) { return document.getElementById(i) }, K = "ls2";
+      var pad = function (n) { return String(n).padStart(2, "0") };
+      var ds = function (d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) };
+      var uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
+      var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] }) };
+      function load(k, f) { try { var r = localStorage.getItem(k); return r === null ? f : JSON.parse(r) } catch (e) { return f } }
+      function save() { try { localStorage.setItem(K, JSON.stringify(S)) } catch (e) { } cloudSave() }
+      var today = ds(new Date());
+      var diff = function (s) { return Math.round((new Date(s + "T00:00:00") - new Date(today + "T00:00:00")) / 864e5) };
+
+      var S = load(K, null);
+      if (!S) { /* 旧バージョンのデータを引き継ぐ */
+        S = {
+          todos: load("ls_todos", []).map(function (t) { return { id: uid(), text: t.text, done: !!t.done, date: today } }),
+          sched: load("ls_schedule", []).map(function (s) { return { id: uid(), date: today, time: s.time, text: s.text } }),
+          fridge: load("ls_fridge", []).map(function (n) { return { id: uid(), name: n, exp: "" } }),
+          memo: load("ls_memo", "")
+        };
+      }
+      S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [] }, S);
+
+      var RECIPES = [["親子丼", ["卵", "鶏肉", "玉ねぎ", "ご飯"]], ["野菜炒め", ["キャベツ", "にんじん", "豚肉", "もやし", "ピーマン"]], ["オムライス", ["卵", "ご飯", "玉ねぎ", "ケチャップ", "鶏肉"]], ["カレー", ["じゃがいも", "にんじん", "玉ねぎ", "豚肉", "カレールー"]], ["豚汁", ["豚肉", "大根", "にんじん", "味噌", "じゃがいも"]], ["チャーハン", ["ご飯", "卵", "ネギ", "ハム"]], ["焼きそば", ["麺", "キャベツ", "豚肉", "もやし"]], ["ナポリタン", ["パスタ", "玉ねぎ", "ピーマン", "ソーセージ", "ケチャップ"]], ["肉じゃが", ["じゃがいも", "牛肉", "玉ねぎ", "にんじん"]], ["卵かけご飯と味噌汁", ["卵", "ご飯", "味噌", "豆腐"]], ["麻婆豆腐", ["豆腐", "ひき肉", "ネギ"]], ["きのこパスタ", ["パスタ", "きのこ", "ベーコン"]], ["卵焼き", ["卵"]], ["味噌汁", ["味噌", "豆腐", "ネギ"]], ["納豆ご飯", ["納豆", "ご飯"]], ["ハムエッグ", ["ハム", "卵"]], ["玉ねぎと卵の炒め物", ["玉ねぎ", "卵"]], ["野菜スープ", ["キャベツ", "にんじん", "玉ねぎ"]], ["豚の生姜焼き", ["豚肉", "玉ねぎ", "生姜"]], ["豚キムチ", ["豚肉", "キムチ"]], ["ツナマヨおにぎり", ["ご飯", "ツナ", "マヨネーズ"]], ["にんじんしりしり", ["にんじん", "卵", "ツナ"]], ["お好み焼き", ["キャベツ", "卵", "小麦粉", "豚肉"]], ["豆腐ステーキ", ["豆腐", "ネギ"]]];
+      var SYN = [[/たまご|タマゴ|玉子/g, "卵"], [/ごはん|ゴハン|白米|白飯/g, "ご飯"], [/たまねぎ|タマネギ|玉葱/g, "玉ねぎ"], [/長ねぎ|青ねぎ|小ねぎ|万能ねぎ|ねぎ/g, "ネギ"], [/人参|ニンジン/g, "にんじん"], [/ジャガイモ|馬鈴薯/g, "じゃがいも"], [/とうふ|トウフ/g, "豆腐"], [/みそ|ミソ/g, "味噌"], [/豚バラ|豚こま|豚コマ|ぶた肉/g, "豚肉"], [/鶏もも|鶏むね|とり肉|鳥肉|チキン/g, "鶏肉"], [/合いびき|合挽き|豚ひき|牛ひき|挽き肉|ミンチ/g, "ひき肉"], [/きゃべつ/g, "キャベツ"], [/なっとう|ナットウ/g, "納豆"]];
+      var norm = function (s) { SYN.forEach(function (p) { s = s.replace(p[0], p[1]) }); return s };
+
+      /* 日付が変わったときの整理:未完了は持ち越し、繰り返しタスクを生成、古い予定/ご飯を削除 */
+      function rollover() {
+        today = ds(new Date()); var dow = new Date().getDay();
+        S.todos = S.todos.filter(function (t) { return (!t.done || t.date >= today) && !(t.tid && t.date < today) }).map(function (t) { return t.date < today ? Object.assign({}, t, { date: today }) : t });
+        S.rec.forEach(function (r) {
+          if ((r.dow < 0 || r.dow === dow) && !S.todos.some(function (t) { return t.rid === r.id && t.date === today }))
+            S.todos.push({ id: uid(), text: r.text, done: false, date: today, rid: r.id });
+        });
+        if (S.tgen !== today) { S.tgen = today; S.todos = S.todos.filter(function (t) { return t.tid !== "trash" }); var tr = S.trash[dow]; if (tr) S.todos.push({ id: uid(), text: tr + "を出す", done: false, date: today, tid: "trash" }) }
+        S.sched = S.sched.filter(function (s) { return s.date >= today });
+        Object.keys(S.meals).forEach(function (d) { if (d < today) delete S.meals[d] });
+        save();
+      }
+
+      /* ---- お金 ---- */
+      function renderMoney() {
+        var ym = today.slice(0, 7), dim = new Date(+ym.slice(0, 4), +ym.slice(5), 0).getDate(), left = dim - Number(today.slice(8)) + 1;
+        var mine = S.exp.filter(function (e) { return e.date.slice(0, 7) === ym });
+        var sum = function (a) { return a.reduce(function (s, e) { return s + e.amt }, 0) };
+        var todayEx = mine.filter(function (e) { return e.date === today }), st = sum(todayEx), sm = sum(mine), sb = sm - st;
+        var amt = $("moneyAmt"), bar = $("bar");
+        if (!S.budget) {
+          amt.className = "big"; amt.innerHTML = "—<span> 円</span>";
+          $("moneySub").textContent = "「今月の予算を設定」から予算を入れると、1日に使える額を自動計算します";
+          bar.querySelector("i").style.width = "0"; bar.classList.remove("over");
+        } else {
+          var fx = S.fixed.reduce(function (a, x) { return a + x.amt }, 0), daily = Math.floor((S.budget - fx - sb) / left), remain = daily - st;
+          amt.className = "big" + (remain < 0 ? " over" : "");
+          amt.innerHTML = remain.toLocaleString("ja-JP") + "<span> 円</span>";
+          $("moneySub").textContent = "今月の残り " + (S.budget - fx - sm).toLocaleString("ja-JP") + "円" + (fx ? "(固定費" + fx.toLocaleString("ja-JP") + "円を引いて計算)" : "") + " ・ 1日あたり " + daily.toLocaleString("ja-JP") + "円(残り" + left + "日) ・ 今日使った額 " + st.toLocaleString("ja-JP") + "円";
+          bar.querySelector("i").style.width = (daily > 0 ? Math.min(100, st / daily * 100) : 100) + "%";
+          bar.classList.toggle("over", remain < 0);
+        }
+        renderCats(mine, sm);
+        $("expList").innerHTML = todayEx.map(function (e) { return '<li><span class="tx">' + esc((e.cat ? e.cat + " " : "") + (e.memo || "支出")) + '</span><b>' + e.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="edel" data-id="' + e.id + '" aria-label="削除">×</button></li>' }).join("");
+      }
+
+      var CATS = ["食費", "日用品", "交通", "娯楽", "その他"];
+      function renderCats(mine, total) {
+        $("cats").innerHTML = total ? CATS.map(function (c) {
+          var v = mine.filter(function (e) { return (e.cat || "その他") === c }).reduce(function (a, e) { return a + e.amt }, 0);
+          return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="width:' + Math.round(v / total * 100) + '%"></i></div><b>' + v.toLocaleString("ja-JP") + '円</b></div>' : "";
+        }).join("") : "";
+      }
+      function renderShop() {
+        $("shopList").innerHTML = S.shop.length ? S.shop.map(function (x) {
+          return '<li><button class="chk" type="button" data-a="shdone" data-id="' + x.id + '" aria-pressed="' + x.bought + '" aria-label="購入済み切替">' + (x.bought ? "✓" : "") + '</button><span class="tx' + (x.bought ? " done" : "") + '">' + esc(x.name) + '</span><button class="x" type="button" data-a="shdel" data-id="' + x.id + '" aria-label="削除">×</button></li>';
+        }).join("") : '<li><p class="empty">買うものはありません</p></li>';
+        $("toFridge").classList.toggle("hidden", !S.shop.some(function (x) { return x.bought }));
+      }
+
+      var W = ["日", "月", "火", "水", "木", "金", "土"];
+      function nextDue(day) { var n = new Date(today + "T00:00:00"), t = new Date(n.getFullYear(), n.getMonth(), day); if (t < n) t = new Date(n.getFullYear(), n.getMonth() + 1, day); return Math.round((t - n) / 864e5) }
+      function renderTrash() {
+        var dow = new Date(today + "T00:00:00").getDay(), t = S.trash[dow], el = $("trashToday");
+        el.textContent = t ? "今日は「" + t + "」の日です" : "今日はゴミ出しなし"; el.className = "status" + (t ? " ok" : "");
+        var nx = "";
+        for (var i = 1; i <= 7 && !nx; i++) { var g = S.trash[(dow + i) % 7]; if (g) nx = (i === 1 ? "明日" : i + "日後(" + W[(dow + i) % 7] + ")") + ":" + g }
+        $("trashNext").textContent = nx ? "次は " + nx : (Object.keys(S.trash).length ? "" : "「曜日を設定」から登録できます");
+      }
+      function renderFixed() {
+        var tot = S.fixed.reduce(function (a, x) { return a + x.amt }, 0);
+        $("fixTotal").textContent = S.fixed.length ? "合計 " + tot.toLocaleString("ja-JP") + "円/月" : "";
+        $("fixList").innerHTML = S.fixed.length ? S.fixed.slice().sort(function (a, b) { return nextDue(a.day) - nextDue(b.day) }).map(function (x) {
+          var d = nextDue(x.day);
+          return '<li><span class="tx">' + esc(x.name) + ' <small>毎月' + x.day + '日(' + (d === 0 ? "今日" : "あと" + d + "日") + ')</small></span><b>' + x.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="fxdel" data-id="' + x.id + '" aria-label="削除">×</button></li>';
+        }).join("") : '<li><p class="empty">固定費はまだありません</p></li>';
+      }
+      function renderStock() {
+        $("stockList").innerHTML = S.stock.length ? S.stock.map(function (k) {
+          return '<li><span class="tx">' + esc(k.name) + (k.qty <= k.min ? ' <small>残りわずか</small>' : "") + '</span><button class="x" type="button" data-a="stdn" data-id="' + k.id + '" aria-label="減らす">−</button><b class="stq">' + k.qty + '</b><button class="x" type="button" data-a="stup" data-id="' + k.id + '" aria-label="増やす">＋</button><button class="x" type="button" data-a="stdel" data-id="' + k.id + '" aria-label="削除">×</button></li>';
+        }).join("") : '<li><p class="empty">日用品はまだありません</p></li>';
+      }
+
+      /* ---- Todo ---- */
+      function renderTodos() {
+        var l = $("todoList");
+        l.innerHTML = S.todos.length ? S.todos.map(function (t) {
+          return '<li><button class="chk" type="button" data-a="tdone" data-id="' + t.id + '" aria-pressed="' + t.done + '" aria-label="完了切替">' + (t.done ? "✓" : "") + '</button><span class="tx' + (t.done ? " done" : "") + '">' + esc(t.text) + (t.rid ? ' <small>🔁</small>' : '') + '</span><button class="x" type="button" data-a="tdel" data-id="' + t.id + '" aria-label="削除">×</button></li>';
+        }).join("") : '<li><p class="empty">やることはありません</p></li>';
+        var d = S.todos.filter(function (t) { return t.done }).length;
+        $("todoProg").textContent = S.todos.length ? d + "/" + S.todos.length + " 完了" : "";
+      }
+
+      /* ---- ご飯 ---- */
+      function renderMeal() {
+        var m = S.meals[today], st = $("mealStatus");
+        st.textContent = m ? "今夜は「" + m + "」に決定!" : "まだ決まっていません";
+        st.className = "status" + (m ? " ok" : "");
+        $("mealBtn").textContent = m ? "変更する" : "夜ご飯を決める";
+        $("mealClear").classList.toggle("hidden", !m);
+      }
+      function suggest(only) {
+        var ul = $("sug");
+        if (!S.fridge.length) { ul.innerHTML = '<li>冷蔵庫に食材を登録すると提案できます</li>'; return }
+        var f = S.fridge.map(function (x) { return { n: norm(x.name), d: x.exp ? diff(x.exp) : 99 } });
+        var res = RECIPES.map(function (r) {
+          var sc = 0, use = [], miss = [];
+          r[1].forEach(function (i) {
+            var m = f.find(function (x) { return x.n.indexOf(i) >= 0 || i.indexOf(x.n) >= 0 });
+            if (m) { use.push(i); sc += 1 + (m.d <= 2 ? 2 : m.d <= 5 ? 1 : 0) } else miss.push(i);
+          });
+          return { name: r[0], use: use, miss: miss, sc: sc };
+        }).filter(function (r) { return r.sc > 0 }).sort(function (a, b) { return b.sc - a.sc || a.miss.length - b.miss.length }), note = "";
+        if (only) {
+          var full = res.filter(function (r) { return !r.miss.length });
+          if (full.length) res = full.slice(0, 5);
+          else { res = res.filter(function (r) { return r.miss.length === 1 }).slice(0, 3); note = '<li>冷蔵庫の食材だけで作れる料理はまだありません。あと1品で作れる料理です</li>' }
+        } else res = res.slice(0, 3);
+        ul.innerHTML = res.length ? note + res.map(function (r) {
+          return '<li><div><b>' + esc(r.name) + '</b><small>使う: ' + esc(r.use.join("・")) + (r.miss.length ? ' ／ 足りない: ' + esc(r.miss.join("・")) : '') + '</small></div><span class="bt">' + (r.miss.length ? '<button class="btn b-gh" type="button" data-a="addmiss" data-miss="' + esc(r.miss.join("|")) + '">足りない食材を追加</button>' : '') + '<button class="btn b-gh" type="button" data-a="pick" data-name="' + esc(r.name) + '">これにする</button></span></li>';
+        }).join("") : '<li>' + (only ? "冷蔵庫の食材だけで作れる料理はありません。食材を追加してみてください" : "合う料理が見つかりませんでした") + '</li>';
+      }
+
+      /* ---- 予定 ---- */
+      function renderSched() {
+        var l = $("tl");
+        if (!S.sched.length) { l.innerHTML = '<li><p class="empty">予定はまだありません</p></li>'; return }
+        l.innerHTML = S.sched.slice().sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time) }).map(function (s) {
+          var d = s.date === today ? "" : (+s.date.slice(5, 7)) + "/" + (+s.date.slice(8)) + " ";
+          return '<li><b>' + d + s.time + '</b><span class="tx">' + esc(s.text) + '</span><button class="x" type="button" data-a="sdel" data-id="' + s.id + '" aria-label="削除">×</button></li>';
+        }).join("");
+      }
+
+      /* ---- 冷蔵庫 ---- */
+      function renderFridge() {
+        var l = $("fridge");
+        if (!S.fridge.length) { l.innerHTML = '<li style="background:none;padding:0"><p class="empty">まだ何も登録されていません</p></li>'; return }
+        l.innerHTML = S.fridge.slice().sort(function (a, b) { return (a.exp || "9999").localeCompare(b.exp || "9999") }).map(function (x) {
+          var cls = "", lb = "";
+          if (x.exp) { var d = diff(x.exp); lb = d < 0 ? "期限切れ" : d === 0 ? "今日まで" : "あと" + d + "日"; cls = d <= 0 ? "bad" : d <= 2 ? "warn" : "" }
+          return '<li class="' + cls + '"><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '<button class="x" type="button" data-a="fdel" data-id="' + x.id + '" aria-label="' + esc(x.name) + 'を削除">×</button></li>';
+        }).join("");
+      }
+
+      function renderAll() {
+        var w = ["日", "月", "火", "水", "木", "金", "土"], n = new Date();
+        $("today").textContent = n.getFullYear() + "年" + (n.getMonth() + 1) + "月" + n.getDate() + "日(" + w[n.getDay()] + ")";
+        $("schDate").value = $("schDate").value || today; $("schDate").min = today;
+        renderMoney(); renderTodos(); renderMeal(); renderSched(); renderFridge(); renderShop(); renderTrash(); renderFixed(); renderStock();
+      }
+
+      /* ---- 操作(クリック) ---- */
+      var by = function (list, id) { return list.filter(function (x) { return x.id !== id }) };
+      var act = {
+        edel: function (id) { S.exp = by(S.exp, id) },
+        tdone: function (id) { S.todos.forEach(function (t) { if (t.id === id) t.done = !t.done }) },
+        tdel: function (id) {
+          var t = S.todos.filter(function (x) { return x.id === id })[0];
+          if (t && t.rid && confirm("この繰り返しタスクをやめますか?\nOK=今後も削除 / キャンセル=今日だけ削除")) S.rec = by(S.rec, t.rid);
+          S.todos = by(S.todos, id);
+        },
+        sdel: function (id) { S.sched = by(S.sched, id) },
+        fdel: function (id) { S.fridge = by(S.fridge, id); $("sug").innerHTML = "" },
+        pick: function (id, b) { S.meals[today] = b.dataset.name; $("sug").innerHTML = "" },
+        shdone: function (id) { S.shop.forEach(function (x) { if (x.id === id) x.bought = !x.bought }) },
+        shdel: function (id) { S.shop = by(S.shop, id) },
+        fxdel: function (id) { S.fixed = by(S.fixed, id) },
+        stdel: function (id) { S.stock = by(S.stock, id) },
+        stup: function (id) { S.stock.forEach(function (k) { if (k.id === id) k.qty++ }) },
+        stdn: function (id) { S.stock.forEach(function (k) { if (k.id === id && k.qty > 0) { k.qty--; if (k.qty <= k.min && !S.shop.some(function (x) { return x.name === k.name && !x.bought })) S.shop.push({ id: uid(), name: k.name, bought: false }) } }) },
+        tofridge: function () { S.shop.filter(function (x) { return x.bought }).forEach(function (x) { var st = S.stock.filter(function (k) { return k.name === x.name })[0]; if (st) st.qty += 1; else S.fridge.push({ id: uid(), name: x.name, exp: "" }) }); S.shop = S.shop.filter(function (x) { return !x.bought }) },
+        addmiss: function (id, b) { b.dataset.miss.split("|").forEach(function (n) { if (!S.shop.some(function (x) { return x.name === n && !x.bought }) && !S.fridge.some(function (x) { return x.name === n })) S.shop.push({ id: uid(), name: n, bought: false }) }) }
+      };
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-a]"); if (!b) return;
+        act[b.dataset.a](b.dataset.id, b); save(); renderAll();
+      });
+
+      /* ---- フォーム ---- */
+      $("expForm").addEventListener("submit", function (e) {
+        e.preventDefault(); var a = parseInt($("expAmt").value, 10); if (isNaN(a) || a <= 0) return;
+        S.exp.push({ id: uid(), date: today, amt: a, memo: $("expMemo").value.trim(), cat: $("expCat").value });
+        $("expAmt").value = ""; $("expMemo").value = ""; save(); renderMoney();
+      });
+      $("budgetBtn").addEventListener("click", function () {
+        var v = prompt("今月使えるお金の総額(円)を入力してください(固定費を含む)", S.budget || ""); if (v === null) return;
+        var n = parseInt(v, 10); if (!isNaN(n) && n >= 0) { S.budget = n; save(); renderMoney() }
+      });
+      $("todoForm").addEventListener("submit", function (e) {
+        e.preventDefault(); var text = $("todoIn").value.trim(); if (!text) return;
+        var t = { id: uid(), text: text, done: false, date: today }, rep = $("todoRep").value;
+        if (rep) { var r = { id: uid(), text: text, dow: rep === "daily" ? -1 : new Date().getDay() }; S.rec.push(r); t.rid = r.id }
+        S.todos.push(t); $("todoIn").value = ""; $("todoRep").value = ""; save(); renderTodos();
+      });
+      $("mealBtn").addEventListener("click", function () { $("mealIn").value = S.meals[today] || ""; $("mealEdit").classList.remove("hidden"); $("mealIn").focus() });
+      $("mealSave").addEventListener("click", function () {
+        var v = $("mealIn").value.trim(); if (v) S.meals[today] = v;
+        $("mealEdit").classList.add("hidden"); save(); renderMeal();
+      });
+      $("mealIn").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); $("mealSave").click() } });
+      $("mealClear").addEventListener("click", function () { delete S.meals[today]; $("mealEdit").classList.add("hidden"); save(); renderMeal() });
+      $("mealSug").addEventListener("click", function () { suggest() });
+      $("mealOnly").addEventListener("click", function () { suggest(true) });
+      $("schForm").addEventListener("submit", function (e) {
+        e.preventDefault(); var t = $("schText").value.trim(); if (!t || !$("schTime").value || !$("schDate").value) return;
+        S.sched.push({ id: uid(), date: $("schDate").value, time: $("schTime").value, text: t });
+        $("schTime").value = ""; $("schText").value = ""; save(); renderSched();
+      });
+      $("frForm").addEventListener("submit", function (e) {
+        e.preventDefault(); var n = $("frName").value.trim(); if (!n) return;
+        S.fridge.push({ id: uid(), name: n, exp: $("frExp").value });
+        $("frName").value = ""; $("frExp").value = ""; $("sug").innerHTML = ""; save(); renderFridge();
+      });
+      $("memo").value = S.memo;
+      $("trashGrid").innerHTML = W.map(function (w, i) { return '<label>' + w + '<input type="text" data-d="' + i + '" placeholder="なし"></label>' }).join("");
+      $("trashBtn").addEventListener("click", function () {
+        var ed = $("trashEdit"), hid = ed.classList.toggle("hidden");
+        if (!hid) ed.querySelectorAll("input").forEach(function (i) { i.value = S.trash[i.dataset.d] || "" });
+      });
+      $("trashSave").addEventListener("click", function () {
+        var t = {}; $("trashEdit").querySelectorAll("input").forEach(function (i) { var v = i.value.trim(); if (v) t[i.dataset.d] = v });
+        S.trash = t; S.tgen = ""; $("trashEdit").classList.add("hidden"); rollover(); renderAll();
+      });
+      $("fixForm").addEventListener("submit", function (e) {
+        e.preventDefault(); var a = parseInt($("fixAmt").value, 10), d = parseInt($("fixDay").value, 10), n = $("fixName").value.trim();
+        if (!n || isNaN(a) || a <= 0 || isNaN(d) || d < 1 || d > 31) return;
+        S.fixed.push({ id: uid(), name: n, amt: a, day: d }); $("fixName").value = ""; $("fixAmt").value = ""; $("fixDay").value = ""; save(); renderAll();
+      });
+      $("stockForm").addEventListener("submit", function (e) {
+        e.preventDefault(); var n = $("stName").value.trim(), q = parseInt($("stQty").value, 10), m = parseInt($("stMin").value, 10);
+        if (!n) return; q = isNaN(q) ? 0 : q; m = isNaN(m) ? 1 : m;
+        S.stock.push({ id: uid(), name: n, qty: q, min: m });
+        if (q <= m && !S.shop.some(function (x) { return x.name === n && !x.bought })) S.shop.push({ id: uid(), name: n, bought: false });
+        $("stName").value = ""; save(); renderAll();
+      });
+      $("shopForm").addEventListener("submit", function (e) {
+        e.preventDefault(); var n = $("shopIn").value.trim(); if (!n) return;
+        S.shop.push({ id: uid(), name: n, bought: false }); $("shopIn").value = ""; save(); renderShop();
+      });
+      $("memo").addEventListener("input", function () { S.memo = $("memo").value; save() });
+
+      /* ---- バックアップ ---- */
+      $("exportBtn").addEventListener("click", function () {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: "application/json" }));
+        a.download = "life-support-backup-" + today + ".json"; a.click(); URL.revokeObjectURL(a.href);
+      });
+      $("importBtn").addEventListener("click", function () { $("importFile").click() });
+      $("importFile").addEventListener("change", function (e) {
+        var f = e.target.files[0]; if (!f) return;
+        var r = new FileReader();
+        r.onload = function () {
+          try {
+            var d = JSON.parse(r.result); if (!d || !Array.isArray(d.todos)) throw 0;
+            if (!confirm("現在のデータを上書きして読み込みます。よろしいですか?")) return;
+            S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [] }, d);
+            rollover(); $("memo").value = S.memo; renderAll();
+          } catch (x) { alert("読み込めませんでした。バックアップファイルを確認してください。") }
+        };
+        r.readAsText(f); e.target.value = "";
+      });
+
+      /* アプリを開いたまま日付をまたいだ場合に更新 */
+      document.addEventListener("visibilitychange", function () { if (!document.hidden) { rollover(); renderAll() } });
+
+      rollover(); renderAll();
+
+      /* ---- タブ切り替え ---- */
+      var TABS = ["home", "meal", "shop", "money"];
+      function setTab(t) {
+        if (TABS.indexOf(t) < 0) t = "home";
+        document.querySelectorAll(".card[data-tab]").forEach(function (c) { c.classList.toggle("off", c.dataset.tab !== t) });
+        document.querySelectorAll(".tab").forEach(function (b) { b.setAttribute("aria-selected", String(b.dataset.t === t)) });
+        try { localStorage.setItem("ls_tab", JSON.stringify(t)) } catch (e) { }
+      }
+      document.querySelector(".tabs").addEventListener("click", function (e) { var b = e.target.closest(".tab"); if (b) { setTab(b.dataset.t); window.scrollTo(0, 0) } });
+      setTab(load("ls_tab", "home"));
+
+      /* ---- レシート読み取り(端末内でOCR) ---- */
+      var rcItems = [];
+      function loadOCR() {
+        return window.Tesseract ? Promise.resolve() : new Promise(function (ok, ng) {
+          var sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"; sc.onload = ok; sc.onerror = ng; document.head.appendChild(sc);
+        });
+      }
+      function parseReceipt(txt) {
+        var t = txt.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248) }).replace(/[￥\\]/g, "¥").replace(/，/g, ",");
+        var lines = t.split(/\n/).map(function (l) { return l.replace(/([^\x00-\x7F]) +(?=[^\x00-\x7F])/g, "$1").trim() }).filter(Boolean);
+        var num = function (x) { return parseInt(x.replace(/[,\s]/g, ""), 10) };
+        var NG = /合計|小計|お預|お釣|釣り|税|対象|点数|現金|カード|ポイント|電話|TEL|領収|レジ|担当|様|番号/i;
+        var total = 0, items = [];
+        lines.forEach(function (l) {
+          if (!total && !/点数/.test(l)) { var m = l.match(/(合計|お買上|お会計|ご請求)\D*¥?\s*(\d[\d,]+)/); if (m) total = num(m[2]) }
+          var im = l.match(/^(.{2,}?)\s*¥?\s*(\d{1,3}(?:,\d{3})+|\d{2,6})\s*[軽※*]?$/);
+          if (im && !NG.test(l) && /[^\d\s\-¥.,:]/.test(im[1])) items.push({ name: im[1].replace(/[¥\s※*軽]+$/, "").trim(), price: num(im[2]) });
+        });
+        if (!total) lines.forEach(function (l) { (l.match(/¥?\d[\d,]*/g) || []).forEach(function (x) { var v = num(x.replace("¥", "")); if (v > total && v <= 200000) total = v }) });
+        return { total: total, items: items };
+      }
+      function renderRc() {
+        $("rcItems").innerHTML = rcItems.length ? rcItems.map(function (x, i) {
+          return '<li><input type="checkbox" data-i="' + i + '" checked aria-label="選ぶ"><input type="text" class="tx" data-n="' + i + '" value="' + esc(x.name) + '"><b>' + x.price.toLocaleString("ja-JP") + '円</b></li>';
+        }).join("") : '<li><p class="empty">品物は読み取れませんでした(合計は使えます)</p></li>';
+      }
+      $("rcBtn").addEventListener("click", function () { $("rcFile").click() });
+      $("rcFile").addEventListener("change", function (e) {
+        var f = e.target.files[0]; if (!f) return; e.target.value = "";
+        $("rcRes").classList.add("hidden"); $("rcMsg").textContent = "準備中…(初回は日本語データの読み込みで少し時間がかかります)";
+        loadOCR().then(function () {
+          return Tesseract.recognize(f, "jpn", { logger: function (m) { if (m.status === "recognizing text") $("rcMsg").textContent = "読み取り中… " + Math.round(m.progress * 100) + "%" } });
+        }).then(function (r) {
+          var p = parseReceipt(r.data.text); rcItems = p.items;
+          $("rcTotal").value = p.total || ""; $("rcMemo").value = ""; renderRc(); $("rcRes").classList.remove("hidden");
+          $("rcMsg").textContent = p.total ? "読み取れました。内容を確認して登録してください" : "合計が読み取れませんでした。金額を入力してください";
+        }).catch(function () { $("rcMsg").textContent = "読み取れませんでした。通信を確認するか、明るい場所で撮り直してください" });
+      });
+      $("rcAdd").addEventListener("click", function () {
+        var a = parseInt($("rcTotal").value, 10); if (isNaN(a) || a <= 0) { $("rcMsg").textContent = "合計金額を入力してください"; return }
+        S.exp.push({ id: uid(), date: today, amt: a, memo: $("rcMemo").value.trim() || "レシート", cat: $("rcCat").value });
+        save(); renderMoney(); $("rcRes").classList.add("hidden"); $("rcMsg").textContent = "今日の支出に登録しました(ホームで確認できます)";
+      });
+      $("rcFr").addEventListener("click", function () {
+        var n = 0;
+        $("rcItems").querySelectorAll("input[type=checkbox]:checked").forEach(function (c) {
+          var nm = $("rcItems").querySelector('[data-n="' + c.dataset.i + '"]').value.trim();
+          if (nm && !S.fridge.some(function (x) { return x.name === nm })) { S.fridge.push({ id: uid(), name: nm, exp: "" }); n++ }
+        });
+        save(); renderFridge(); $("rcMsg").textContent = n + "品を冷蔵庫に追加しました(ごはんタブで確認できます)";
+      });
+
+      /* ---- Firebase(ログイン+クラウド保存) ---- */
+      var CFG = { apiKey: "AIzaSyCLdsMHrKRwEzyrB_HPiRitPErjIIHWdZ4", authDomain: "life-support-a2a21.firebaseapp.com", projectId: "life-support-a2a21", storageBucket: "life-support-a2a21.firebasestorage.app", messagingSenderId: "789058079447", appId: "1:789058079447:web:7a4e3113758af4d3f0fe92" };
+      var BASE = "https://www.gstatic.com/firebasejs/12.19.0/", A = null, F = null, auth = null, db = null, cuid = null, timer = null;
+      var show = function (id, on) { $(id).classList.toggle("hidden", !on) };
+      function setSync(t) { $("sync").textContent = t }
+      function withDef(o) { return Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [] }, o) }
+      function push() { return F.setDoc(F.doc(db, "users", cuid), JSON.parse(JSON.stringify(S))) }
+      function cloudSave() {
+        if (!cuid) return; setSync("同期中…"); clearTimeout(timer);
+        timer = setTimeout(function () { push().then(function () { setSync("クラウドに保存済み") }).catch(function () { setSync("クラウドに保存できませんでした(通信やルールを確認)") }) }, 700);
+      }
+      function authErr(e) {
+        var m = { "auth/invalid-credential": "メールアドレスまたはパスワードが違います", "auth/invalid-email": "メールアドレスの形式が正しくありません", "auth/email-already-in-use": "このメールアドレスはすでに登録されています", "auth/weak-password": "パスワードは6文字以上にしてください", "auth/network-request-failed": "通信できません。接続を確認してください", "auth/operation-not-allowed": "メール/パスワードのログインが有効になっていません", "auth/operation-not-supported-in-this-environment": "ファイルを直接開いている間はログインできません。Live Serverなどで開いてください", "auth/unauthorized-domain": "このアドレスがFirebaseの「承認済みドメイン」に登録されていません" };
+        $("authMsg").textContent = m[e.code] || ("エラー: " + (e.code || e.message));
+      }
+
+      /* ログイン画面のボタンは、Firebaseの読み込みを待たずに先に登録する */
+      $("guestBtn").addEventListener("click", function () { show("login", false); show("loginBtn", true); setSync("ログインしていません(この端末にのみ保存)") });
+      $("loginBtn").addEventListener("click", function () { if (!auth) { alert("クラウドに接続できません。通信を確認してください。"); return } show("login", true) });
+      $("loginForm").addEventListener("submit", function (e) { e.preventDefault(); if (!auth) return; $("authMsg").textContent = ""; A.signInWithEmailAndPassword(auth, $("authMail").value.trim(), $("authPass").value).catch(authErr) });
+      $("signupBtn").addEventListener("click", function () {
+        if (!auth) return;
+        if (!$("loginForm").reportValidity()) return; $("authMsg").textContent = "";
+        A.createUserWithEmailAndPassword(auth, $("authMail").value.trim(), $("authPass").value).catch(authErr);
+      });
+      $("logoutBtn").addEventListener("click", function () {
+        clearTimeout(timer);
+        (cuid ? push() : Promise.resolve()).catch(function () { }).then(function () { return A.signOut(auth) }).then(function () { try { localStorage.removeItem(K) } catch (x) { } location.reload() });
+      });
+
+      Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-auth.js"), import(BASE + "firebase-firestore.js")]).then(function (m) {
+        A = m[1]; F = m[2]; var app = m[0].initializeApp(CFG); auth = A.getAuth(app); db = F.getFirestore(app);
+        A.onAuthStateChanged(auth, function (u) {
+          if (!u) { cuid = null; show("login", true); show("logoutBtn", false); show("loginBtn", true); return }
+          cuid = u.uid; show("login", false); show("logoutBtn", true); show("loginBtn", false); setSync("読み込み中…");
+          F.getDoc(F.doc(db, "users", cuid)).then(function (snap) {
+            if (snap.exists()) { S = withDef(snap.data()); rollover(); $("memo").value = S.memo; renderAll(); setSync("クラウドと同期しました") }
+            else { save() }
+          }).catch(function () { setSync("読み込めませんでした。Firestoreのルールと接続を確認してください") });
+        });
+      }).catch(function () { setSync("クラウドに接続できません(この端末にのみ保存中)") });
+    })();
+  </script>
+</body>
+
+</html>

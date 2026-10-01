@@ -1,0 +1,341 @@
+  :root{
+    --bg:#EDEADF;
+    --paper:#FBFAF5;
+    --ink:#24261F;
+    --ink-soft:#6B6E5F;
+    --line:#DEDACA;
+
+    --teal:#33604E;
+    --teal-tint:#E2ECE6;
+    --rust:#B04B29;
+    --rust-tint:#F4E1D5;
+    --gold:#B5842A;
+    --gold-tint:#F2E7CC;
+
+    --radius-card:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+    line-height:1.7;
+  }
+
+  .page{
+    max-width:640px;
+    margin:0 auto;
+    padding:36px 20px 60px;
+  }
+
+  /* ---------- Header ---------- */
+  .hero{
+    margin-bottom:28px;
+  }
+  .hero-top{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .badge-house{
+    flex:none;
+    width:52px;height:52px;
+    border-radius:50%;
+    background:var(--teal);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    box-shadow:0 2px 0 rgba(0,0,0,.08);
+  }
+  h1{
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-weight:900;
+    font-size:32px;
+    margin:0;
+    letter-spacing:.02em;
+  }
+  .tagline{
+    margin:2px 0 0;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+  .today{
+    margin:14px 0 0;
+    font-size:13px;
+    color:var(--ink-soft);
+    padding-left:66px;
+  }
+
+  /* ---------- Cards (base) ---------- */
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:22px 22px 24px;
+    margin-bottom:16px;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .icon{
+    flex:none;
+    width:34px;height:34px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+  }
+  .icon-teal{background:var(--teal-tint);}
+  .icon-rust{background:var(--rust-tint);}
+  .icon-gold{background:var(--gold-tint);}
+  h2{
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-size:17px;
+    font-weight:700;
+    margin:0;
+    flex:1;
+  }
+  .progress-label{
+    font-size:13px;
+    color:var(--ink-soft);
+    font-weight:500;
+  }
+
+  /* buttons */
+  .btn{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    border-radius:7px;
+    padding:9px 16px;
+    cursor:pointer;
+    border:1px solid transparent;
+    transition:transform .12s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-outline{
+    background:transparent;
+    border-color:var(--ink);
+    color:var(--ink);
+  }
+  .btn-outline:hover{background:var(--ink);color:var(--paper);}
+  .btn-primary{
+    background:var(--teal);
+    color:#fff;
+  }
+  .btn-primary:hover{background:#294c3f;}
+  .btn-ghost{
+    background:var(--line);
+    color:var(--ink);
+  }
+  .btn-ghost:hover{background:#d1cbb4;}
+
+  input[type=text], input[type=number], input[type=time]{
+    font-family:inherit;
+    font-size:14px;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus-visible, textarea:focus-visible, button:focus-visible{
+    outline:2px solid var(--rust);
+    outline-offset:2px;
+  }
+  .hidden{display:none !important;}
+
+  .add-row{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+  }
+  .add-row input[type=text]{flex:1;min-width:0;}
+
+  /* ---------- Money: ticket stub ---------- */
+  .card-money{
+    border-radius:var(--radius-card);
+    position:relative;
+    background:
+      radial-gradient(circle at 0 100%, transparent 8px, var(--bg) 8.5px) bottom left,
+      radial-gradient(circle at 0 0%, transparent 8px, var(--bg) 8.5px) top left;
+    background-size:100% 50%;
+    background-repeat:no-repeat;
+    border-left:2px dashed var(--line);
+  }
+  .money-body{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .money-amount{
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-weight:900;
+    font-size:40px;
+    color:var(--teal);
+  }
+  .money-amount .unit{
+    font-size:18px;
+    font-weight:500;
+    margin-left:2px;
+    color:var(--ink-soft);
+  }
+  .money-input{
+    width:140px;
+    font-size:22px;
+    font-weight:700;
+  }
+
+  /* ---------- Todo ---------- */
+  .todo-list{list-style:none;margin:0;padding:0;}
+  .todo-list li{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .todo-list li:last-child{border-bottom:none;}
+  .todo-check{
+    flex:none;
+    width:20px;height:20px;
+    border-radius:5px;
+    border:2px solid var(--rust);
+    background:transparent;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    padding:0;
+  }
+  .todo-check[aria-pressed="true"]{background:var(--rust);}
+  .todo-text{flex:1;font-size:15px;}
+  .todo-text.done{color:var(--ink-soft);text-decoration:line-through;}
+  .todo-remove{
+    flex:none;
+    background:none;border:none;
+    color:var(--ink-soft);
+    font-size:16px;
+    cursor:pointer;
+    padding:2px 6px;
+  }
+  .todo-remove:hover{color:var(--rust);}
+
+  /* ---------- Meal ---------- */
+  .meal-status{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+  }
+  .meal-status.decided{color:var(--ink);font-weight:700;}
+  .meal-edit{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .meal-edit input{flex:1;min-width:0;}
+
+  /* ---------- Schedule: timeline ---------- */
+  .timeline{
+    list-style:none;
+    margin:0 0 4px;
+    padding:0 0 0 6px;
+    border-left:2px solid var(--line);
+  }
+  .timeline li{
+    position:relative;
+    padding:2px 0 20px 22px;
+  }
+  .timeline li:last-child{padding-bottom:2px;}
+  .timeline li::before{
+    content:"";
+    position:absolute;
+    left:-7px;top:6px;
+    width:12px;height:12px;
+    border-radius:50%;
+    background:var(--teal);
+    border:2px solid var(--paper);
+  }
+  .timeline-time{
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--teal);
+    margin-right:10px;
+  }
+  .timeline-text{font-size:15px;}
+  .timeline-remove{
+    background:none;border:none;color:var(--ink-soft);
+    font-size:14px;cursor:pointer;margin-left:8px;
+  }
+  .timeline-remove:hover{color:var(--rust);}
+  .empty-note{color:var(--ink-soft);font-size:14px;margin:0;}
+
+  #schedForm input[type=time]{flex:none;width:110px;}
+
+  /* ---------- Fridge: chips ---------- */
+  .tag-list{
+    list-style:none;
+    display:flex;flex-wrap:wrap;
+    gap:8px;
+    margin:0 0 4px;
+    padding:0;
+  }
+  .tag-list li{
+    display:flex;align-items:center;gap:6px;
+    background:var(--gold-tint);
+    border-radius:999px;
+    padding:6px 8px 6px 14px;
+    font-size:14px;
+  }
+  .tag-remove{
+    background:none;border:none;
+    color:var(--ink-soft);
+    font-size:14px;cursor:pointer;
+    line-height:1;
+    padding:2px 4px;
+  }
+  .tag-remove:hover{color:var(--rust);}
+
+  /* ---------- Memo: ruled paper ---------- */
+  textarea{
+    width:100%;
+    min-height:120px;
+    resize:vertical;
+    font-family:inherit;
+    font-size:15px;
+    line-height:28px;
+    padding:6px 10px 6px 4px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background-image:repeating-linear-gradient(var(--paper) 0 27px, var(--line) 27px 28px);
+    background-attachment:local;
+    color:var(--ink);
+  }
+  .autosave-note{
+    margin:8px 0 0;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  .page-footer{
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:28px;
+  }
+
+  @media (max-width:420px){
+    h1{font-size:26px;}
+    .money-amount{font-size:32px;}
+    .today{padding-left:0;margin-top:10px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
