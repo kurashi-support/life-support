@@ -5,6 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Life Support</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F1F4F2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0E1618" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Life Support">
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%2317695F'/%3E%3Ctext x='50' y='68' font-size='56' text-anchor='middle'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
@@ -664,6 +672,424 @@
         flex-wrap: wrap
       }
     }
+
+    .hp {
+      list-style: disc;
+      padding-left: 20px;
+      margin: 0
+    }
+
+    .hp li {
+      font-size: 14px;
+      margin: 6px 0
+    }
+
+    details.hp {
+      list-style: none;
+      padding: 0;
+      border-bottom: 1px solid var(--line)
+    }
+
+    details.hp:last-child {
+      border-bottom: none
+    }
+
+    details.hp summary {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 10px 0;
+      min-height: 40px
+    }
+
+    details.hp ul {
+      list-style: disc;
+      padding-left: 20px;
+      margin: 0 0 10px
+    }
+
+    /* ===== 見やすさ・使いやすさの仕上げ ===== */
+    :root {
+      color-scheme: light dark;
+      --bg: #F1F4F2;
+      --paper: #FFFFFF;
+      --ink: #16252B;
+      --soft: #566568;
+      --line: #DCE3E2;
+      --teal: #17695F;
+      --teal-t: #DCEEEA;
+      --rust: #C9461F;
+      --rust-t: #FBE5DC;
+      --gold: #A87413;
+      --gold-t: #FAF0D6;
+      --field: #FFFFFF;
+      --rp: #FFFDF6;
+      --on-teal: #FFFFFF
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0E1618;
+        --paper: #162124;
+        --ink: #E7F0EE;
+        --soft: #9CAEAD;
+        --line: #2A3A3E;
+        --teal: #52B8AA;
+        --teal-t: #18383A;
+        --rust: #F58B63;
+        --rust-t: #3A2820;
+        --gold: #E4B14B;
+        --gold-t: #392F1D;
+        --field: #1B2A2E;
+        --rp: #162124;
+        --on-teal: #06201D
+      }
+
+      .chk[aria-pressed=true] {
+        color: #1b1210
+      }
+
+      .chips li.bad,
+      .chips li.bad small,
+      .chips li.bad .x {
+        color: #2a1008
+      }
+    }
+
+    body {
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased
+    }
+
+    ::selection {
+      background: var(--teal-t)
+    }
+
+    h1,
+    h2,
+    .tab,
+    .btn,
+    summary {
+      font-feature-settings: "palt" 1
+    }
+
+    .page {
+      max-width: 1040px
+    }
+
+    .badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 24px
+    }
+
+    h1 {
+      font-size: 28px;
+      letter-spacing: -.01em
+    }
+
+    .today {
+      padding-left: 62px
+    }
+
+    .grid {
+      gap: 14px
+    }
+
+    .card {
+      border-radius: 16px;
+      box-shadow: none;
+      padding: 20px
+    }
+
+    .card-head {
+      margin-bottom: 14px
+    }
+
+    .icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px
+    }
+
+    h2 {
+      font-size: 17px;
+      letter-spacing: .01em
+    }
+
+    .label,
+    .autosave-note {
+      font-size: 14px
+    }
+
+    .btn {
+      border-radius: 10px;
+      min-height: 46px;
+      padding: 10px 18px;
+      font-size: 16px;
+      transition: background .15s, transform .1s, filter .15s
+    }
+
+    .b-pri {
+      background: var(--teal);
+      color: var(--on-teal)
+    }
+
+    .b-pri:hover {
+      background: var(--teal);
+      filter: brightness(.92)
+    }
+
+    .b-gh {
+      background: var(--teal-t);
+      color: var(--teal)
+    }
+
+    .b-gh:hover {
+      background: var(--teal-t);
+      filter: brightness(.95)
+    }
+
+    .b-out {
+      border-color: var(--soft)
+    }
+
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--field);
+      color: var(--ink);
+      min-height: 46px
+    }
+
+    textarea {
+      min-height: 120px
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 28%, transparent)
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--teal);
+      outline-offset: 2px
+    }
+
+    .tx {
+      font-size: 16px
+    }
+
+    .x {
+      min-width: 44px;
+      min-height: 44px;
+      font-size: 20px
+    }
+
+    .chk {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      position: relative;
+      transition: background .15s
+    }
+
+    .chk::after {
+      content: "";
+      position: absolute;
+      inset: -8px
+    }
+
+    .rows li {
+      padding: 10px 0
+    }
+
+    .chips li {
+      font-size: 15px;
+      min-height: 40px
+    }
+
+    .status {
+      font-size: 16px
+    }
+
+    /* 今日のまとめ */
+    .sumcard {
+      padding: 14px
+    }
+
+    .sum {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px
+    }
+
+    .sum div {
+      background: var(--teal-t);
+      border-radius: 12px;
+      padding: 12px 14px;
+      min-width: 0
+    }
+
+    .sum small {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--soft)
+    }
+
+    .sum b {
+      display: block;
+      font-size: 18px;
+      line-height: 1.4;
+      overflow-wrap: anywhere
+    }
+
+    @media (min-width: 820px) {
+      .sum {
+        grid-template-columns: repeat(4, 1fr)
+      }
+    }
+
+    /* 今日使えるお金 */
+    .card[aria-labelledby="h-money"] {
+      background: var(--rp);
+      border-top: 5px solid var(--teal);
+      border-radius: 6px 6px 18px 18px;
+      padding: 22px 24px 24px
+    }
+
+    .big {
+      font-size: clamp(44px, 12vw, 60px);
+      line-height: 1.05;
+      letter-spacing: -.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink)
+    }
+
+    .big span {
+      font-size: .34em;
+      font-weight: 700;
+      color: var(--soft);
+      margin-left: 6px
+    }
+
+    .big.over {
+      color: var(--rust)
+    }
+
+    .bar {
+      height: 10px
+    }
+
+    #expForm {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px dashed var(--line)
+    }
+
+    /* タブ */
+    .tabs {
+      top: 8px;
+      padding: 5px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      gap: 4px
+    }
+
+    .tab {
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      min-height: 44px;
+      font-size: 15px
+    }
+
+    .tab:hover {
+      background: var(--teal-t)
+    }
+
+    .tab[aria-selected=true] {
+      background: var(--teal);
+      color: var(--on-teal)
+    }
+
+    @media (max-width: 819px) {
+      .tabs {
+        top: auto;
+        border: none;
+        border-top: 1px solid var(--line);
+        border-radius: 0;
+        background: color-mix(in srgb, var(--paper) 90%, transparent);
+        -webkit-backdrop-filter: saturate(1.4) blur(14px);
+        backdrop-filter: saturate(1.4) blur(14px);
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom))
+      }
+
+      .tab {
+        min-height: 56px;
+        border-radius: 12px;
+        font-size: 13px
+      }
+
+      .tab[aria-selected=true] {
+        background: var(--teal-t);
+        color: var(--teal)
+      }
+    }
+
+    /* 使い方・ログイン */
+    details.hp summary {
+      font-size: 16px;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    details.hp summary::-webkit-details-marker {
+      display: none
+    }
+
+    details.hp summary::after {
+      content: "＋";
+      color: var(--soft);
+      font-weight: 400
+    }
+
+    details.hp[open] summary::after {
+      content: "－"
+    }
+
+    .hp li {
+      font-size: 15px
+    }
+
+    #login {
+      background: var(--bg)
+    }
+
+    .lbox {
+      background: var(--paper);
+      border-radius: 20px;
+      padding: 28px
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        animation: none !important
+      }
+    }
   </style>
 </head>
 
@@ -700,9 +1126,14 @@
       <button class="tab" type="button" role="tab" data-t="meal"><span aria-hidden="true">🍚</span>ごはん</button>
       <button class="tab" type="button" role="tab" data-t="shop"><span aria-hidden="true">🛒</span>買い物</button>
       <button class="tab" type="button" role="tab" data-t="money"><span aria-hidden="true">💴</span>家計</button>
+      <button class="tab" type="button" role="tab" data-t="help"><span aria-hidden="true">📖</span>使い方</button>
     </nav>
 
     <div class="grid">
+      <section class="card full sumcard" data-tab="home" aria-label="今日のまとめ">
+        <div class="sum" id="sum"></div>
+      </section>
+
       <section class="card full" data-tab="home" aria-labelledby="h-money">
         <div class="card-head"><span class="icon i-t" aria-hidden="true">💴</span>
           <h2 id="h-money">今日使えるお金</h2>
@@ -712,7 +1143,8 @@
         <p class="sub" id="moneySub"></p>
         <div class="bar" id="bar"><i></i></div>
         <form class="row" id="expForm">
-          <input type="number" id="expAmt" placeholder="金額(円)" min="1" inputmode="numeric" required style="width:120px">
+          <input type="number" id="expAmt" placeholder="金額(円・税込)" min="1" inputmode="numeric" required
+            style="width:120px">
           <select id="expCat" aria-label="カテゴリ">
             <option>食費</option>
             <option>日用品</option>
@@ -810,6 +1242,34 @@
         <p class="label" style="margin:8px 0 0">左:今の個数 / 右:この数以下になると買い物リストへ自動追加</p>
       </section>
 
+      <section class="card full" data-tab="shop" aria-labelledby="h-scan">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">🔍</span>
+          <h2 id="h-scan">バーコード・QRを読む</h2>
+        </div>
+        <div class="row" style="margin-top:0">
+          <button class="btn b-pri" id="scBtn" type="button">カメラで読む</button>
+          <button class="btn b-gh" id="scPhoto" type="button">写真から読む</button>
+          <button class="btn b-out hidden" id="scStop" type="button">カメラを止める</button>
+          <input type="file" id="scFile" accept="image/*" class="hidden">
+        </div>
+        <div id="scView" class="hidden" style="margin-top:10px;max-width:420px"></div>
+        <div id="scTmp" class="hidden"></div>
+        <p class="label" id="scMsg" style="margin:8px 0 0">商品のバーコードを読むと、名前を調べて、買い物リスト・冷蔵庫・日用品ストックに入れられます</p>
+        <p class="label" id="scInfo" style="margin:4px 0 0;word-break:break-all"></p>
+        <div class="hidden" id="scRes">
+          <div class="row">
+            <input type="text" id="scName" placeholder="商品名" style="flex:1;min-width:160px">
+          </div>
+          <div class="row">
+            <button class="btn b-pri" type="button" data-sc="shop">買い物リストへ</button>
+            <button class="btn b-out" type="button" data-sc="fridge">冷蔵庫へ</button>
+            <button class="btn b-out" type="button" data-sc="stock">日用品ストックに+1</button>
+          </div>
+          <p class="label" id="scCode" style="margin:6px 0 0"></p>
+        </div>
+        <p class="label" style="margin:8px 0 0">バーコードの読み取りは端末の中で行います。商品名を調べるときは、番号だけを Open Food Facts に送ります</p>
+      </section>
+
       <section class="card" data-tab="home" aria-labelledby="h-trash">
         <div class="card-head"><span class="icon i-g" aria-hidden="true">🗑️</span>
           <h2 id="h-trash">ゴミ出し</h2><button class="btn b-gh" id="trashBtn" type="button">曜日を設定</button>
@@ -834,7 +1294,7 @@
         <p class="label" id="rcMsg" style="margin:8px 0 0">レシートの写真から、合計金額と買った品物を読み取ります</p>
         <div class="hidden" id="rcRes">
           <div class="row">
-            <input type="number" id="rcTotal" placeholder="合計(円)" min="1" inputmode="numeric" style="width:120px"
+            <input type="number" id="rcTotal" placeholder="税込合計(円)" min="1" inputmode="numeric" style="width:120px"
               aria-label="合計金額">
             <select id="rcCat" aria-label="カテゴリ">
               <option>食費</option>
@@ -849,9 +1309,113 @@
           <ul class="rows" id="rcItems" style="margin-top:10px"></ul>
           <p class="label" id="rcSum" style="margin:6px 0 0"></p>
           <div class="row"><button class="btn b-out" id="rcFr" type="button">チェックした品を冷蔵庫へ</button></div>
-          <p class="label" style="margin:8px 0 0">読み間違いは入力欄で直せます。写真は端末の外へ送られません</p>
-          <details style="margin-top:8px"><summary class="label" style="cursor:pointer">読み取った文字(確認用)</summary><pre id="rcRaw" class="label" style="white-space:pre-wrap;margin:6px 0 0"></pre></details>
+          <p class="label" style="margin:8px 0 0">読み間違いは入力欄で直せます。AIで読み取るときは、写真がGoogleのAIに送られます(簡易読み取りは端末の中だけで処理します)</p>
+          <details style="margin-top:8px">
+            <summary class="label" style="cursor:pointer">読み取った文字(確認用)</summary>
+            <pre id="rcRaw" class="label" style="white-space:pre-wrap;margin:6px 0 0"></pre>
+          </details>
         </div>
+      </section>
+
+      <section class="card full" data-tab="help" aria-labelledby="h-help">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">📖</span>
+          <h2 id="h-help">はじめに</h2>
+        </div>
+        <ul class="hp">
+          <li>Life Support は、お金・やること・予定・ごはん・買い物を、ひとつにまとめるアプリです。</li>
+          <li>ホームの一番上に、今日のやること・次の予定・ゴミ出し・今夜のご飯のまとめが出ます。</li>
+          <li>画面の下(パソコンでは上)のタブで、「ホーム」「ごはん」「買い物」「家計」「使い方」を切り替えます。</li>
+          <li>ページの一番下の「ログイン(クラウド保存)」からログインすると、データがクラウドに保存され、スマホとパソコンで同じ内容を使えます。ログインしない場合は、この端末の中だけに保存されます。</li>
+          <li>金額は、すべて<b>税込</b>で扱います。レシートの金額も、税込に合わせて表示します。</li>
+        </ul>
+      </section>
+
+      <section class="card full" data-tab="help" aria-labelledby="h-help2">
+        <div class="card-head"><span class="icon i-g" aria-hidden="true">🧭</span>
+          <h2 id="h-help2">タブごとの使い方</h2>
+        </div>
+        <details class="hp" open>
+          <summary>🏠 ホーム</summary>
+          <ul>
+            <li><b>今日使えるお金</b>:
+              「今月の予算を設定」に、今月使えるお金の総額(固定費を含む)を入れます。固定費を引いて、残り日数で割った金額が表示されます。使ったら、金額・カテゴリ・メモを入れて「使った」を押します。</li>
+            <li><b>今日やること</b>: 入力して「追加」。「毎日」「毎週」を選ぶと、くり返し入ります。✓で完了、×で削除です。終わらなかったものは、翌日に持ち越されます。</li>
+            <li><b>予定</b>: 日付・時刻・内容を入れて「追加」します。</li>
+            <li><b>ゴミ出し</b>: 「曜日を設定」で、曜日ごとのゴミの種類を登録します。当日は「今日は〇〇の日です」と出て、「やること」にも自動で入ります。</li>
+            <li><b>メモ</b>: 書くと自動で保存されます。</li>
+          </ul>
+        </details>
+        <details class="hp">
+          <summary>🍚 ごはん</summary>
+          <ul>
+            <li><b>今日のご飯</b>: 「夜ご飯を決める」で入力します。「クリア」で消せます。</li>
+            <li><b>冷蔵庫の中身</b>: 食材と賞味期限を入れて「追加」します。期限が近いものは色が変わります。</li>
+            <li><b>冷蔵庫から提案</b>: 期限が近い食材を優先して、作れそうな料理を出します。足りない食材は「足りない食材を追加」で買い物リストに入れられます。</li>
+            <li><b>食材だけで作れる料理</b>: 冷蔵庫にある食材だけで作れる料理を出します。</li>
+          </ul>
+        </details>
+        <details class="hp">
+          <summary>🛒 買い物</summary>
+          <ul>
+            <li><b>買い物リスト</b>: 買うものを追加して、買ったらチェックします。「チェックした品を冷蔵庫へ」で、冷蔵庫に移せます。</li>
+            <li><b>日用品ストック</b>: 洗剤などの個数を＋−で管理します。設定した数以下になると、買い物リストに自動で入ります。</li>
+            <li><b>バーコード・QRを読む</b>:
+              「カメラで読む」か「写真から読む」で、商品のバーコードを読み取ります。商品名を確認して、買い物リスト・冷蔵庫・日用品ストックのどれかに入れます。一度入れた商品は、次から名前が自動で出ます。</li>
+          </ul>
+        </details>
+        <details class="hp">
+          <summary>💴 家計</summary>
+          <ul>
+            <li><b>レシート読み取り</b>: 「レシートを撮る・選ぶ」で写真を選ぶと、品物と金額(税込)の一覧が出ます。名前や金額は直せて、いらない行は×で消せます。確認したら「今日の支出に登録」を押します。</li>
+            <li><b>固定費・サブスク</b>: 名前・金額・支払日を登録します。毎月の予算から、自動で引かれます。</li>
+          </ul>
+        </details>
+      </section>
+
+      <section class="card full" data-tab="help" aria-labelledby="h-help3">
+        <div class="card-head"><span class="icon i-r" aria-hidden="true">💡</span>
+          <h2 id="h-help3">レシートをきれいに読み取るコツ</h2>
+        </div>
+        <ul class="hp">
+          <li>明るい場所で、影が入らないように撮ります。</li>
+          <li>レシートを平らに伸ばして、全体が画面に入るようにします。しわや折れ目は、できるだけ伸ばします。</li>
+          <li>なるべく正面から、文字が読めるくらいまで近づきます。遠すぎたり、斜めすぎたりすると、読み間違いが増えます。</li>
+          <li>読み取ったあとは、必ず金額と商品名を確認します。品物の合計とレシートの合計がちがうときは、差額が表示されます。</li>
+          <li>外税(税抜き)で印字されたレシートは、税込に換算して表示します。1円ほどのずれが出ることがあります。</li>
+          <li>AI読み取りを設定している場合、写真は Google の AI に送られます。カード番号や会員番号が写らないようにしてください。</li>
+        </ul>
+      </section>
+
+      <section class="card full" data-tab="help" aria-labelledby="h-help4">
+        <div class="card-head"><span class="icon i-g" aria-hidden="true">🛟</span>
+          <h2 id="h-help4">困ったとき</h2>
+        </div>
+        <details class="hp">
+          <summary>別の端末でデータが見えない</summary>
+          <ul>
+            <li>ページの一番下に「クラウドに保存済み」と出ているか確認します。「ログインしていません」と出ていたら、「ログイン(クラウド保存)」から、同じメールアドレスでログインします。</li>
+          </ul>
+        </details>
+        <details class="hp">
+          <summary>スマホのホーム画面に追加したい</summary>
+          <ul>
+            <li><b>iPhone(Safari)</b>: 共有ボタンから「ホーム画面に追加」を選びます。</li>
+            <li><b>Android(Chrome)</b>: 右上のメニューから「ホーム画面に追加」を選びます。</li>
+          </ul>
+        </details>
+        <details class="hp">
+          <summary>データのバックアップを取りたい</summary>
+          <ul>
+            <li>ページの一番下の「バックアップを書き出す」で保存できます。「バックアップを読み込む」で戻せます。</li>
+          </ul>
+        </details>
+        <details class="hp">
+          <summary>読み取りがうまくいかない</summary>
+          <ul>
+            <li>撮り直しのコツは、上の「レシートをきれいに読み取るコツ」を見てください。「読み取った文字(確認用)」を開くと、読み取った内容と、エラーがあればその理由が見られます。</li>
+            <li>カメラが使えないときは、ブラウザのカメラの許可を確認するか、「写真から読む」を使ってください。</li>
+          </ul>
+        </details>
       </section>
 
       <section class="card full" data-tab="money" aria-labelledby="h-fix">
@@ -860,7 +1424,7 @@
         </div>
         <ul class="rows" id="fixList"></ul>
         <form class="row" id="fixForm"><input type="text" id="fixName" placeholder="名前(例:家賃)" required><input
-            type="number" id="fixAmt" placeholder="金額(円)" min="1" required style="width:110px"><input type="number"
+            type="number" id="fixAmt" placeholder="金額(円・税込)" min="1" required style="width:110px"><input type="number"
             id="fixDay" placeholder="支払日" min="1" max="31" required style="width:80px" aria-label="毎月の支払日"><button
             class="btn b-pri">追加</button></form>
         <p class="label" style="margin:8px 0 0">登録した固定費は今月の予算から引いて、「今日使えるお金」を計算します</p>
@@ -895,7 +1459,7 @@
       var uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
       var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] }) };
       function load(k, f) { try { var r = localStorage.getItem(k); return r === null ? f : JSON.parse(r) } catch (e) { return f } }
-      function save() { try { localStorage.setItem(K, JSON.stringify(S)) } catch (e) { } cloudSave() }
+      function save() { try { localStorage.setItem(K, JSON.stringify(S)) } catch (e) { } cloudSave(); try { renderSummary() } catch (e) { } }
       var today = ds(new Date());
       var diff = function (s) { return Math.round((new Date(s + "T00:00:00") - new Date(today + "T00:00:00")) / 864e5) };
 
@@ -908,7 +1472,7 @@
           memo: load("ls_memo", "")
         };
       }
-      S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [] }, S);
+      S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} }, S);
 
       var RECIPES = [["親子丼", ["卵", "鶏肉", "玉ねぎ", "ご飯"]], ["野菜炒め", ["キャベツ", "にんじん", "豚肉", "もやし", "ピーマン"]], ["オムライス", ["卵", "ご飯", "玉ねぎ", "ケチャップ", "鶏肉"]], ["カレー", ["じゃがいも", "にんじん", "玉ねぎ", "豚肉", "カレールー"]], ["豚汁", ["豚肉", "大根", "にんじん", "味噌", "じゃがいも"]], ["チャーハン", ["ご飯", "卵", "ネギ", "ハム"]], ["焼きそば", ["麺", "キャベツ", "豚肉", "もやし"]], ["ナポリタン", ["パスタ", "玉ねぎ", "ピーマン", "ソーセージ", "ケチャップ"]], ["肉じゃが", ["じゃがいも", "牛肉", "玉ねぎ", "にんじん"]], ["卵かけご飯と味噌汁", ["卵", "ご飯", "味噌", "豆腐"]], ["麻婆豆腐", ["豆腐", "ひき肉", "ネギ"]], ["きのこパスタ", ["パスタ", "きのこ", "ベーコン"]], ["卵焼き", ["卵"]], ["味噌汁", ["味噌", "豆腐", "ネギ"]], ["納豆ご飯", ["納豆", "ご飯"]], ["ハムエッグ", ["ハム", "卵"]], ["玉ねぎと卵の炒め物", ["玉ねぎ", "卵"]], ["野菜スープ", ["キャベツ", "にんじん", "玉ねぎ"]], ["豚の生姜焼き", ["豚肉", "玉ねぎ", "生姜"]], ["豚キムチ", ["豚肉", "キムチ"]], ["ツナマヨおにぎり", ["ご飯", "ツナ", "マヨネーズ"]], ["にんじんしりしり", ["にんじん", "卵", "ツナ"]], ["お好み焼き", ["キャベツ", "卵", "小麦粉", "豚肉"]], ["豆腐ステーキ", ["豆腐", "ネギ"]]];
       var SYN = [[/たまご|タマゴ|玉子/g, "卵"], [/ごはん|ゴハン|白米|白飯/g, "ご飯"], [/たまねぎ|タマネギ|玉葱/g, "玉ねぎ"], [/長ねぎ|青ねぎ|小ねぎ|万能ねぎ|ねぎ/g, "ネギ"], [/人参|ニンジン/g, "にんじん"], [/ジャガイモ|馬鈴薯/g, "じゃがいも"], [/とうふ|トウフ/g, "豆腐"], [/みそ|ミソ/g, "味噌"], [/豚バラ|豚こま|豚コマ|ぶた肉/g, "豚肉"], [/鶏もも|鶏むね|とり肉|鳥肉|チキン/g, "鶏肉"], [/合いびき|合挽き|豚ひき|牛ひき|挽き肉|ミンチ/g, "ひき肉"], [/きゃべつ/g, "キャベツ"], [/なっとう|ナットウ/g, "納豆"]];
@@ -1049,11 +1613,26 @@
         }).join("");
       }
 
+      function renderSummary() {
+        if (!window.S && typeof S === "undefined") return; var el = $("sum"); if (!el) return;
+        var left = S.todos.filter(function (t) { return !t.done }).length, now = new Date();
+        var hm = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+        var ts = S.sched.filter(function (s) { return s.date === today }).sort(function (a, b) { return a.time.localeCompare(b.time) });
+        var nx = ts.filter(function (s) { return s.time >= hm })[0];
+        var tr = (S.trash || {})[new Date(today + "T00:00:00").getDay()], meal = (S.meals || {})[today];
+        var T = [
+          ["やること", left ? "残り " + left + "件" : (S.todos.length ? "ぜんぶ完了" : "なし")],
+          ["次の予定", nx ? nx.time + " " + nx.text : (ts.length ? "今日の予定は終了" : "予定なし")],
+          ["ゴミ出し", tr ? tr + "の日" : "今日はなし"],
+          ["今夜のご飯", meal || "未定"]
+        ];
+        el.innerHTML = T.map(function (x) { return "<div><small>" + x[0] + "</small><b>" + esc(x[1]) + "</b></div>" }).join("");
+      }
       function renderAll() {
         var w = ["日", "月", "火", "水", "木", "金", "土"], n = new Date();
         $("today").textContent = n.getFullYear() + "年" + (n.getMonth() + 1) + "月" + n.getDate() + "日(" + w[n.getDay()] + ")";
         $("schDate").value = $("schDate").value || today; $("schDate").min = today;
-        renderMoney(); renderTodos(); renderMeal(); renderSched(); renderFridge(); renderShop(); renderTrash(); renderFixed(); renderStock();
+        renderMoney(); renderTodos(); renderMeal(); renderSched(); renderFridge(); renderShop(); renderTrash(); renderFixed(); renderStock(); renderSummary();
       }
 
       /* ---- 操作(クリック) ---- */
@@ -1160,7 +1739,7 @@
           try {
             var d = JSON.parse(r.result); if (!d || !Array.isArray(d.todos)) throw 0;
             if (!confirm("現在のデータを上書きして読み込みます。よろしいですか?")) return;
-            S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [] }, d);
+            S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} }, d);
             rollover(); $("memo").value = S.memo; renderAll();
           } catch (x) { alert("読み込めませんでした。バックアップファイルを確認してください。") }
         };
@@ -1173,7 +1752,7 @@
       rollover(); renderAll();
 
       /* ---- タブ切り替え ---- */
-      var TABS = ["home", "meal", "shop", "money"];
+      var TABS = ["home", "meal", "shop", "money", "help"];
       function setTab(t) {
         if (TABS.indexOf(t) < 0) t = "home";
         document.querySelectorAll(".card[data-tab]").forEach(function (c) { c.classList.toggle("off", c.dataset.tab !== t) });
@@ -1265,11 +1844,11 @@
       }
       function rcSumText() {
         var s = rcItems.reduce(function (a, x) { return a + (x.price || 0) }, 0), t = parseInt($("rcTotal").value, 10) || 0;
-        $("rcSum").textContent = rcItems.length ? "品物の合計 " + s.toLocaleString("ja-JP") + "円" + (t && s !== t ? "(レシートの合計と " + Math.abs(t - s).toLocaleString("ja-JP") + "円ちがいます。値引きや読み間違いがないか確認してください)" : "") : "";
+        $("rcSum").textContent = rcItems.length ? "品物の合計(税込) " + s.toLocaleString("ja-JP") + "円" + (t && s !== t ? "(レシートの合計と " + Math.abs(t - s).toLocaleString("ja-JP") + "円ちがいます。値引きや読み間違いがないか確認してください)" : "") : "";
       }
       function renderRc() {
         $("rcItems").innerHTML = rcItems.length ? rcItems.map(function (x, i) {
-          return '<li><input type="checkbox" data-i="' + i + '" checked aria-label="選ぶ"><input type="text" class="tx" data-n="' + i + '" value="' + esc(x.name) + '"><input type="number" data-p="' + i + '" value="' + x.price + '" min="0" inputmode="numeric" style="width:84px" aria-label="金額"><button class="x" type="button" data-rm="' + i + '" aria-label="この行を消す">×</button></li>';
+          return '<li><input type="checkbox" data-i="' + i + '" checked aria-label="選ぶ"><input type="text" class="tx" data-n="' + i + '" value="' + esc(x.name) + '"><input type="number" data-p="' + i + '" value="' + x.price + '" min="0" inputmode="numeric" style="width:84px" aria-label="税込金額"><button class="x" type="button" data-rm="' + i + '" aria-label="この行を消す">×</button></li>';
         }).join("") : '<li><p class="empty">品物は読み取れませんでした(合計は使えます)</p></li>';
         rcSumText();
       }
@@ -1283,16 +1862,102 @@
       });
       $("rcTotal").addEventListener("input", rcSumText);
       $("rcBtn").addEventListener("click", function () { $("rcFile").click() });
-      $("rcFile").addEventListener("change", function (e) {
-        var f = e.target.files[0]; if (!f) return; e.target.value = "";
-        $("rcRes").classList.add("hidden"); $("rcMsg").textContent = "準備中…(初回は日本語データの読み込みで少し時間がかかります)";
-        loadOCR().then(function () { return Promise.all([getWorker(), prep(f)]) }).then(function (a) {
+      var RC_SITE_KEY = "";   /* reCAPTCHA Enterprise のサイトキー(App Check用)。入れるとAI読み取りが使えます */
+      var AI_MODEL = "gemini-3.5-flash";
+      var aiP = null;
+      function loadAI() {
+        if (!RC_SITE_KEY) return Promise.reject(new Error("サイトキー未設定"));
+        if (!aiP) aiP = Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-ai.js"), import(BASE + "firebase-app-check.js")]).then(function (m) {
+          var app = m[0].getApp(), Sc = m[1].Schema;
+          if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+          m[2].initializeAppCheck(app, { provider: new m[2].ReCaptchaEnterpriseProvider(RC_SITE_KEY), isTokenAutoRefreshEnabled: true });
+          var ai = m[1].getAI(app, { backend: new m[1].GoogleAIBackend() });
+          return m[1].getGenerativeModel(ai, {
+            model: AI_MODEL,
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema: Sc.object({ properties: { store: Sc.string(), total: Sc.number(), taxIncluded: Sc.boolean(), items: Sc.array({ items: Sc.object({ properties: { name: Sc.string(), price: Sc.number(), rate: Sc.number() } }) }) } })
+            }
+          });
+        });
+        return aiP;
+      }
+      var AI_PROMPT = "これはレシートの写真です(少し斜めだったり、遠かったり、ピントが甘いことがあります)。買った品物の「商品名」と「金額」だけを読み取り、JSONで返してください。\n" +
+        "- 食品に限らず、日用品・衣類・本・交通費・飲食店の料理など、レシートに書かれている品物をすべて対象にします。\n" +
+        "- 店名・住所・電話番号・日付・時刻・レジ番号・担当者・登録番号・ポイント・支払い方法・お預り・お釣り・税の内訳・小計・合計の行は、items に入れません。\n" +
+        "- price は、レシートに印字されているその行の金額(円の整数)です。数量が2以上なら、その行の合計金額です。値引きの行は、直前の商品の金額から引いた額にします。\n" +
+        "- taxIncluded は、品物の金額が税込で印字されていれば true、税抜(外税)で印字され、税が最後にまとめて加算されていれば false です。\n" +
+        "- rate は、その品物の消費税率(8 または 10)です。「軽」「※」などの軽減税率の印や、税率ごとの内訳から判断し、分からなければ 10 にします。\n" +
+        "- name は、レシートの表記を読みやすく整えた商品名にします(商品コードや記号は除きます)。\n" +
+        "- 読み取れない行は、推測で作らず、含めません。\n" +
+        "- total はレシートの合計(支払う金額・税込)、store は店名です。レシートでない写真なら items を空にします。";
+      function toB64(f) {
+        return new Promise(function (ok, ng) {
+          var u = URL.createObjectURL(f), im = new Image();
+          im.onload = function () {
+            URL.revokeObjectURL(u);
+            var k = Math.min(1, 1800 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
+            c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+            c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+            ok(c.toDataURL("image/jpeg", 0.88).split(",")[1]);
+          };
+          im.onerror = function () { ng(new Error("画像を読み込めません")) }; im.src = u;
+        });
+      }
+      function fitTotal(items, total) {
+        var sum = items.reduce(function (a, x) { return a + x.price }, 0), d = total - sum;
+        if (!items.length || !total || !d || Math.abs(d) > items.length + 2) return items;
+        var k = 0; items.forEach(function (x, i) { if (x.price > items[k].price) k = i });
+        items[k].price += d; return items;
+      }
+      function readAI(f) {
+        return Promise.all([loadAI(), toB64(f)]).then(function (a) {
+          return a[0].generateContent([AI_PROMPT, { inlineData: { mimeType: "image/jpeg", data: a[1] } }]);
+        }).then(function (r) {
+          var txt = r.response.text(), d = JSON.parse(txt), excl = d.taxIncluded === false;
+          var items = (d.items || []).map(function (x) {
+            var p = Math.round(Number(x.price)), rt = Number(x.rate) === 8 ? 8 : 10;
+            return { name: String(x.name || "").trim(), price: excl ? Math.floor(p * (100 + rt) / 100) : p };
+          }).filter(function (x) { return x.name && x.price > 0 && x.price <= 1000000 });
+          var total = Math.round(Number(d.total)) || 0, note = "";
+          if (excl) { note = "税抜の金額を税込に換算しました"; items = fitTotal(items, total) }
+          if (!total) total = items.reduce(function (a, x) { return a + x.price }, 0);
+          return { items: items, total: total, store: String(d.store || "").trim(), raw: txt, taxNote: note };
+        });
+      }
+      function readTess(f) {
+        return loadOCR().then(function () { return Promise.all([getWorker(), prep(f)]) }).then(function (a) {
           $("rcMsg").textContent = "読み取り中…"; return a[0].recognize(a[1]);
         }).then(function (r) {
-          var txt = r.data.text, p = parseReceipt(txt); rcItems = p.items; $("rcRaw").textContent = txt;
-          $("rcTotal").value = p.total || ""; $("rcMemo").value = ""; renderRc(); $("rcRes").classList.remove("hidden");
-          $("rcMsg").textContent = !p.items.length ? "品物を読み取れませんでした。下の「読み取った文字」を確認するか、明るい場所でレシートをまっすぐ撮り直してください" : p.total ? "読み取れました。内容を確認して登録してください" : "合計が読み取れませんでした。金額を入力してください";
-        }).catch(function () { rcWorker = null; $("rcMsg").textContent = "読み取れませんでした。通信を確認するか、明るい場所で撮り直してください" });
+          var p = parseReceipt(r.data.text); p.raw = r.data.text; p.store = "";
+          var sm = p.items.reduce(function (a, x) { return a + x.price }, 0), f = sm ? p.total / sm : 0;
+          if (/外税|税抜|税別/.test(r.data.text) && f > 1.03 && f < 1.11) {
+            p.items = fitTotal(p.items.map(function (x) { return { name: x.name, price: Math.floor(x.price * f) } }), p.total);
+            p.taxNote = "税抜の金額を、合計に合わせて税込に換算しました(概算)";
+          }
+          return p
+        });
+      }
+      function showRc(p, ai, note) {
+        rcItems = p.items; $("rcRaw").textContent = (note ? "[" + note + "]\n" : "") + p.raw;
+        $("rcTotal").value = p.total || ""; $("rcMemo").value = p.store || "";
+        renderRc(); $("rcRes").classList.remove("hidden");
+        $("rcMsg").textContent = !p.items.length ? "品物を読み取れませんでした。レシート全体が写るように、明るい場所で撮り直してください"
+          : (ai ? "AIで読み取りました。" : (RC_SITE_KEY ? "簡易読み取りです。" : "簡易読み取りです(AI読み取りは未設定)。")) + (p.taxNote ? p.taxNote + "。" : "") + "内容を確認して登録してください";
+      }
+      $("rcFile").addEventListener("change", function (e) {
+        var f = e.target.files[0]; if (!f) return; e.target.value = "";
+        $("rcRes").classList.add("hidden");
+        var ok = false; try { ok = localStorage.getItem("ls_ai_ok") === "1" } catch (x) { }
+        var useAI = !!RC_SITE_KEY && (ok || confirm("レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n送ってよろしいですか?\n(キャンセルすると、端末の中だけで読み取る簡易読み取りを使います)"));
+        if (useAI && !ok) { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } }
+        $("rcMsg").textContent = useAI ? "AIで読み取り中…(数秒かかります)" : "準備中…(初回は日本語データの読み込みで少し時間がかかります)";
+        (useAI ? readAI(f).then(function (p) { showRc(p, true) }, function (err) {
+          var why = "AI読み取りエラー: " + String(err && (err.code || err.message) || err);
+          $("rcMsg").textContent = "AI読み取りに失敗したため、簡易読み取りに切り替えます…";
+          return readTess(f).then(function (p) { showRc(p, false, why) });
+        }) : readTess(f).then(function (p) { showRc(p, false) }))
+          .catch(function () { rcWorker = null; $("rcMsg").textContent = "読み取れませんでした。通信を確認するか、明るい場所で撮り直してください" });
       });
       $("rcAdd").addEventListener("click", function () {
         var a = parseInt($("rcTotal").value, 10); if (isNaN(a) || a <= 0) { $("rcMsg").textContent = "合計金額を入力してください"; return }
@@ -1308,12 +1973,83 @@
         save(); renderFridge(); $("rcMsg").textContent = n + "品を冷蔵庫に追加しました(ごはんタブで確認できます)";
       });
 
+      /* ---- バーコード・QR読み取り ---- */
+      var scLib = null, scQr = null, scCode = "";
+      function loadSC() {
+        if (window.Html5Qrcode) return Promise.resolve();
+        return scLib = scLib || new Promise(function (ok, ng) {
+          var sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"; sc.onload = ok; sc.onerror = function () { scLib = null; ng() }; document.head.appendChild(sc);
+        });
+      }
+      function scFmt() { var F = Html5QrcodeSupportedFormats; return [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.QR_CODE] }
+      function scEnd() {
+        var q = scQr; scQr = null; $("scStop").classList.add("hidden");
+        var hide = function () { $("scView").classList.add("hidden") };
+        if (q) q.stop().then(function () { q.clear(); hide() }).catch(hide); else hide();
+      }
+      function scShow(name, msg) {
+        $("scName").value = name; $("scCode").textContent = /^\d{8,14}$/.test(scCode) ? "バーコード: " + scCode : "";
+        $("scRes").classList.remove("hidden"); $("scMsg").textContent = msg;
+      }
+      function scLookup(code) {
+        var ac = new AbortController(), t = setTimeout(function () { ac.abort() }, 8000);
+        return fetch("https://world.openfoodfacts.org/api/v2/product/" + code + ".json?fields=product_name,product_name_ja,brands,quantity", { signal: ac.signal })
+          .then(function (r) { return r.json() }).then(function (d) {
+            clearTimeout(t); var p = d && d.product; if (!p) return "";
+            var n = (p.product_name_ja || p.product_name || "").trim(); if (!n) return "";
+            var b = (p.brands || "").split(",")[0].trim();
+            return (b && n.indexOf(b) < 0 ? b + " " : "") + n + (p.quantity ? " " + p.quantity : "");
+          }).catch(function () { clearTimeout(t); return "" });
+      }
+      function handleCode(code) {
+        scCode = code; $("scRes").classList.add("hidden"); $("scInfo").textContent = "";
+        if (/^https?:\/\//i.test(code)) {
+          var a = document.createElement("a"); a.href = code; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = code.length > 70 ? code.slice(0, 70) + "…" : code;
+          $("scInfo").appendChild(a); $("scMsg").textContent = "QRコードのリンクを読み取りました(開くかどうかは、中身を確認してから選んでください)"; return;
+        }
+        if (!/^\d{8,14}$/.test(code)) { $("scInfo").textContent = code.slice(0, 120); $("scMsg").textContent = "商品のバーコードではないようです。読み取った内容を表示しています"; return }
+        S.codes = S.codes || {};
+        if (S.codes[code]) { scShow(S.codes[code], "登録済みの商品です。入れ先を選んでください"); return }
+        $("scMsg").textContent = "商品を調べています…";
+        scLookup(code).then(function (n) { scShow(n, n ? "見つかりました。名前を確認して、入れ先を選んでください" : "データベースに見つかりませんでした。名前を入力すると、次から自動で出ます") });
+      }
+      $("scBtn").addEventListener("click", function () {
+        if (scQr) return; $("scMsg").textContent = "カメラを準備中…"; $("scRes").classList.add("hidden"); $("scInfo").textContent = "";
+        loadSC().then(function () {
+          $("scView").classList.remove("hidden"); $("scStop").classList.remove("hidden");
+          scQr = new Html5Qrcode("scView", { formatsToSupport: scFmt(), verbose: false });
+          return scQr.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 260, height: 160 } }, function (t) { if (scQr) { scEnd(); handleCode(String(t).trim()) } }, function () { });
+        }).then(function () { $("scMsg").textContent = "バーコードを枠の中に入れてください" })
+          .catch(function () { scQr = null; scEnd(); $("scMsg").textContent = "カメラを使えませんでした。ブラウザのカメラ許可を確認するか、「写真から読む」を使ってください" });
+      });
+      $("scStop").addEventListener("click", function () { scEnd(); $("scMsg").textContent = "カメラを止めました" });
+      $("scPhoto").addEventListener("click", function () { $("scFile").click() });
+      $("scFile").addEventListener("change", function (e) {
+        var f = e.target.files[0]; if (!f) return; e.target.value = ""; $("scMsg").textContent = "読み取り中…";
+        loadSC().then(function () {
+          var q = new Html5Qrcode("scTmp", { formatsToSupport: scFmt(), verbose: false });
+          return q.scanFile(f, false).then(function (t) { try { q.clear() } catch (x) { } return t });
+        }).then(function (t) { handleCode(String(t).trim()) })
+          .catch(function () { $("scMsg").textContent = "バーコードを読み取れませんでした。バーコードを大きく、ピントを合わせて撮り直してください" });
+      });
+      $("scRes").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-sc]"); if (!b) return;
+        var nm = $("scName").value.trim(); if (!nm) { $("scMsg").textContent = "商品名を入力してください"; return }
+        S.codes = S.codes || {}; if (/^\d{8,14}$/.test(scCode)) S.codes[scCode] = nm;
+        var d = b.dataset.sc, msg;
+        if (d === "shop") { if (!S.shop.some(function (x) { return x.name === nm && !x.bought })) S.shop.push({ id: uid(), name: nm, bought: false }); msg = "買い物リストに追加しました" }
+        else if (d === "fridge") { if (!S.fridge.some(function (x) { return x.name === nm })) S.fridge.push({ id: uid(), name: nm, exp: "" }); msg = "冷蔵庫に追加しました(ごはんタブで確認できます)" }
+        else { var st = S.stock.filter(function (k) { return k.name === nm })[0]; if (st) st.qty++; else S.stock.push({ id: uid(), name: nm, qty: 1, min: 1 }); msg = "日用品ストックに入れました" }
+        save(); renderAll(); $("scRes").classList.add("hidden"); $("scMsg").textContent = msg;
+      });
+      document.querySelector(".tabs").addEventListener("click", function () { if (scQr) scEnd() });
+
       /* ---- Firebase(ログイン+クラウド保存) ---- */
       var CFG = { apiKey: "AIzaSyCLdsMHrKRwEzyrB_HPiRitPErjIIHWdZ4", authDomain: "life-support-a2a21.firebaseapp.com", projectId: "life-support-a2a21", storageBucket: "life-support-a2a21.firebasestorage.app", messagingSenderId: "789058079447", appId: "1:789058079447:web:7a4e3113758af4d3f0fe92" };
       var BASE = "https://www.gstatic.com/firebasejs/12.19.0/", A = null, F = null, auth = null, db = null, cuid = null, timer = null;
       var show = function (id, on) { $(id).classList.toggle("hidden", !on) };
       function setSync(t) { $("sync").textContent = t }
-      function withDef(o) { return Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [] }, o) }
+      function withDef(o) { return Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} }, o) }
       function push() { return F.setDoc(F.doc(db, "users", cuid), JSON.parse(JSON.stringify(S))) }
       function cloudSave() {
         if (!cuid) return; setSync("同期中…"); clearTimeout(timer);
@@ -1349,6 +2085,12 @@
           }).catch(function () { setSync("読み込めませんでした。Firestoreのルールと接続を確認してください") });
         });
       }).catch(function () { setSync("クラウドに接続できません(この端末にのみ保存中)") });
+    })();
+  </script>
+  <script>
+    (function () {
+      var h = new Date().getHours(), g = h < 5 ? "こんばんは" : h < 11 ? "おはようございます" : h < 17 ? "こんにちは" : "こんばんは";
+      var t = document.querySelector(".tagline"); if (t) t.textContent = g + "。今日のことは、ここにぜんぶ。";
     })();
   </script>
 </body>
