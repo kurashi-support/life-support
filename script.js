@@ -331,7 +331,7 @@
     var PHONE = /\d{2,4}[-ー‐]\d{2,4}[-ー‐]\d{3,4}|TEL|FAX|電話|〒|T\d{10,13}|登録番号|https?:|www\.|\.com|\.jp/i;
     var ADDR = /[都道府県].*[市区町村郡]|丁目|番地|\d+-\d+-\d+/;
     var NG = /合計|小計|お預|お釣|釣り?銭|税|対象|点数|現金|カード|ポイント|領収|レジ|担当|責任|様|番号|会員|クーポン|割引|値引|ありがとう|お越し|営業|伝票|取引|端末|ご利用|お支払|支払|電子|マネー|PayPay|Suica|QR|No\.\s*\d|#\d/i;
-    var strip = function (s) { return s.replace(/\d+\s*[点個コ本袋]?\s*[x×@＠]\s*\d[\d,]*/gi, " ").replace(/[x×@＠]\s*\d+\s*[点個コ]?/gi, " ").replace(/\s+/g, " ").trim() };
+    var strip = function (s) { return s.replace(/\d+\s*[点個コ本袋]?\s*[x×@＠]\s*\d[\d,]*/gi, " ").replace(/[x×@＠]\s*\d+\s*[点個コ]?/gi, " ").replace(/\s\d{1,2}(?=\s*¥)/g, " ").replace(/\s+/g, " ").trim() };
     var clean = function (n) {
       return n.replace(/^[\d\s\-*#.,:;]{3,}/, "").replace(/^[\s\-*#.,:;]+/, "").replace(/[¥\s※*軽★☆\-.,:;]+$/, "").replace(/\s+/g, " ").trim();
     };
@@ -368,15 +368,35 @@
     if (!total && items.length) total = items.reduce(function (a, x) { return a + x.price }, 0);
     return { total: total, items: items };
   }
+  function cropPaper(c) {
+    var W = c.width, H = c.height, d = c.getContext("2d").getImageData(0, 0, W, H).data, g = new Uint8Array(W * H), h = new Array(256).fill(0), i, j, k;
+    for (i = 0, j = 0; i < d.length; i += 4, j++) { g[j] = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000; h[g[j]]++ }
+    var tot = g.length, sum = 0, sb = 0, wb = 0, mx = 0, th = 128;
+    for (k = 0; k < 256; k++) sum += k * h[k];
+    for (k = 0; k < 256; k++) { wb += h[k]; if (!wb) continue; var wf = tot - wb; if (!wf) break; sb += k * h[k]; var mb = sb / wb, mf = (sum - sb) / wf, v = wb * wf * (mb - mf) * (mb - mf); if (v > mx) { mx = v; th = k } }
+    var rows = new Array(H).fill(0), cols = new Array(W).fill(0), x, y;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) if (g[y * W + x] > th) { rows[y]++; cols[x]++ }
+    var y0 = 0, y1 = H - 1, x0 = 0, x1 = W - 1;
+    while (y0 < H && rows[y0] < W * .2) y0++; while (y1 > y0 && rows[y1] < W * .2) y1--;
+    while (x0 < W && cols[x0] < H * .2) x0++; while (x1 > x0 && cols[x1] < H * .2) x1--;
+    var mw = Math.round(W * .02), mh = Math.round(H * .02);
+    x0 = Math.max(0, x0 - mw); x1 = Math.min(W - 1, x1 + mw); y0 = Math.max(0, y0 - mh); y1 = Math.min(H - 1, y1 + mh);
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+    if (cw * ch < W * H * .25 || cw * ch > W * H * .97) return c;
+    var o = document.createElement("canvas"); o.width = cw; o.height = ch; o.getContext("2d").drawImage(c, x0, y0, cw, ch, 0, 0, cw, ch); return o;
+  }
   function prep(f) {
     return new Promise(function (ok, ng) {
       var u = URL.createObjectURL(f), im = new Image();
       im.onload = function () {
         URL.revokeObjectURL(u);
-        var W = Math.max(1400, Math.min(2200, im.naturalWidth)), c = document.createElement("canvas");
-        c.width = W; c.height = Math.round(im.naturalHeight * W / im.naturalWidth);
-        var x = c.getContext("2d"); x.drawImage(im, 0, 0, c.width, c.height);
-        var d = x.getImageData(0, 0, c.width, c.height), p = d.data, h = new Array(256).fill(0), i, g, n = c.width * c.height, lo = 0, hi = 255, a = 0;
+        var k0 = Math.min(1, 2000 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
+        c.width = Math.round(im.naturalWidth * k0); c.height = Math.round(im.naturalHeight * k0);
+        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+        c = cropPaper(c);
+        var k1 = 1400 / c.width;
+        if (k1 > 1) { var u2 = document.createElement("canvas"); u2.width = Math.round(c.width * k1); u2.height = Math.round(c.height * k1); u2.getContext("2d").drawImage(c, 0, 0, u2.width, u2.height); c = u2 }
+        var x = c.getContext("2d"), d = x.getImageData(0, 0, c.width, c.height), p = d.data, h = new Array(256).fill(0), i, g, n = c.width * c.height, lo = 0, hi = 255, a = 0;
         for (i = 0; i < p.length; i += 4) { g = Math.round(.299 * p[i] + .587 * p[i + 1] + .114 * p[i + 2]); p[i] = g; h[g]++ }
         for (; lo < 255 && (a += h[lo]) < n * .02; lo++); a = 0;
         for (; hi > 0 && (a += h[hi]) < n * .02; hi--);
@@ -446,11 +466,10 @@
   var AI_MODEL = "gemini-3.5-flash";
   var aiP = null;
   function loadAI() {
-    if (!RC_SITE_KEY) return Promise.reject(new Error("サイトキー未設定"));
-    if (!aiP) aiP = Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-ai.js"), import(BASE + "firebase-app-check.js")]).then(function (m) {
+    if (!aiP) aiP = Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-ai.js"), RC_SITE_KEY ? import(BASE + "firebase-app-check.js") : Promise.resolve(null)]).then(function (m) {
       var app = m[0].getApp(), Sc = m[1].Schema;
       if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-      m[2].initializeAppCheck(app, { provider: new m[2].ReCaptchaEnterpriseProvider(RC_SITE_KEY), isTokenAutoRefreshEnabled: true });
+      if (RC_SITE_KEY && m[2]) m[2].initializeAppCheck(app, { provider: new m[2].ReCaptchaEnterpriseProvider(RC_SITE_KEY), isTokenAutoRefreshEnabled: true });
       var ai = m[1].getAI(app, { backend: new m[1].GoogleAIBackend() });
       return m[1].getGenerativeModel(ai, {
         model: AI_MODEL,
@@ -523,18 +542,18 @@
     $("rcTotal").value = p.total || ""; $("rcMemo").value = p.store || ""; $("rcDate").value = today;
     renderRc(); $("rcRes").classList.remove("hidden");
     $("rcMsg").textContent = !p.items.length ? "品物を読み取れませんでした。レシート全体が写るように、明るい場所で撮り直してください"
-      : (ai ? "AIで読み取りました。" : (RC_SITE_KEY ? "簡易読み取りです。" : "簡易読み取りです(AI読み取りは未設定)。")) + (p.taxNote ? p.taxNote + "。" : "") + "内容を確認して登録してください";
+      : (ai ? "AIで読み取りました。" : "簡易読み取りです(精度が低いため、必ず内容を確認してください)。") + (p.taxNote ? p.taxNote + "。" : "") + "内容を確認して登録してください";
   }
   $("rcFile").addEventListener("change", function (e) {
     var f = e.target.files[0]; if (!f) return; e.target.value = "";
     $("rcRes").classList.add("hidden");
     var ok = false; try { ok = localStorage.getItem("ls_ai_ok") === "1" } catch (x) { }
-    var useAI = !!RC_SITE_KEY && (ok || confirm("レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n送ってよろしいですか?\n(キャンセルすると、端末の中だけで読み取る簡易読み取りを使います)"));
+    var useAI = (ok || confirm("レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n送ってよろしいですか?\n(キャンセルすると、端末の中だけで読み取る簡易読み取りを使います)"));
     if (useAI && !ok) { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } }
     $("rcMsg").textContent = useAI ? "AIで読み取り中…(数秒かかります)" : "準備中…(初回は日本語データの読み込みで少し時間がかかります)";
     (useAI ? readAI(f).then(function (p) { showRc(p, true) }, function (err) {
       var why = "AI読み取りエラー: " + String(err && (err.code || err.message) || err);
-      $("rcMsg").textContent = "AI読み取りに失敗したため、簡易読み取りに切り替えます…";
+      $("rcMsg").textContent = "AI読み取りを使えませんでした(Firebase の AI Logic の設定が必要です)。簡易読み取りに切り替えます…";
       return readTess(f).then(function (p) { showRc(p, false, why) });
     }) : readTess(f).then(function (p) { showRc(p, false) }))
       .catch(function () {
