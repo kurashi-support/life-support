@@ -16,7 +16,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 
 <body>
@@ -32,9 +32,25 @@
         <button class="btn b-pri">ログイン</button>
       </form>
       <button class="btn b-out" id="signupBtn" type="button">新規登録</button>
+      <button class="btn b-gh" id="resetBtn" type="button">パスワードを忘れた</button>
       <button class="btn b-gh" id="guestBtn" type="button">ログインせずに使う</button>
     </div>
   </div>
+  <div id="intro" class="hidden" role="dialog" aria-labelledby="introT">
+    <div class="lbox">
+      <h2 id="introT" style="margin-bottom:6px">ようこそ、Life Support へ</h2>
+      <p class="label" style="margin:0">まずは、この3つだけ試してください</p>
+      <ol class="introlist">
+        <li><b>予算を決める</b><br>ホームの「予算を設定」に、今月使えるお金を入れます。固定費を引いて、1日に使える額が出ます。</li>
+        <li><b>レシートを撮る</b><br>「家計」タブで撮ると、支出・冷蔵庫・日用品に自動で入ります。</li>
+        <li><b>ホームを見る</b><br>今日のやること・予定・使えるお金・食材の期限が、1画面で分かります。</li>
+      </ol>
+      <button class="btn b-pri" id="introOk" type="button">はじめる</button>
+      <button class="btn b-gh" id="introHelp" type="button">使い方を見る</button>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status"><span id="toastMsg"></span><button class="btn sm" id="toastUndo"
+      type="button">元に戻す</button></div>
   <div class="page">
     <header class="hero">
       <div class="hero-top">
@@ -134,14 +150,22 @@
       <section class="card" data-tab="meal" aria-labelledby="h-fr">
         <div class="card-head"><span class="icon i-g" aria-hidden="true">🧊</span>
           <h2 id="h-fr">冷蔵庫の中身</h2>
+          <button class="btn b-gh sm" id="frSelBtn" type="button">まとめて消す</button>
         </div>
         <ul class="chips" id="fridge"></ul>
+        <div class="row hidden" id="frBulk">
+          <button class="btn b-gh sm" id="frAll" type="button">全部選ぶ</button>
+          <button class="btn b-gh sm" id="frExpired" type="button">期限切れを選ぶ</button>
+          <button class="btn b-gh sm" id="frCancel" type="button">やめる</button>
+          <button class="btn b-danger" id="frDel" type="button" disabled>選んだものを消す(0)</button>
+        </div>
         <form class="row" id="frForm">
           <input type="text" id="frName" placeholder="食材(例:卵)" required>
           <input type="date" id="frExp" aria-label="賞味期限">
           <button class="btn b-pri">追加</button>
         </form>
-        <p class="label" style="margin:8px 0 0">賞味期限を入れると、近いものから使う献立を提案します</p>
+        <p class="label" style="margin:8px 0 0">
+          賞味期限は、空欄のままなら食材の種類から目安を自動で入れます(「目安」と表示します)。レシートやバーコードから入れたときも自動です。期限が近いものは、ホームの「今日のまとめ」と、ごはんタブの赤い点でお知らせします</p>
       </section>
 
       <section class="card" data-tab="shop" aria-labelledby="h-shop">
@@ -158,14 +182,24 @@
 
       <section class="card" data-tab="shop" aria-labelledby="h-stock">
         <div class="card-head"><span class="icon i-t" aria-hidden="true">🧻</span>
-          <h2 id="h-stock">日用品ストック</h2>
+          <h2 id="h-stock">日用品管理</h2>
         </div>
         <ul class="rows" id="stockList"></ul>
-        <form class="row" id="stockForm"><input type="text" id="stName" placeholder="日用品(例:洗剤)" required><input
-            type="number" id="stQty" value="2" min="0" style="width:70px" aria-label="今の個数"><input type="number"
-            id="stMin" value="1" min="0" style="width:70px" aria-label="この数以下で買い足す"><button
-            class="btn b-pri">追加</button></form>
-        <p class="label" style="margin:8px 0 0">左:今の個数 / 右:この数以下になると買い物リストへ自動追加</p>
+        <form class="row" id="stockForm">
+          <input type="text" id="stName" placeholder="日用品(例:シャンプー)" required>
+          <select id="stUse" aria-label="使う量">
+            <option value="ふつう">使う量:ふつう</option>
+            <option value="少なめ">少なめ</option>
+            <option value="多め">多め(髪が長いなど)</option>
+            <option value="共有">家族・同居人と共有</option>
+          </select>
+          <input type="date" id="stDate" aria-label="最後に買った日">
+          <input type="number" id="stCycle" placeholder="何日ごと" min="1" inputmode="numeric" aria-label="何日ごとに買うか(目安)">
+          <button class="btn b-pri">追加</button>
+        </form>
+        <p class="label" style="margin:8px 0 0">
+          残りの量は、アプリからは分からないので、「いつ買ったか」を記録します。買うたびに日付が増え、あなたの買った間隔から、目安の日数を自動で更新します(夏と冬で使う量が変わっても、最近の買い方に合わせます)。記録が少ないうちは、季節で補正した標準の日数を使います。使う量は、人によって違うので(髪の長さ、一緒に使う人数、使う回数など)、「使う量」を選ぶと、目安に反映します。性別などの入力は必要ありません。目安は、品物の「目安…」をタップして、自分で直せます
+        </p>
       </section>
 
       <section class="card full" data-tab="shop" aria-labelledby="h-scan">
@@ -189,7 +223,7 @@
           <div class="row">
             <button class="btn b-pri" type="button" data-sc="shop">買い物リストへ</button>
             <button class="btn b-out" type="button" data-sc="fridge">冷蔵庫へ</button>
-            <button class="btn b-out" type="button" data-sc="stock">日用品ストックに+1</button>
+            <button class="btn b-out" type="button" data-sc="stock">日用品に登録(今日買った)</button>
           </div>
           <p class="label" id="scCode" style="margin:6px 0 0"></p>
         </div>
@@ -207,6 +241,20 @@
           <div class="row"><button class="btn b-pri" id="trashSave" type="button">保存</button></div>
           <p class="label" style="margin:8px 0 0">ゴミがない曜日は空欄にします。設定した日は「やること」に自動で入ります</p>
         </div>
+      </section>
+
+      <section class="card full" data-tab="money" aria-labelledby="h-month">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">📊</span>
+          <h2 id="h-month">月ごとの家計</h2>
+        </div>
+        <div class="monthnav"><button class="btn b-gh sm" id="mPrev" type="button">‹ 前の月</button><b
+            id="mLabel"></b><button class="btn b-gh sm" id="mNext" type="button">次の月 ›</button></div>
+        <div class="mstats" id="mStats"></div>
+        <div id="mChart"></div>
+        <div id="mCats" style="margin-top:12px"></div>
+        <ul class="rows" id="mList" style="margin-top:12px"></ul>
+        <div class="row"><button class="btn b-gh" id="mCsv" type="button">この月をCSVで書き出す</button></div>
+        <p class="label" style="margin:8px 0 0">✎で、金額・メモ・カテゴリを直せます。×で消しても、すぐに「元に戻す」を押せば戻せます</p>
       </section>
 
       <section class="card full" data-tab="money" aria-labelledby="h-rc">
@@ -239,7 +287,7 @@
           </div>
           <p class="label" id="rcSum" style="margin:6px 0 0"></p>
           <div id="rcFix"></div>
-          <div class="row"><button class="btn b-out" id="rcFr" type="button">チェックした品を冷蔵庫へ</button></div>
+          <p class="label" style="margin:8px 0 0">品物ごとの「冷蔵庫へ」「日用品へ」は、登録したときに自動で入れる先です(賞味期限は、食材から目安を入れます)</p>
           <p class="label" style="margin:8px 0 0">読み間違いは入力欄で直せます。AIで読み取るときは、写真がGoogleのAIに送られます(簡易読み取りは端末の中だけで処理します)</p>
           <details style="margin-top:8px">
             <summary class="label" style="cursor:pointer">読み取った文字(確認用)</summary>
@@ -280,7 +328,7 @@
           <summary>🍚 ごはん</summary>
           <ul>
             <li><b>今日のご飯</b>: 「夜ご飯を決める」で入力します。「クリア」で消せます。</li>
-            <li><b>冷蔵庫の中身</b>: 食材と賞味期限を入れて「追加」します。期限が近いものは色が変わります。</li>
+            <li><b>冷蔵庫の中身</b>: 食材を入れて「追加」します。賞味期限は、空欄なら、食材の種類から目安を自動で入れます。期限が近いものは色が変わり、ホームのまとめにも出ます。</li>
             <li><b>冷蔵庫から提案</b>: 期限が近い食材を優先して、作れそうな料理を出します。足りない食材は「足りない食材を追加」で買い物リストに入れられます。</li>
             <li><b>食材だけで作れる料理</b>: 冷蔵庫にある食材だけで作れる料理を出します。</li>
           </ul>
@@ -289,7 +337,9 @@
           <summary>🛒 買い物</summary>
           <ul>
             <li><b>買い物リスト</b>: 買うものを追加して、買ったらチェックします。「チェックした品を冷蔵庫へ」で、冷蔵庫に移せます。</li>
-            <li><b>日用品ストック</b>: 洗剤などの個数を＋−で管理します。設定した数以下になると、買い物リストに自動で入ります。</li>
+            <li><b>日用品管理</b>:
+              シャンプーや洗剤などを、「いつ買ったか」で管理します。レシートを登録すると、自動で入ります。買うたびに日付が記録され、あなたの買った間隔から、目安の日数が自動で変わります(夏と冬で使う量が変わっても、合わせます)。目安の日数がたつと「そろそろ買い時」と出ます。買ったら「買った」を押します。使う量(髪が長い・家族で使うなど)も選べます。「目安…」「使う量…」をタップすると、自分で直せます。
+            </li>
             <li><b>バーコード・QRを読む</b>:
               「カメラで読む」か「写真から読む」で、商品のバーコードを読み取ります。商品名を確認して、買い物リスト・冷蔵庫・日用品ストックのどれかに入れます。一度入れた商品は、次から名前が自動で出ます。</li>
           </ul>
@@ -298,7 +348,7 @@
           <summary>💴 家計</summary>
           <ul>
             <li><b>レシート読み取り</b>: 「レシートを撮る・選ぶ」で写真を選ぶと、品物と金額(税込)の一覧が出ます。名前や金額は直せて、足りない品物は「＋
-              品物を1行追加」で足せます。いらない行は×で消せます。合計がレシートとちがうときは、差額が表示され、ボタンで調整できます。読み取れないときは「手入力で登録」も使えます。確認したら「今日の支出に登録」を押します。
+              品物を1行追加」で足せます。いらない行は×で消せます。合計がレシートとちがうときは、差額が表示され、ボタンで調整できます。読み取れないときは「手入力で登録」も使えます。品物ごとに、「冷蔵庫へ」「日用品へ」「入れない」を選べます(自動で選ばれます)。確認したら「今日の支出に登録」を押すと、支出に加えて、冷蔵庫(賞味期限は目安)と日用品にも入ります。
             </li>
             <li><b>固定費・サブスク</b>: 名前・金額・支払日を登録します。毎月の予算から、自動で引かれます。</li>
           </ul>
@@ -383,7 +433,7 @@
     </footer>
   </div>
 
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=8"></script>
 
 </body>
 
