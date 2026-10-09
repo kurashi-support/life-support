@@ -694,103 +694,754 @@ details.hp ul {
   padding-left: 20px;
   margin: 0 0 10px
 }
+
 /* ===== 見やすさ・使いやすさの仕上げ ===== */
 :root {
   color-scheme: light dark;
-  --bg: #F1F4F2; --paper: #FFFFFF; --ink: #16252B; --soft: #566568; --line: #DCE3E2;
-  --teal: #17695F; --teal-t: #DCEEEA; --rust: #C9461F; --rust-t: #FBE5DC; --gold: #A87413; --gold-t: #FAF0D6;
-  --field: #FFFFFF; --rp: #FFFDF6; --on-teal: #FFFFFF
+  --bg: #F1F4F2;
+  --paper: #FFFFFF;
+  --ink: #16252B;
+  --soft: #566568;
+  --line: #DCE3E2;
+  --teal: #17695F;
+  --teal-t: #DCEEEA;
+  --rust: #C9461F;
+  --rust-t: #FBE5DC;
+  --gold: #A87413;
+  --gold-t: #FAF0D6;
+  --field: #FFFFFF;
+  --rp: #FFFDF6;
+  --on-teal: #FFFFFF
 }
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0E1618; --paper: #162124; --ink: #E7F0EE; --soft: #9CAEAD; --line: #2A3A3E;
-    --teal: #52B8AA; --teal-t: #18383A; --rust: #F58B63; --rust-t: #3A2820; --gold: #E4B14B; --gold-t: #392F1D;
-    --field: #1B2A2E; --rp: #162124; --on-teal: #06201D
+    --bg: #0E1618;
+    --paper: #162124;
+    --ink: #E7F0EE;
+    --soft: #9CAEAD;
+    --line: #2A3A3E;
+    --teal: #52B8AA;
+    --teal-t: #18383A;
+    --rust: #F58B63;
+    --rust-t: #3A2820;
+    --gold: #E4B14B;
+    --gold-t: #392F1D;
+    --field: #1B2A2E;
+    --rp: #162124;
+    --on-teal: #06201D
   }
-  .chk[aria-pressed=true] { color: #1b1210 }
-  .chips li.bad, .chips li.bad small, .chips li.bad .x { color: #2a1008 }
+
+  .chk[aria-pressed=true] {
+    color: #1b1210
+  }
+
+  .chips li.bad,
+  .chips li.bad small,
+  .chips li.bad .x {
+    color: #2a1008
+  }
 }
-body { font-size: 16px; line-height: 1.75; -webkit-font-smoothing: antialiased }
-::selection { background: var(--teal-t) }
-h1, h2, .tab, .btn, summary { font-feature-settings: "palt" 1 }
-.page { max-width: 1040px }
-.badge { width: 48px; height: 48px; border-radius: 14px; font-size: 24px }
-h1 { font-size: 28px; letter-spacing: -.01em }
-.today { padding-left: 62px }
-.grid { gap: 14px }
-.card { border-radius: 16px; box-shadow: none; padding: 20px }
-.card-head { margin-bottom: 14px }
-.icon { width: 34px; height: 34px; border-radius: 10px }
-h2 { font-size: 17px; letter-spacing: .01em }
-.label, .autosave-note { font-size: 14px }
-.btn { border-radius: 10px; min-height: 46px; padding: 10px 18px; font-size: 16px; transition: background .15s, transform .1s, filter .15s }
-.b-pri { background: var(--teal); color: var(--on-teal) }
-.b-pri:hover { background: var(--teal); filter: brightness(.92) }
-.b-gh { background: var(--teal-t); color: var(--teal) }
-.b-gh:hover { background: var(--teal-t); filter: brightness(.95) }
-.b-out { border-color: var(--soft) }
-input, select, textarea { font-size: 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--field); color: var(--ink); min-height: 46px }
-textarea { min-height: 120px }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 28%, transparent) }
-:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px }
-.tx { font-size: 16px }
-.x { min-width: 44px; min-height: 44px; font-size: 20px }
-.chk { width: 28px; height: 28px; border-radius: 8px; position: relative; transition: background .15s }
-.chk::after { content: ""; position: absolute; inset: -8px }
-.rows li { padding: 10px 0 }
-.chips li { font-size: 15px; min-height: 40px }
-.status { font-size: 16px }
+
+body {
+  font-size: 16px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased
+}
+
+::selection {
+  background: var(--teal-t)
+}
+
+h1,
+h2,
+.tab,
+.btn,
+summary {
+  font-feature-settings: "palt" 1
+}
+
+.page {
+  max-width: 1040px
+}
+
+.badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  font-size: 24px
+}
+
+h1 {
+  font-size: 28px;
+  letter-spacing: -.01em
+}
+
+.today {
+  padding-left: 62px
+}
+
+.grid {
+  gap: 14px
+}
+
+.card {
+  border-radius: 16px;
+  box-shadow: none;
+  padding: 20px
+}
+
+.card-head {
+  margin-bottom: 14px
+}
+
+.icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px
+}
+
+h2 {
+  font-size: 17px;
+  letter-spacing: .01em
+}
+
+.label,
+.autosave-note {
+  font-size: 14px
+}
+
+.btn {
+  border-radius: 10px;
+  min-height: 46px;
+  padding: 10px 18px;
+  font-size: 16px;
+  transition: background .15s, transform .1s, filter .15s
+}
+
+.b-pri {
+  background: var(--teal);
+  color: var(--on-teal)
+}
+
+.b-pri:hover {
+  background: var(--teal);
+  filter: brightness(.92)
+}
+
+.b-gh {
+  background: var(--teal-t);
+  color: var(--teal)
+}
+
+.b-gh:hover {
+  background: var(--teal-t);
+  filter: brightness(.95)
+}
+
+.b-out {
+  border-color: var(--soft)
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  min-height: 46px
+}
+
+textarea {
+  min-height: 120px
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 28%, transparent)
+}
+
+:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px
+}
+
+.tx {
+  font-size: 16px
+}
+
+.x {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 20px
+}
+
+.chk {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  position: relative;
+  transition: background .15s
+}
+
+.chk::after {
+  content: "";
+  position: absolute;
+  inset: -8px
+}
+
+.rows li {
+  padding: 10px 0
+}
+
+.chips li {
+  font-size: 15px;
+  min-height: 40px
+}
+
+.status {
+  font-size: 16px
+}
+
 /* 今日のまとめ */
-.sumcard { padding: 14px }
-.sum { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px }
-.sum div { background: var(--teal-t); border-radius: 12px; padding: 12px 14px; min-width: 0 }
-.sum small { display: block; font-size: 13px; font-weight: 700; color: var(--soft) }
-.sum b { display: block; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere }
-@media (min-width: 820px) { .sum { grid-template-columns: repeat(4, 1fr) } }
-/* 今日使えるお金 */
-.card[aria-labelledby="h-money"] { background: var(--rp); border-top: 5px solid var(--teal); border-radius: 6px 6px 18px 18px; padding: 22px 24px 24px }
-.big { font-size: clamp(44px, 12vw, 60px); line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--ink) }
-.big span { font-size: .34em; font-weight: 700; color: var(--soft); margin-left: 6px }
-.big.over { color: var(--rust) }
-.bar { height: 10px }
-#expForm { margin-top: 16px; padding-top: 16px; border-top: 2px dashed var(--line) }
-/* タブ */
-.tabs { top: 8px; padding: 5px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; gap: 4px }
-.tab { border: none; background: transparent; border-radius: 10px; min-height: 44px; font-size: 15px }
-.tab:hover { background: var(--teal-t) }
-.tab[aria-selected=true] { background: var(--teal); color: var(--on-teal) }
-@media (max-width: 819px) {
-  .tabs { top: auto; border: none; border-top: 1px solid var(--line); border-radius: 0; background: color-mix(in srgb, var(--paper) 90%, transparent); -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) }
-  .tab { min-height: 56px; border-radius: 12px; font-size: 13px }
-  .tab[aria-selected=true] { background: var(--teal-t); color: var(--teal) }
+.sumcard {
+  padding: 14px
 }
-/* 使い方・ログイン */
-details.hp summary { font-size: 16px; list-style: none; display: flex; justify-content: space-between; align-items: center }
-details.hp summary::-webkit-details-marker { display: none }
-details.hp summary::after { content: "＋"; color: var(--soft); font-weight: 400 }
-details.hp[open] summary::after { content: "－" }
-.hp li { font-size: 15px }
-#login { background: var(--bg) }
-.lbox { background: var(--paper); border-radius: 20px; padding: 28px }
-/* 仕上げ: 入力フォームの折り返しと、パソコンでの2列の並び */
-form.row .btn { flex: 1 1 auto }
-form.row input[type=number] { width: auto !important; flex: 1 1 110px; min-width: 96px }
-form.row input[type=date], form.row input[type=time] { width: auto !important; flex: 1 1 130px; min-width: 0 }
-form.row input[type=text] { flex: 1 1 180px }
-#todoForm input[type=text], #fixForm input[type=text], #frForm input[type=text], #stockForm input[type=text] { flex-basis: 100% }
-#rcBtn, #rcManual { flex: 1 1 160px }
-#rcTotal { width: auto !important; flex: 1 1 130px }
-.card-head h2 { min-width: 0 }
-.rows li .tx { min-width: 0; overflow-wrap: anywhere }
+
+.sum {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px
+}
+
+.sum div {
+  background: var(--teal-t);
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-width: 0
+}
+
+.sum small {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--soft)
+}
+
+.sum b {
+  display: block;
+  font-size: 18px;
+  line-height: 1.4;
+  overflow-wrap: anywhere
+}
+
 @media (min-width: 820px) {
-  .grid { display: block; column-count: 2; column-gap: 14px }
-  .grid > .card { break-inside: avoid; -webkit-column-break-inside: avoid; margin: 0 0 14px }
-  .grid > .card.full { column-span: all }
-  .grid > .card.full:not(:first-child) { margin-top: 14px }
+  .sum {
+    grid-template-columns: repeat(4, 1fr)
+  }
 }
-.grid > .card { min-width: 0 }
-.rows li input.tx { width: 0 }
-.sug li .btn { background: var(--paper); color: var(--teal); border: 1px solid var(--line) }
-#rcFix .okmark { color: var(--teal); font-weight: 700; margin: 6px 0 0 }
-#rcFix .warnmark { color: var(--rust); font-weight: 700; margin: 8px 0 0; font-size: 15px }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important } }
+
+/* 今日使えるお金 */
+.card[aria-labelledby="h-money"] {
+  background: var(--rp);
+  border-top: 5px solid var(--teal);
+  border-radius: 6px 6px 18px 18px;
+  padding: 22px 24px 24px
+}
+
+.big {
+  font-size: clamp(44px, 12vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink)
+}
+
+.big span {
+  font-size: .34em;
+  font-weight: 700;
+  color: var(--soft);
+  margin-left: 6px
+}
+
+.big.over {
+  color: var(--rust)
+}
+
+.bar {
+  height: 10px
+}
+
+#expForm {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--line)
+}
+
+/* タブ */
+.tabs {
+  top: 8px;
+  padding: 5px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  gap: 4px
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  min-height: 44px;
+  font-size: 15px
+}
+
+.tab:hover {
+  background: var(--teal-t)
+}
+
+.tab[aria-selected=true] {
+  background: var(--teal);
+  color: var(--on-teal)
+}
+
+@media (max-width: 819px) {
+  .tabs {
+    top: auto;
+    border: none;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom))
+  }
+
+  .tab {
+    min-height: 56px;
+    border-radius: 12px;
+    font-size: 13px
+  }
+
+  .tab[aria-selected=true] {
+    background: var(--teal-t);
+    color: var(--teal)
+  }
+}
+
+/* 使い方・ログイン */
+details.hp summary {
+  font-size: 16px;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center
+}
+
+details.hp summary::-webkit-details-marker {
+  display: none
+}
+
+details.hp summary::after {
+  content: "＋";
+  color: var(--soft);
+  font-weight: 400
+}
+
+details.hp[open] summary::after {
+  content: "－"
+}
+
+.hp li {
+  font-size: 15px
+}
+
+#login {
+  background: var(--bg)
+}
+
+.lbox {
+  background: var(--paper);
+  border-radius: 20px;
+  padding: 28px
+}
+
+/* 仕上げ: 入力フォームの折り返しと、パソコンでの2列の並び */
+form.row .btn {
+  flex: 1 1 auto
+}
+
+form.row input[type=number] {
+  width: auto !important;
+  flex: 1 1 110px;
+  min-width: 96px
+}
+
+form.row input[type=date],
+form.row input[type=time] {
+  width: auto !important;
+  flex: 1 1 130px;
+  min-width: 0
+}
+
+form.row input[type=text] {
+  flex: 1 1 180px
+}
+
+#todoForm input[type=text],
+#fixForm input[type=text],
+#frForm input[type=text],
+#stockForm input[type=text] {
+  flex-basis: 100%
+}
+
+#rcBtn,
+#rcManual {
+  flex: 1 1 160px
+}
+
+#rcTotal {
+  width: auto !important;
+  flex: 1 1 130px
+}
+
+.card-head h2 {
+  min-width: 0
+}
+
+.rows li .tx {
+  min-width: 0;
+  overflow-wrap: anywhere
+}
+
+@media (min-width: 820px) {
+  .grid {
+    display: block;
+    column-count: 2;
+    column-gap: 14px
+  }
+
+  .grid>.card {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    margin: 0 0 14px
+  }
+
+  .grid>.card.full {
+    column-span: all
+  }
+
+  .grid>.card.full:not(:first-child) {
+    margin-top: 14px
+  }
+}
+
+.grid>.card {
+  min-width: 0
+}
+
+.rows li input.tx {
+  width: 0
+}
+
+.sug li .btn {
+  background: var(--paper);
+  color: var(--teal);
+  border: 1px solid var(--line)
+}
+
+#rcFix .okmark {
+  color: var(--teal);
+  font-weight: 700;
+  margin: 6px 0 0
+}
+
+#rcFix .warnmark {
+  color: var(--rust);
+  font-weight: 700;
+  margin: 8px 0 0;
+  font-size: 15px
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important
+  }
+}
+
+/* 日用品管理・冷蔵庫の自動入力・レシートの入れ先 */
+.sub2 {
+  display: block;
+  font-size: 13px;
+  color: var(--soft);
+  font-weight: 400
+}
+
+.rows small.soon {
+  color: var(--gold)
+}
+
+.btn.sm {
+  min-height: 36px;
+  padding: 4px 12px;
+  font-size: 14px
+}
+
+#rcItems li {
+  flex-wrap: wrap;
+  gap: 8px
+}
+
+#rcItems li input.tx {
+  width: 100%;
+  flex: 1 1 100%
+}
+
+#rcItems li select {
+  flex: 1 1 100px;
+  min-width: 0
+}
+
+.sum div.alert {
+  background: var(--rust-t)
+}
+
+.sum div.alert b {
+  color: var(--rust)
+}
+
+@media (min-width: 820px) {
+  .sum {
+    grid-template-columns: repeat(3, 1fr)
+  }
+}
+
+.tab {
+  position: relative
+}
+
+.tab.alert::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 24px);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--rust)
+}
+
+.linkbtn {
+  display: block;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  min-height: 32px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--soft);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px
+}
+
+/* 月ごとの家計・元に戻す・初回の案内 */
+.monthnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px
+}
+
+.monthnav b {
+  font-size: 17px
+}
+
+.mstats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px
+}
+
+.mstats div {
+  background: var(--teal-t);
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-width: 0
+}
+
+.mstats small {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--soft)
+}
+
+.mstats b {
+  display: block;
+  font-size: 16px;
+  overflow-wrap: anywhere
+}
+
+.mstats div.alert {
+  background: var(--rust-t)
+}
+
+.mstats div.alert b {
+  color: var(--rust)
+}
+
+.dchart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 84px;
+  margin-top: 14px;
+  border-bottom: 1px solid var(--line)
+}
+
+.dchart i {
+  flex: 1;
+  min-height: 2px;
+  background: var(--teal);
+  border-radius: 3px 3px 0 0;
+  opacity: .8
+}
+
+.dchart i.now {
+  background: var(--rust);
+  opacity: 1
+}
+
+.dlab {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--soft);
+  margin-top: 2px
+}
+
+.cat b {
+  width: 128px
+}
+
+.rows small.d {
+  color: var(--soft);
+  font-weight: 700
+}
+
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px
+}
+
+.introlist {
+  padding-left: 22px;
+  margin: 10px 0 16px
+}
+
+.introlist li {
+  margin: 10px 0;
+  font-size: 15px
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  z-index: 30;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 12px;
+  padding: 8px 8px 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+  font-size: 15px
+}
+
+.toast .btn {
+  background: var(--paper);
+  color: var(--ink)
+}
+
+@media (min-width: 820px) {
+  .toast {
+    bottom: 24px
+  }
+}
+
+/* 冷蔵庫のまとめて消す */
+.chips li.pm {
+  padding: 0
+}
+
+.chips li button.pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  padding: 6px 14px 6px 8px;
+  min-height: 40px;
+  cursor: pointer;
+  border-radius: 999px
+}
+
+.chips li .ck {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex: none
+}
+
+.chips li.sel {
+  outline: 3px solid var(--teal);
+  outline-offset: 1px
+}
+
+.chips li.sel .ck {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--on-teal)
+}
+
+.b-danger {
+  background: var(--rust);
+  color: #fff
+}
+
+.b-danger:disabled {
+  opacity: .45;
+  cursor: not-allowed
+}
+
+@media (prefers-color-scheme: dark) {
+  .b-danger {
+    color: #1b1210
+  }
+}
