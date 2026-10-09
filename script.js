@@ -27,12 +27,13 @@
   }
   S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} }, S);
 
-  var RECIPES = [["親子丼", ["卵", "鶏肉", "玉ねぎ", "ご飯"]], ["野菜炒め", ["キャベツ", "にんじん", "豚肉", "もやし", "ピーマン"]], ["オムライス", ["卵", "ご飯", "玉ねぎ", "ケチャップ", "鶏肉"]], ["カレー", ["じゃがいも", "にんじん", "玉ねぎ", "豚肉", "カレールー"]], ["豚汁", ["豚肉", "大根", "にんじん", "味噌", "じゃがいも"]], ["チャーハン", ["ご飯", "卵", "ネギ", "ハム"]], ["焼きそば", ["麺", "キャベツ", "豚肉", "もやし"]], ["ナポリタン", ["パスタ", "玉ねぎ", "ピーマン", "ソーセージ", "ケチャップ"]], ["肉じゃが", ["じゃがいも", "牛肉", "玉ねぎ", "にんじん"]], ["卵かけご飯と味噌汁", ["卵", "ご飯", "味噌", "豆腐"]], ["麻婆豆腐", ["豆腐", "ひき肉", "ネギ"]], ["きのこパスタ", ["パスタ", "きのこ", "ベーコン"]], ["卵焼き", ["卵"]], ["味噌汁", ["味噌", "豆腐", "ネギ"]], ["納豆ご飯", ["納豆", "ご飯"]], ["ハムエッグ", ["ハム", "卵"]], ["玉ねぎと卵の炒め物", ["玉ねぎ", "卵"]], ["野菜スープ", ["キャベツ", "にんじん", "玉ねぎ"]], ["豚の生姜焼き", ["豚肉", "玉ねぎ", "生姜"]], ["豚キムチ", ["豚肉", "キムチ"]], ["ツナマヨおにぎり", ["ご飯", "ツナ", "マヨネーズ"]], ["にんじんしりしり", ["にんじん", "卵", "ツナ"]], ["お好み焼き", ["キャベツ", "卵", "小麦粉", "豚肉"]], ["豆腐ステーキ", ["豆腐", "ネギ"]]];
+  var RECIPES = [["親子丼", ["卵", "鶏肉", "玉ねぎ", "ご飯"]], ["野菜炒め", ["キャベツ", "にんじん", "豚肉", "もやし", "ピーマン"]], ["オムライス", ["卵", "ご飯", "玉ねぎ", "ケチャップ", "鶏肉"]], ["カレー", ["じゃがいも", "にんじん", "玉ねぎ", "豚肉", "カレールー"]], ["豚汁", ["豚肉", "大根", "にんじん", "味噌", "じゃがいも"]], ["チャーハン", ["ご飯", "卵", "ネギ", "ハム"]], ["焼きそば", ["麺", "キャベツ", "豚肉", "もやし"]], ["ナポリタン", ["パスタ", "玉ねぎ", "ピーマン", "ソーセージ", "ケチャップ"]], ["肉じゃが", ["じゃがいも", "牛肉", "玉ねぎ", "にんじん"]], ["卵かけご飯と味噌汁", ["卵", "ご飯", "味噌", "豆腐"]], ["麻婆豆腐", ["豆腐", "ひき肉", "ネギ"]], ["きのこパスタ", ["パスタ", "きのこ", "ベーコン"]], ["卵焼き", ["卵"]], ["味噌汁", ["味噌", "豆腐", "ネギ"]], ["納豆ご飯", ["納豆", "ご飯"]], ["ハムエッグ", ["ハム", "卵"]], ["玉ねぎと卵の炒め物", ["玉ねぎ", "卵"]], ["野菜スープ", ["キャベツ", "にんじん", "玉ねぎ"]], ["豚の生姜焼き", ["豚肉", "玉ねぎ", "生姜"]], ["豚キムチ", ["豚肉", "キムチ"]], ["ツナマヨおにぎり", ["ご飯", "ツナ", "マヨネーズ"]], ["にんじんしりしり", ["にんじん", "卵", "ツナ"]], ["お好み焼き", ["キャベツ", "卵", "小麦粉", "豚肉"]], ["豆腐ステーキ", ["豆腐", "ネギ"]], ["回鍋肉", ["キャベツ", "豚肉", "ピーマン"]], ["鶏の照り焼き", ["鶏肉"]], ["肉豆腐", ["牛肉", "豆腐", "ネギ"]], ["スクランブルエッグ", ["卵", "牛乳", "バター"]], ["冷ややっこ", ["豆腐", "ネギ"]], ["焼きうどん", ["うどん", "キャベツ", "豚肉"]], ["ほうれん草のおひたし", ["ほうれん草"]], ["きのこの味噌汁", ["きのこ", "味噌", "豆腐"]], ["ミートソースパスタ", ["パスタ", "ひき肉", "玉ねぎ", "トマト"]], ["クリームシチュー", ["じゃがいも", "にんじん", "玉ねぎ", "鶏肉", "牛乳"]], ["鮭のバター焼き", ["鮭", "バター"]], ["フレンチトースト", ["パン", "卵", "牛乳"]], ["サラダ", ["レタス", "トマト", "きゅうり"]], ["鶏のから揚げ", ["鶏肉"]], ["キャベツと卵の炒め物", ["キャベツ", "卵"]], ["チーズオムレツ", ["卵", "チーズ"]], ["ひき肉とキャベツの炒め物", ["ひき肉", "キャベツ"]]];
   var SYN = [[/たまご|タマゴ|玉子/g, "卵"], [/ごはん|ゴハン|白米|白飯/g, "ご飯"], [/たまねぎ|タマネギ|玉葱/g, "玉ねぎ"], [/長ねぎ|青ねぎ|小ねぎ|万能ねぎ|ねぎ/g, "ネギ"], [/人参|ニンジン/g, "にんじん"], [/ジャガイモ|馬鈴薯/g, "じゃがいも"], [/とうふ|トウフ/g, "豆腐"], [/みそ|ミソ/g, "味噌"], [/豚バラ|豚こま|豚コマ|ぶた肉/g, "豚肉"], [/鶏もも|鶏むね|とり肉|鳥肉|チキン/g, "鶏肉"], [/合いびき|合挽き|豚ひき|牛ひき|挽き肉|ミンチ/g, "ひき肉"], [/きゃべつ/g, "キャベツ"], [/なっとう|ナットウ/g, "納豆"]];
   var norm = function (s) { SYN.forEach(function (p) { s = s.replace(p[0], p[1]) }); return s };
 
   /* 日付が変わったときの整理:未完了は持ち越し、繰り返しタスクを生成、古い予定/ご飯を削除 */
   function rollover() {
+    S.stock.forEach(function (k) { if (!k.hist && k.bought) { k.hist = [k.bought]; k.base = k.base || k.cycle } if (!k.bought) { k.bought = ds(new Date()); k.cycle = k.cycle || dailyDays(k.name) || 30; delete k.qty; delete k.min } });
     today = ds(new Date()); var dow = new Date().getDay();
     S.todos = S.todos.filter(function (t) { return (!t.done || t.date >= today) && !(t.tid && t.date < today) }).map(function (t) { return t.date < today ? Object.assign({}, t, { date: today }) : t });
     S.rec.forEach(function (r) {
@@ -99,10 +100,75 @@
       return '<li><span class="tx">' + esc(x.name) + ' <small>毎月' + x.day + '日(' + (d === 0 ? "今日" : "あと" + d + "日") + ')</small></span><b>' + x.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="fxdel" data-id="' + x.id + '" aria-label="削除">×</button></li>';
     }).join("") : '<li><p class="empty">固定費はまだありません</p></li>';
   }
+  /* ---- 日用品・食材の判定と、賞味期限・買い替えの目安 ---- */
+  var DAILY = [["シャンプー", 45], ["リンス", 45], ["コンディショナー", 45], ["トリートメント", 45], ["ボディソープ", 35], ["ハンドソープ", 40], ["洗顔", 40], ["歯みがき", 45], ["歯磨き", 45], ["ハミガキ", 45], ["歯ブラシ", 60], ["洗剤", 40], ["柔軟剤", 45], ["漂白", 60], ["トイレットペーパー", 30], ["ティッシュ", 30], ["キッチンペーパー", 30], ["ラップ", 60], ["アルミホイル", 90], ["ゴミ袋", 45], ["ごみ袋", 45], ["スポンジ", 30], ["除菌", 30], ["掃除", 60], ["マスク", 30], ["綿棒", 90], ["カミソリ", 30], ["日焼け止め", 60], ["化粧水", 45], ["乳液", 45], ["電池", 90]];
+  var SHELF = [["弁当", 1], ["おにぎり", 1], ["サンドイッチ", 1], ["惣菜", 1], ["刺身", 1], ["サラダ", 2], ["ひき肉", 1], ["挽き肉", 1], ["食パン", 4], ["パン", 4], ["牛乳", 7], ["豆乳", 7], ["卵", 14], ["たまご", 14], ["玉子", 14], ["ヨーグルト", 14], ["チーズ", 21], ["バター", 30], ["納豆", 10], ["豆腐", 5], ["油揚げ", 5], ["こんにゃく", 30], ["ささみ", 2], ["鶏", 2], ["とり", 2], ["豚", 3], ["牛", 3], ["ベーコン", 10], ["ハム", 7], ["ソーセージ", 14], ["ウインナー", 14], ["鮭", 3], ["さけ", 3], ["魚", 2], ["えび", 2], ["いか", 2], ["キャベツ", 7], ["レタス", 5], ["白菜", 10], ["ほうれん草", 3], ["小松菜", 4], ["もやし", 2], ["ねぎ", 7], ["ネギ", 7], ["にんじん", 14], ["人参", 14], ["大根", 10], ["玉ねぎ", 30], ["たまねぎ", 30], ["玉葱", 30], ["じゃがいも", 30], ["ジャガイモ", 30], ["さつまいも", 30], ["トマト", 7], ["きゅうり", 5], ["なす", 5], ["ピーマン", 7], ["ブロッコリー", 5], ["きのこ", 5], ["しめじ", 5], ["えのき", 5], ["しいたけ", 5], ["りんご", 21], ["バナナ", 5], ["みかん", 14], ["いちご", 3], ["レモン", 14], ["うどん", 5], ["そば", 5], ["漬物", 14], ["キムチ", 14], ["味噌", 90], ["ジャム", 30], ["マヨネーズ", 60], ["ケチャップ", 60], ["ドレッシング", 60], ["めんつゆ", 60]];
+  function hit(list, name) { for (var i = 0; i < list.length; i++) if (name.indexOf(list[i][0]) >= 0) return list[i][1]; return 0 }
+  function dailyDays(n) { return hit(DAILY, n) }
+  function shelfDays(n) { return hit(SHELF, n) }
+  function kindOf(name, ai) { if (dailyDays(name)) return "日用品"; if (shelfDays(name)) return "食材"; return (ai === "食材" || ai === "日用品") ? ai : "なし" }
+  function addDays(d, n) { var t = new Date(d + "T00:00:00"); t.setDate(t.getDate() + n); return ds(t) }
+  /* 季節による使う量の変化: ①買った日を記録して、実際の買い方から目安を自動更新 ②記録が少ないうちは、季節で補正した標準の日数 */
+  var HOT = ["シャンプー", "リンス", "コンディショナー", "トリートメント", "ボディソープ", "洗剤", "柔軟剤", "日焼け止め"];   /* 夏に使う量が増える */
+  var COLD = ["化粧水", "乳液", "ハンドクリーム", "リップ"];                                                              /* 冬に使う量が増える */
+  var SEASONAL = ["ティッシュ", "マスク"];                                                                                 /* 冬〜春(風邪・花粉)に増える */
+  function hasAny(list, name) { return list.some(function (w) { return name.indexOf(w) >= 0 }) }
+  function seasonFactor(name, m) {
+    var hot = m >= 6 && m <= 9, cold = m === 12 || m <= 2;
+    if (hasAny(HOT, name)) return hot ? 0.85 : cold ? 1.1 : 1;
+    if (hasAny(COLD, name)) return cold ? 0.85 : hot ? 1.1 : 1;
+    if (hasAny(SEASONAL, name)) return (m >= 11 || m <= 4) ? 0.85 : 1;
+    return 1;
+  }
+  function learnedCycle(k) {
+    var h = (k.hist || []).slice().sort(), iv = [], i;
+    for (i = 1; i < h.length; i++) {
+      var d = Math.round((new Date(h[i] + "T00:00:00") - new Date(h[i - 1] + "T00:00:00")) / 864e5);
+      if (d >= 3 && d <= 365) iv.push({ d: d, m: +h[i].slice(5, 7) });
+    }
+    if (!iv.length) return 0;
+    var m0 = +today.slice(5, 7), near = iv.filter(function (x) { var g = Math.abs(x.m - m0); return Math.min(g, 12 - g) <= 1 });
+    var use = near.length ? near : iv.slice(-3), w = 0, s = 0;
+    use.forEach(function (x, j) { w += j + 1; s += (j + 1) * x.d });
+    return Math.round(s / w);
+  }
+  var USE = { "少なめ": 1.25, "ふつう": 1, "多め": 0.8, "共有": 0.6 };   /* 使う量(髪の長さ・人数・回数など)で、目安の日数を変える */
+  function stockCycle(k) {
+    if (k.manual) return { c: k.cycle, src: "手入力" };
+    var L = learnedCycle(k); if (L) return { c: L, src: "買った間隔から自動" };
+    var base = k.base || dailyDays(k.name) || k.cycle || 30, f = seasonFactor(k.name, +today.slice(5, 7)), u = USE[k.use || "ふつう"] || 1;
+    return { c: Math.max(7, Math.round(base * f * u)), src: (f === 1 && u === 1) ? "標準の目安" : u !== 1 ? "季節・使う量で調整" : "季節で調整" };
+  }
+  /* 日用品: 「いつ買ったか」を記録する(残りの量は、システムからは分からないため) */
+  function addStock(name, date, cycle, use) {
+    var k = S.stock.filter(function (x) { return x.name === name })[0], b = dailyDays(name) || 30;
+    if (!k) { k = { id: uid(), name: name, bought: date, hist: [], base: b, cycle: b }; S.stock.push(k) }
+    if (!k.hist) k.hist = [k.bought];
+    if (k.hist.indexOf(date) < 0) k.hist.push(date);
+    k.hist.sort(); k.bought = k.hist[k.hist.length - 1];
+    if (cycle) { k.manual = true; k.cycle = cycle }
+    if (use && (use !== "ふつう" || !k.use)) k.use = use;
+    S.shop = S.shop.filter(function (x) { return !(x.name === name && !x.bought) });
+  }
+  /* 冷蔵庫: 賞味期限は、食材の種類から目安を自動で入れる */
+  function addFridge(name, date) {
+    var ex = addDays(date, shelfDays(name) || 7); if (ex < today) return false;
+    var f = S.fridge.filter(function (x) { return x.name === name })[0];
+    if (f) { f.exp = ex; f.est = true } else S.fridge.push({ id: uid(), name: name, exp: ex, est: true });
+    return true;
+  }
+  function stockState(k) { var el = -diff(k.bought), cc = stockCycle(k), c = cc.c; return { el: el, c: c, src: cc.src, due: el >= c, soon: el >= c * .8 && el < c } }
   function renderStock() {
-    $("stockList").innerHTML = S.stock.length ? S.stock.map(function (k) {
-      return '<li><span class="tx">' + esc(k.name) + (k.qty <= k.min ? ' <small>残りわずか</small>' : "") + '</span><button class="x" type="button" data-a="stdn" data-id="' + k.id + '" aria-label="減らす">−</button><b class="stq">' + k.qty + '</b><button class="x" type="button" data-a="stup" data-id="' + k.id + '" aria-label="増やす">＋</button><button class="x" type="button" data-a="stdel" data-id="' + k.id + '" aria-label="削除">×</button></li>';
-    }).join("") : '<li><p class="empty">日用品はまだありません</p></li>';
+    var rows = S.stock.slice().sort(function (a, b) { var x = stockState(a), y = stockState(b); return y.el / y.c - x.el / x.c });
+    $("stockList").innerHTML = rows.length ? rows.map(function (k) {
+      var st = stockState(k), b = new Date(k.bought + "T00:00:00");
+      var tag = st.due ? '<small>そろそろ買い時</small>' : st.soon ? '<small class="soon">もうすぐ買い時</small>' : '';
+      var last = (b.getMonth() + 1) + "/" + b.getDate() + "に購入(" + (st.el <= 0 ? "今日" : st.el + "日前") + ")";
+      return '<li><span class="tx">' + esc(k.name) + ' ' + tag + '<span class="sub2">' + last + '</span><button class="linkbtn" type="button" data-a="stcycle" data-id="' + k.id + '">目安 ' + st.c + '日ごと(' + st.src + ') ✎</button><button class="linkbtn" type="button" data-a="stuse" data-id="' + k.id + '">使う量: ' + (k.use || "ふつう") + ' ✎</button></span>' +
+        (st.due ? '<button class="btn b-gh sm" type="button" data-a="stshop" data-id="' + k.id + '">買い物へ</button>' : '') +
+        '<button class="btn b-gh sm" type="button" data-a="stbuy" data-id="' + k.id + '">買った</button>' +
+        '<button class="x" type="button" data-a="stdel" data-id="' + k.id + '" aria-label="削除">×</button></li>';
+    }).join("") : '<li><p class="empty">日用品はまだありません。レシートを登録すると、自動で入ります</p></li>';
   }
 
   /* ---- Todo ---- */
@@ -156,41 +222,104 @@
   }
 
   /* ---- 冷蔵庫 ---- */
+  var frSel = null;   /* null: ふつうの表示 / オブジェクト: まとめて消すものを選んでいる状態 */
   function renderFridge() {
-    var l = $("fridge");
+    if (frSel && !S.fridge.length) frSel = null;
+    var l = $("fridge"), n = frSel ? Object.keys(frSel).filter(function (k) { return frSel[k] }).length : 0;
+    $("frSelBtn").classList.toggle("hidden", !!frSel || !S.fridge.length); $("frBulk").classList.toggle("hidden", !frSel);
+    $("frDel").textContent = "選んだものを消す(" + n + ")"; $("frDel").disabled = !n;
     if (!S.fridge.length) { l.innerHTML = '<li style="background:none;padding:0"><p class="empty">まだ何も登録されていません</p></li>'; return }
     l.innerHTML = S.fridge.slice().sort(function (a, b) { return (a.exp || "9999").localeCompare(b.exp || "9999") }).map(function (x) {
       var cls = "", lb = "";
-      if (x.exp) { var d = diff(x.exp); lb = d < 0 ? "期限切れ" : d === 0 ? "今日まで" : "あと" + d + "日"; cls = d <= 0 ? "bad" : d <= 2 ? "warn" : "" }
+      if (x.exp) { var d = diff(x.exp); lb = (d < 0 ? "期限切れ" : d === 0 ? "今日まで" : "あと" + d + "日") + (x.est ? "(目安)" : ""); cls = d <= 0 ? "bad" : d <= 2 ? "warn" : "" }
+      if (frSel) {
+        var on = !!frSel[x.id];
+        return '<li class="' + cls + ' pm' + (on ? " sel" : "") + '"><button type="button" class="pick" data-a="fpick" data-id="' + x.id + '" aria-pressed="' + on + '"><span class="ck">' + (on ? "✓" : "") + '</span><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '</button></li>';
+      }
       return '<li class="' + cls + '"><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '<button class="x" type="button" data-a="fdel" data-id="' + x.id + '" aria-label="' + esc(x.name) + 'を削除">×</button></li>';
     }).join("");
   }
 
   function renderSummary() {
-    if (!window.S && typeof S === "undefined") return; var el = $("sum"); if (!el) return;
+    var el = $("sum"); if (!el) return;
     var left = S.todos.filter(function (t) { return !t.done }).length, now = new Date();
     var hm = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
     var ts = S.sched.filter(function (s) { return s.date === today }).sort(function (a, b) { return a.time.localeCompare(b.time) });
     var nx = ts.filter(function (s) { return s.time >= hm })[0];
     var tr = (S.trash || {})[new Date(today + "T00:00:00").getDay()], meal = (S.meals || {})[today];
+    var soon = S.fridge.filter(function (x) { return x.exp && diff(x.exp) <= 2 }).sort(function (a, b) { return a.exp.localeCompare(b.exp) });
+    var due = S.stock.filter(function (k) { return stockState(k).due });
+    var d0 = soon.length ? diff(soon[0].exp) : 0;
+    var fl = soon.length ? soon[0].name + "(" + (d0 < 0 ? "期限切れ" : d0 === 0 ? "今日まで" : "あと" + d0 + "日") + ")" + (soon.length > 1 ? " ほか" + (soon.length - 1) + "品" : "") : "近いものはなし";
+    var dl = due.length ? due[0].name + (due.length > 1 ? " ほか" + (due.length - 1) + "品" : "") + "が買い時" : "買い時はなし";
     var T = [
       ["やること", left ? "残り " + left + "件" : (S.todos.length ? "ぜんぶ完了" : "なし")],
       ["次の予定", nx ? nx.time + " " + nx.text : (ts.length ? "今日の予定は終了" : "予定なし")],
+      ["今夜のご飯", meal || "未定"],
       ["ゴミ出し", tr ? tr + "の日" : "今日はなし"],
-      ["今夜のご飯", meal || "未定"]
+      ["冷蔵庫の期限", fl, soon.length > 0],
+      ["日用品", dl, due.length > 0]
     ];
-    el.innerHTML = T.map(function (x) { return "<div><small>" + x[0] + "</small><b>" + esc(x[1]) + "</b></div>" }).join("");
+    el.innerHTML = T.map(function (x) { return "<div" + (x[2] ? ' class="alert"' : "") + "><small>" + x[0] + "</small><b>" + esc(x[1]) + "</b></div>" }).join("");
+    var tm = document.querySelector('.tab[data-t="meal"]'), tb = document.querySelector('.tab[data-t="shop"]');
+    if (tm) tm.classList.toggle("alert", soon.length > 0); if (tb) tb.classList.toggle("alert", due.length > 0);
   }
   function renderAll() {
     var w = ["日", "月", "火", "水", "木", "金", "土"], n = new Date();
     $("today").textContent = n.getFullYear() + "年" + (n.getMonth() + 1) + "月" + n.getDate() + "日(" + w[n.getDay()] + ")";
     $("schDate").value = $("schDate").value || today; $("schDate").min = today;
-    renderMoney(); renderTodos(); renderMeal(); renderSched(); renderFridge(); renderShop(); renderTrash(); renderFixed(); renderStock(); renderSummary();
+    renderMoney(); renderTodos(); renderMeal(); renderSched(); renderFridge(); renderShop(); renderTrash(); renderFixed(); renderStock(); renderMonth(); renderSummary();
+  }
+
+  /* ---- 月ごとの家計(一覧・グラフ・編集・CSV) ---- */
+  var viewMonth = "";
+  function curMonth() { return viewMonth || today.slice(0, 7) }
+  function shiftMonth(m, n) { var d = new Date(+m.slice(0, 4), +m.slice(5) - 1 + n, 1); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") }
+  function renderMonth() {
+    if (!$("mList")) return;
+    var m = curMonth(), isNow = m === today.slice(0, 7), yen = function (n) { return n.toLocaleString("ja-JP") + "円" };
+    var list = S.exp.filter(function (e) { return e.date.slice(0, 7) === m }).sort(function (a, b) { return b.date.localeCompare(a.date) });
+    var total = list.reduce(function (a, e) { return a + e.amt }, 0), fx = S.fixed.reduce(function (a, x) { return a + x.amt }, 0);
+    $("mLabel").textContent = m.slice(0, 4) + "年" + (+m.slice(5)) + "月"; $("mNext").disabled = m >= today.slice(0, 7);
+    var tiles = [["使った額", yen(total)], ["固定費(月)", yen(fx)]];
+    if (S.budget) { var rest = S.budget - fx - total; tiles.push(["予算の残り", yen(rest), rest < 0]) } else tiles.push(["予算", "未設定"]);
+    $("mStats").innerHTML = tiles.map(function (t) { return "<div" + (t[2] ? ' class="alert"' : "") + "><small>" + t[0] + "</small><b>" + t[1] + "</b></div>" }).join("");
+    var dim = new Date(+m.slice(0, 4), +m.slice(5), 0).getDate(), days = new Array(dim).fill(0);
+    list.forEach(function (e) { days[+e.date.slice(8) - 1] += e.amt });
+    var mx = Math.max.apply(null, days.concat([1]));
+    $("mChart").innerHTML = '<div class="dchart" aria-hidden="true">' + days.map(function (v, i) { return '<i' + (isNow && i + 1 === +today.slice(8) ? ' class="now"' : '') + ' style="height:' + Math.round(v / mx * 100) + '%" title="' + (i + 1) + '日 ' + yen(v) + '"></i>' }).join("") + '</div><div class="dlab"><span>1日</span><span>' + Math.ceil(dim / 2) + '日</span><span>' + dim + '日</span></div>';
+    $("mCats").innerHTML = total ? CATS.map(function (c) {
+      var v = list.filter(function (e) { return (e.cat || "その他") === c }).reduce(function (a, e) { return a + e.amt }, 0), pc = Math.round(v / total * 100);
+      return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="width:' + pc + '%"></i></div><b>' + yen(v) + '(' + pc + '%)</b></div>' : "";
+    }).join("") : "";
+    $("mList").innerHTML = list.length ? list.map(function (e) {
+      return '<li><span class="tx"><small class="d">' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '</small> ' + esc((e.cat || "その他") + " " + (e.memo || "")) + '</span><b>' + yen(e.amt) + '</b><button class="x" type="button" data-a="eedit" data-id="' + e.id + '" aria-label="直す">✎</button><button class="x" type="button" data-a="edel" data-id="' + e.id + '" aria-label="削除">×</button></li>';
+    }).join("") : '<li><p class="empty">この月の支出は、まだありません</p></li>';
+  }
+  /* ---- 削除の「元に戻す」 ---- */
+  var toastTimer = null, toastUndo = null;
+  function showToast(msg, undo) {
+    $("toastMsg").textContent = msg; toastUndo = undo; $("toastUndo").classList.toggle("hidden", !undo); $("toast").classList.remove("hidden"); clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { $("toast").classList.add("hidden"); toastUndo = null }, 7000);
+  }
+  /* ---- 初めて開いたときの案内 ---- */
+  function maybeIntro() {
+    try { if (localStorage.getItem("ls_intro") === "1") return } catch (e) { }
+    if (!$("login").classList.contains("hidden")) return;
+    if (S.budget || S.exp.length || S.fridge.length || S.todos.length) { try { localStorage.setItem("ls_intro", "1") } catch (e) { } return }
+    $("intro").classList.remove("hidden");
   }
 
   /* ---- 操作(クリック) ---- */
   var by = function (list, id) { return list.filter(function (x) { return x.id !== id }) };
   var act = {
+    eedit: function (id) {
+      var e = S.exp.filter(function (x) { return x.id === id })[0]; if (!e) return;
+      var a = prompt("金額(円・税込)", e.amt); if (a === null) return;
+      var n = parseInt(a, 10); if (!isNaN(n) && n > 0) e.amt = n;
+      var m = prompt("メモ", e.memo || ""); if (m === null) return; e.memo = m.trim();
+      var c = prompt("カテゴリ(" + CATS.join("・") + ")", e.cat || "その他"); if (c !== null && CATS.indexOf(c.trim()) >= 0) e.cat = c.trim();
+    },
     edel: function (id) { S.exp = by(S.exp, id) },
     tdone: function (id) { S.todos.forEach(function (t) { if (t.id === id) t.done = !t.done }) },
     tdel: function (id) {
@@ -199,23 +328,66 @@
       S.todos = by(S.todos, id);
     },
     sdel: function (id) { S.sched = by(S.sched, id) },
+    fpick: function (id) { if (!frSel) return; if (frSel[id]) delete frSel[id]; else frSel[id] = true },
     fdel: function (id) { S.fridge = by(S.fridge, id); $("sug").innerHTML = "" },
     pick: function (id, b) { S.meals[today] = b.dataset.name; $("sug").innerHTML = "" },
     shdone: function (id) { S.shop.forEach(function (x) { if (x.id === id) x.bought = !x.bought }) },
     shdel: function (id) { S.shop = by(S.shop, id) },
     fxdel: function (id) { S.fixed = by(S.fixed, id) },
     stdel: function (id) { S.stock = by(S.stock, id) },
-    stup: function (id) { S.stock.forEach(function (k) { if (k.id === id) k.qty++ }) },
-    stdn: function (id) { S.stock.forEach(function (k) { if (k.id === id && k.qty > 0) { k.qty--; if (k.qty <= k.min && !S.shop.some(function (x) { return x.name === k.name && !x.bought })) S.shop.push({ id: uid(), name: k.name, bought: false }) } }) },
-    tofridge: function () { S.shop.filter(function (x) { return x.bought }).forEach(function (x) { var st = S.stock.filter(function (k) { return k.name === x.name })[0]; if (st) st.qty += 1; else S.fridge.push({ id: uid(), name: x.name, exp: "" }) }); S.shop = S.shop.filter(function (x) { return !x.bought }) },
+    stbuy: function (id) { var k = S.stock.filter(function (x) { return x.id === id })[0]; if (k) addStock(k.name, today) },
+    stuse: function (id) {
+      var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
+      var names = ["少なめ", "ふつう", "多め", "共有"], cur = names.indexOf(k.use || "ふつう") + 1;
+      var v = prompt("使う量を選んでください(番号)\n1: 少なめ\n2: ふつう\n3: 多め(髪が長い・使う回数が多いなど)\n4: 家族・同居人と共有", cur); if (v === null) return;
+      var n = parseInt(v, 10); if (n >= 1 && n <= 4) k.use = names[n - 1];
+    },
+    stcycle: function (id) {
+      var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
+      var v = prompt("何日ごとに買い足しますか?\n(空欄にすると、買った間隔から自動で計算します)", k.manual ? k.cycle : ""); if (v === null) return;
+      var n = parseInt(v, 10); if (!isNaN(n) && n >= 1) { k.manual = true; k.cycle = n } else if (v.trim() === "") k.manual = false;
+    },
+    stshop: function (id) { S.stock.forEach(function (k) { if (k.id === id && !S.shop.some(function (x) { return x.name === k.name && !x.bought })) S.shop.push({ id: uid(), name: k.name, bought: false }) }) },
+    tofridge: function () { S.shop.filter(function (x) { return x.bought }).forEach(function (x) { var st = S.stock.filter(function (y) { return y.name === x.name })[0]; if (st || kindOf(x.name, "") === "日用品") addStock(x.name, today); else addFridge(x.name, today) }); S.shop = S.shop.filter(function (x) { return !x.bought }) },
     addmiss: function (id, b) { b.dataset.miss.split("|").forEach(function (n) { if (!S.shop.some(function (x) { return x.name === n && !x.bought }) && !S.fridge.some(function (x) { return x.name === n })) S.shop.push({ id: uid(), name: n, bought: false }) }) }
   };
   document.addEventListener("click", function (e) {
     var b = e.target.closest("[data-a]"); if (!b) return;
+    var del = /del$/.test(b.dataset.a), snap = del ? JSON.stringify(S) : null;   /* 削除は、あとで元に戻せるように */
     act[b.dataset.a](b.dataset.id, b); save(); renderAll();
+    if (snap) showToast("削除しました", function () { S = withDef(JSON.parse(snap)); save(); renderAll() });
   });
 
   /* ---- フォーム ---- */
+  $("frSelBtn").addEventListener("click", function () { frSel = {}; renderFridge() });
+  $("frCancel").addEventListener("click", function () { frSel = null; renderFridge() });
+  $("frAll").addEventListener("click", function () { frSel = {}; S.fridge.forEach(function (x) { frSel[x.id] = true }); renderFridge() });
+  $("frExpired").addEventListener("click", function () {
+    var old = S.fridge.filter(function (x) { return x.exp && diff(x.exp) < 0 });
+    if (!old.length) { showToast("期限切れの食材はありません", null); return }
+    frSel = {}; old.forEach(function (x) { frSel[x.id] = true }); renderFridge();
+  });
+  $("frDel").addEventListener("click", function () {
+    var ids = Object.keys(frSel || {}).filter(function (k) { return frSel[k] }); if (!ids.length) return;
+    var snap = JSON.stringify(S), sel = frSel;
+    S.fridge = S.fridge.filter(function (x) { return !sel[x.id] }); frSel = null; $("sug").innerHTML = "";
+    save(); renderAll();
+    showToast(ids.length + "品を消しました", function () { S = withDef(JSON.parse(snap)); save(); renderAll() });
+  });
+  $("mPrev").addEventListener("click", function () { viewMonth = shiftMonth(curMonth(), -1); renderMonth() });
+  $("mNext").addEventListener("click", function () { var n = shiftMonth(curMonth(), 1); if (n <= today.slice(0, 7)) { viewMonth = n; renderMonth() } });
+  $("mCsv").addEventListener("click", function () {
+    var m = curMonth(), rows = S.exp.filter(function (e) { return e.date.slice(0, 7) === m }).sort(function (a, b) { return a.date.localeCompare(b.date) });
+    var csv = "\ufeff日付,カテゴリ,メモ,金額(円)\n" + rows.map(function (e) {
+      var memo = e.memo || ""; if (/^[=+\-@]/.test(memo)) memo = "'" + memo;
+      return [e.date, e.cat || "その他", '"' + memo.replace(/"/g, '""') + '"', e.amt].join(",");
+    }).join("\n");
+    var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "家計_" + m + ".csv"; a.click(); URL.revokeObjectURL(a.href);
+  });
+  $("toastUndo").addEventListener("click", function () { if (toastUndo) toastUndo(); $("toast").classList.add("hidden"); toastUndo = null });
+  $("introOk").addEventListener("click", function () { $("intro").classList.add("hidden"); try { localStorage.setItem("ls_intro", "1") } catch (e) { } });
+  $("introHelp").addEventListener("click", function () { $("introOk").click(); document.querySelector('.tab[data-t="help"]').click() });
+
   $("expForm").addEventListener("submit", function (e) {
     e.preventDefault(); var a = parseInt($("expAmt").value, 10); if (isNaN(a) || a <= 0) return;
     S.exp.push({ id: uid(), date: today, amt: a, memo: $("expMemo").value.trim(), cat: $("expCat").value });
@@ -247,7 +419,7 @@
   });
   $("frForm").addEventListener("submit", function (e) {
     e.preventDefault(); var n = $("frName").value.trim(); if (!n) return;
-    S.fridge.push({ id: uid(), name: n, exp: $("frExp").value });
+    var ex = $("frExp").value; S.fridge.push({ id: uid(), name: n, exp: ex || addDays(today, shelfDays(n) || 7), est: !ex });
     $("frName").value = ""; $("frExp").value = ""; $("sug").innerHTML = ""; save(); renderFridge();
   });
   $("memo").value = S.memo;
@@ -266,11 +438,9 @@
     S.fixed.push({ id: uid(), name: n, amt: a, day: d }); $("fixName").value = ""; $("fixAmt").value = ""; $("fixDay").value = ""; save(); renderAll();
   });
   $("stockForm").addEventListener("submit", function (e) {
-    e.preventDefault(); var n = $("stName").value.trim(), q = parseInt($("stQty").value, 10), m = parseInt($("stMin").value, 10);
-    if (!n) return; q = isNaN(q) ? 0 : q; m = isNaN(m) ? 1 : m;
-    S.stock.push({ id: uid(), name: n, qty: q, min: m });
-    if (q <= m && !S.shop.some(function (x) { return x.name === n && !x.bought })) S.shop.push({ id: uid(), name: n, bought: false });
-    $("stName").value = ""; save(); renderAll();
+    e.preventDefault(); var n = $("stName").value.trim(), c = parseInt($("stCycle").value, 10);
+    if (!n) return; addStock(n, $("stDate").value || today, isNaN(c) || c < 1 ? 0 : c, $("stUse").value);
+    $("stName").value = ""; $("stCycle").value = ""; $("stUse").value = "ふつう"; save(); renderAll();
   });
   $("shopForm").addEventListener("submit", function (e) {
     e.preventDefault(); var n = $("shopIn").value.trim(); if (!n) return;
@@ -431,14 +601,23 @@
     $("rcFix").innerHTML = h;
   }
   function renderRc() {
+    var KS = [["食材", "冷蔵庫へ"], ["日用品", "日用品へ"], ["なし", "入れない"]];
     $("rcItems").innerHTML = rcItems.length ? rcItems.map(function (x, i) {
-      return '<li><input type="checkbox" data-i="' + i + '" checked aria-label="選ぶ"><input type="text" class="tx" data-n="' + i + '" value="' + esc(x.name) + '" placeholder="商品名"><input type="number" data-p="' + i + '" value="' + x.price + '" placeholder="金額" inputmode="numeric" style="width:96px;text-align:right" aria-label="税込金額"><button class="x" type="button" data-rm="' + i + '" aria-label="この行を消す">×</button></li>';
+      var k = x.kind || "なし";
+      return '<li><input type="text" class="tx" data-n="' + i + '" value="' + esc(x.name) + '" placeholder="商品名">' +
+        '<select data-k="' + i + '" aria-label="入れ先">' + KS.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === k ? " selected" : "") + '>' + o[1] + '</option>' }).join("") + '</select>' +
+        '<input type="number" data-p="' + i + '" value="' + x.price + '" placeholder="金額" inputmode="numeric" style="width:96px;text-align:right" aria-label="税込金額"><button class="x" type="button" data-rm="' + i + '" aria-label="この行を消す">×</button></li>';
     }).join("") : '<li><p class="empty">品物は読み取れませんでした(合計は使えます)</p></li>';
     rcSumText();
   }
   $("rcItems").addEventListener("input", function (e) {
     var t = e.target;
-    if (t.dataset.n !== undefined) rcItems[+t.dataset.n].name = t.value;
+    if (t.dataset.n !== undefined) {
+      var it = rcItems[+t.dataset.n]; it.name = t.value;
+      var kk = kindOf(t.value, "");
+      if (kk !== "なし" && (it.kind || "なし") === "なし") { it.kind = kk; var sel = t.parentNode.querySelector("select"); if (sel) sel.value = kk }
+    }
+    if (t.dataset.k !== undefined) rcItems[+t.dataset.k].kind = t.value;
     if (t.dataset.p !== undefined) { rcItems[+t.dataset.p].price = parseInt(t.value, 10) || 0; rcSumText() }
   });
   $("rcItems").addEventListener("click", function (e) {
@@ -449,12 +628,12 @@
     var b = e.target.closest("[data-fix]"); if (!b) return;
     var s = rcItems.reduce(function (a, x) { return a + (x.price || 0) }, 0), t = parseInt($("rcTotal").value, 10) || 0, k = b.dataset.fix;
     if (k === "total") $("rcTotal").value = s;
-    else if (k === "add") rcItems.push({ name: "その他(差額)", price: t - s });
-    else if (k === "disc") rcItems.push({ name: "値引き", price: t - s });
+    else if (k === "add") rcItems.push({ name: "その他(差額)", price: t - s, kind: "なし" });
+    else if (k === "disc") rcItems.push({ name: "値引き", price: t - s, kind: "なし" });
     renderRc();
   });
   $("rcNew").addEventListener("click", function () {
-    rcItems.push({ name: "", price: 0 }); renderRc();
+    rcItems.push({ name: "", price: 0, kind: "なし" }); renderRc();
     var ins = $("rcItems").querySelectorAll("input[data-n]"); if (ins.length) ins[ins.length - 1].focus();
   });
   $("rcManual").addEventListener("click", function () {
@@ -475,30 +654,30 @@
         model: AI_MODEL,
         generationConfig: {
           responseMimeType: "application/json",
-          responseSchema: Sc.object({ properties: { store: Sc.string(), total: Sc.number(), taxIncluded: Sc.boolean(), items: Sc.array({ items: Sc.object({ properties: { name: Sc.string(), price: Sc.number(), rate: Sc.number() } }) }) } })
+          responseSchema: Sc.object({ properties: { store: Sc.string(), total: Sc.number(), subtotal: Sc.number(), taxIncluded: Sc.boolean(), items: Sc.array({ items: Sc.object({ properties: { name: Sc.string(), price: Sc.number(), rate: Sc.number(), kind: Sc.string() } }) }) } })
         }
       });
     });
     return aiP;
   }
-  var AI_PROMPT = "これはレシートの写真です(少し斜めだったり、遠かったり、ピントが甘いことがあります)。買った品物の「商品名」と「金額」だけを読み取り、JSONで返してください。\n" +
-    "- 食品に限らず、日用品・衣類・本・交通費・飲食店の料理など、レシートに書かれている品物をすべて対象にします。\n" +
-    "- 店名・住所・電話番号・日付・時刻・レジ番号・担当者・登録番号・ポイント・支払い方法・お預り・お釣り・税の内訳・小計・合計の行は、items に入れません。\n" +
-    "- price は、レシートに印字されているその行の金額(円の整数)です。数量が2以上なら、その行の合計金額です。値引きの行は、直前の商品の金額から引いた額にします。\n" +
-    "- taxIncluded は、品物の金額が税込で印字されていれば true、税抜(外税)で印字され、税が最後にまとめて加算されていれば false です。\n" +
-    "- rate は、その品物の消費税率(8 または 10)です。「軽」「※」などの軽減税率の印や、税率ごとの内訳から判断し、分からなければ 10 にします。\n" +
-    "- name は、レシートの表記を読みやすく整えた商品名にします(商品コードや記号は除きます)。\n" +
-    "- 読み取れない行は、推測で作らず、含めません。\n" +
-    "- total はレシートの合計(支払う金額・税込)、store は店名です。レシートでない写真なら items を空にします。";
+  var AI_PROMPT = "これはレシートの写真です(斜め・遠い・ピンぼけ・指や背景が写っていることがあります)。買った品物だけを読み取り、JSONで返してください。\n" +
+    "【含めるもの】食品に限らず、日用品・衣類・本・飲食店の料理・サービスなど、購入した品物の行すべて。\n" +
+    "【含めないもの】店名、住所、電話番号、日付、時刻、レシート番号、お客様番号、レジ番号、担当者、登録番号(Tで始まる番号)、「イートイン」「テイクアウト」などの区分、小計、合計、内税・外税、税率ごとの対象額、お預り、お釣り、支払方法(現金・カード・交通系IC・QR決済・電子マネー)、残高、ポイント、クーポン、広告・アンケート・クイズなどの文章。\n" +
+    "【金額】price は、その品物の金額(円の整数)です。商品名と金額の間に、数量だけ(「1」「2」など)が書かれている場合、その数字は price ではありません。数量が2以上なら、その行の合計金額を price にします。値引き・割引の行は、直前の品物の金額から引いた額にして、別の行にはしません。\n" +
+    "【税】taxIncluded は、品物の金額が税込で印字されている(内税)なら true、税抜(外税)で印字され、税が最後にまとめて加算されているなら false です。rate は、その品物の消費税率(8 または 10)です。「軽」「※」などの軽減税率の印や、税率ごとの内訳から判断し、分からなければ 10 にします。\n" +
+    "【種類】kind は、品物の種類です。「食材」(冷蔵庫に入れる食品)、「日用品」(シャンプー・洗剤・ティッシュなどの消耗品)、「その他」のどれかにします。\n" +
+    "【合計】total はレシートの合計(支払う金額・税込)、subtotal は小計です。印字がなければ 0 にします。store は店名です。\n" +
+    "【ルール】読み取れない行や、自信がない行は、推測で作らず、含めません。name は印字どおりの商品名にして、商品コードや余計な記号は除きます。レシートでない写真なら items を空にします。";
   function toB64(f) {
     return new Promise(function (ok, ng) {
       var u = URL.createObjectURL(f), im = new Image();
       im.onload = function () {
         URL.revokeObjectURL(u);
-        var k = Math.min(1, 1800 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
+        var k = Math.min(1, 2000 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
         c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
         c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
-        ok(c.toDataURL("image/jpeg", 0.88).split(",")[1]);
+        try { c = cropPaper(c) } catch (e) { }
+        ok(c.toDataURL("image/jpeg", 0.92).split(",")[1]);
       };
       im.onerror = function () { ng(new Error("画像を読み込めません")) }; im.src = u;
     });
@@ -509,19 +688,33 @@
     var k = 0; items.forEach(function (x, i) { if (x.price > items[k].price) k = i });
     items[k].price += d; return items;
   }
+  /* AIの返事を、品物・合計に直す。gap = 品物の合計 − レシートの合計(0なら一致) */
+  function parseAI(txt) {
+    var d = JSON.parse(txt), excl = d.taxIncluded === false;
+    var items = (d.items || []).map(function (x) {
+      var p = Math.round(Number(x.price)), rt = Number(x.rate) === 8 ? 8 : 10;
+      return { name: String(x.name || "").trim(), aiKind: String(x.kind || "").trim(), price: excl ? Math.floor(p * (100 + rt) / 100) : p };
+    }).filter(function (x) { return x.name && x.price > 0 && x.price <= 1000000 });
+    var total = Math.round(Number(d.total)) || 0, sub = Math.round(Number(d.subtotal)) || 0, note = "";
+    if (excl) { note = "税抜の金額を税込に換算しました"; items = fitTotal(items, total) }
+    var sum = items.reduce(function (a, x) { return a + x.price }, 0), target = excl ? total : (sub || total);
+    if (!total) total = sum;
+    return { items: items, total: total, store: String(d.store || "").trim(), raw: txt, taxNote: note, gap: target ? sum - target : 0 };
+  }
   function readAI(f) {
+    var model, img;
     return Promise.all([loadAI(), toB64(f)]).then(function (a) {
-      return a[0].generateContent([AI_PROMPT, { inlineData: { mimeType: "image/jpeg", data: a[1] } }]);
+      model = a[0]; img = { inlineData: { mimeType: "image/jpeg", data: a[1] } };
+      return model.generateContent([AI_PROMPT, img]);
     }).then(function (r) {
-      var txt = r.response.text(), d = JSON.parse(txt), excl = d.taxIncluded === false;
-      var items = (d.items || []).map(function (x) {
-        var p = Math.round(Number(x.price)), rt = Number(x.rate) === 8 ? 8 : 10;
-        return { name: String(x.name || "").trim(), price: excl ? Math.floor(p * (100 + rt) / 100) : p };
-      }).filter(function (x) { return x.name && x.price > 0 && x.price <= 1000000 });
-      var total = Math.round(Number(d.total)) || 0, note = "";
-      if (excl) { note = "税抜の金額を税込に換算しました"; items = fitTotal(items, total) }
-      if (!total) total = items.reduce(function (a, x) { return a + x.price }, 0);
-      return { items: items, total: total, store: String(d.store || "").trim(), raw: txt, taxNote: note };
+      var txt = r.response.text(), p = parseAI(txt);
+      if (!p.gap) return p;
+      var q = "前回の読み取り結果:\n" + txt + "\n\n問題: 品物の金額の合計が、レシートの" + (p.gap > 0 ? "小計・合計より " : "小計・合計より ") + Math.abs(p.gap) + "円 " + (p.gap > 0 ? "多い" : "少ない") + "です。写真をもう一度よく見て、読み間違い・抜け・余計な行(合計や税の行を品物にしていないか)を直した結果を、同じ形式のJSONで返してください。";
+      return model.generateContent([AI_PROMPT, img, q]).then(function (r2) {
+        var p2 = parseAI(r2.response.text()); p2.retried = true;
+        if (Math.abs(p2.gap) <= Math.abs(p.gap)) return p2;
+        p.retried = true; return p;
+      }, function () { return p });
     });
   }
   function readTess(f) {
@@ -538,11 +731,11 @@
     });
   }
   function showRc(p, ai, note) {
-    rcItems = p.items; $("rcRaw").textContent = (note ? "[" + note + "]\n" : "") + p.raw;
+    rcItems = p.items.map(function (x) { return { name: x.name, price: x.price, kind: kindOf(x.name, x.aiKind) } }); $("rcRaw").textContent = (note ? "[" + note + "]\n" : "") + p.raw;
     $("rcTotal").value = p.total || ""; $("rcMemo").value = p.store || ""; $("rcDate").value = today;
     renderRc(); $("rcRes").classList.remove("hidden");
     $("rcMsg").textContent = !p.items.length ? "品物を読み取れませんでした。レシート全体が写るように、明るい場所で撮り直してください"
-      : (ai ? "AIで読み取りました。" : "簡易読み取りです(精度が低いため、必ず内容を確認してください)。") + (p.taxNote ? p.taxNote + "。" : "") + "内容を確認して登録してください";
+      : (ai ? "AIで読み取りました。" : "簡易読み取りです(精度が低いため、必ず内容を確認してください)。") + (p.retried ? "合計が合わなかったため、AIが読み直しました。" : "") + (p.taxNote ? p.taxNote + "。" : "") + "内容を確認して登録してください";
   }
   $("rcFile").addEventListener("change", function (e) {
     var f = e.target.files[0]; if (!f) return; e.target.value = "";
@@ -563,20 +756,16 @@
   });
   $("rcAdd").addEventListener("click", function () {
     var a = parseInt($("rcTotal").value, 10); if (isNaN(a) || a <= 0) { $("rcMsg").textContent = "合計金額を入力してください"; return }
-    var s = rcItems.reduce(function (x, y) { return x + (y.price || 0) }, 0);
-    if (rcItems.length && s !== a && !confirm("品物の合計(" + s.toLocaleString("ja-JP") + "円)と、登録する合計(" + a.toLocaleString("ja-JP") + "円)がちがいます。\nこのまま " + a.toLocaleString("ja-JP") + "円 で登録しますか?")) return;
-    var d = $("rcDate").value || today;
-    S.exp.push({ id: uid(), date: d, amt: a, memo: $("rcMemo").value.trim() || "レシート", cat: $("rcCat").value });
-    save(); renderMoney(); $("rcRes").classList.add("hidden");
-    $("rcMsg").textContent = d === today ? "今日の支出に登録しました(ホームで確認できます)" : d + " の支出として登録しました";
-  });
-  $("rcFr").addEventListener("click", function () {
-    var n = 0;
-    $("rcItems").querySelectorAll("input[type=checkbox]:checked").forEach(function (c) {
-      var nm = $("rcItems").querySelector('[data-n="' + c.dataset.i + '"]').value.trim();
-      if (nm && !S.fridge.some(function (x) { return x.name === nm })) { S.fridge.push({ id: uid(), name: nm, exp: "" }); n++ }
+    var sm = rcItems.reduce(function (x, y) { return x + (y.price || 0) }, 0);
+    if (rcItems.length && sm !== a && !confirm("品物の合計(" + sm.toLocaleString("ja-JP") + "円)と、登録する合計(" + a.toLocaleString("ja-JP") + "円)がちがいます。\nこのまま " + a.toLocaleString("ja-JP") + "円 で登録しますか?")) return;
+    var d = $("rcDate").value || today, nf = 0, nd = 0;
+    rcItems.forEach(function (x) {
+      var nm = (x.name || "").trim(); if (!nm || x.price < 0) return;
+      if (x.kind === "食材") { if (addFridge(nm, d)) nf++ } else if (x.kind === "日用品") { addStock(nm, d); nd++ }
     });
-    save(); renderFridge(); $("rcMsg").textContent = n + "品を冷蔵庫に追加しました(ごはんタブで確認できます)";
+    S.exp.push({ id: uid(), date: d, amt: a, memo: $("rcMemo").value.trim() || "レシート", cat: $("rcCat").value });
+    save(); renderAll(); $("rcRes").classList.add("hidden");
+    $("rcMsg").textContent = (d === today ? "今日の支出に登録しました" : d + " の支出として登録しました") + (nf || nd ? "。冷蔵庫に" + nf + "品(賞味期限は目安)、日用品に" + nd + "品を入れました" : "");
   });
 
   /* ---- バーコード・QR読み取り ---- */
@@ -644,8 +833,8 @@
     S.codes = S.codes || {}; if (/^\d{8,14}$/.test(scCode)) S.codes[scCode] = nm;
     var d = b.dataset.sc, msg;
     if (d === "shop") { if (!S.shop.some(function (x) { return x.name === nm && !x.bought })) S.shop.push({ id: uid(), name: nm, bought: false }); msg = "買い物リストに追加しました" }
-    else if (d === "fridge") { if (!S.fridge.some(function (x) { return x.name === nm })) S.fridge.push({ id: uid(), name: nm, exp: "" }); msg = "冷蔵庫に追加しました(ごはんタブで確認できます)" }
-    else { var st = S.stock.filter(function (k) { return k.name === nm })[0]; if (st) st.qty++; else S.stock.push({ id: uid(), name: nm, qty: 1, min: 1 }); msg = "日用品ストックに入れました" }
+    else if (d === "fridge") { addFridge(nm, today); msg = "冷蔵庫に追加しました。賞味期限は目安で入れています(ごはんタブで確認できます)" }
+    else { addStock(nm, today); msg = "日用品に登録しました(今日買った日として記録します)" }
     save(); renderAll(); $("scRes").classList.add("hidden"); $("scMsg").textContent = msg;
   });
   document.querySelector(".tabs").addEventListener("click", function () { if (scQr) scEnd() });
@@ -667,9 +856,14 @@
   }
 
   /* ログイン画面のボタンは、Firebaseの読み込みを待たずに先に登録する */
-  $("guestBtn").addEventListener("click", function () { show("login", false); show("loginBtn", true); setSync("ログインしていません(この端末にのみ保存)") });
+  $("guestBtn").addEventListener("click", function () { setTimeout(maybeIntro, 300); show("login", false); show("loginBtn", true); setSync("ログインしていません(この端末にのみ保存)") });
   $("loginBtn").addEventListener("click", function () { if (!auth) { alert("クラウドに接続できません。通信を確認してください。"); return } show("login", true) });
   $("loginForm").addEventListener("submit", function (e) { e.preventDefault(); if (!auth) return; $("authMsg").textContent = ""; A.signInWithEmailAndPassword(auth, $("authMail").value.trim(), $("authPass").value).catch(authErr) });
+  $("resetBtn").addEventListener("click", function () {
+    if (!auth) return; var mail = $("authMail").value.trim();
+    if (!mail) { $("authMsg").textContent = "上の欄に、登録したメールアドレスを入れてください"; return }
+    $("authMsg").textContent = ""; A.sendPasswordResetEmail(auth, mail).then(function () { $("authMsg").textContent = "再設定のメールを送りました。届かないときは、迷惑メールも確認してください" }).catch(authErr);
+  });
   $("signupBtn").addEventListener("click", function () {
     if (!auth) return;
     if (!$("loginForm").reportValidity()) return; $("authMsg").textContent = "";
@@ -688,9 +882,10 @@
       F.getDoc(F.doc(db, "users", cuid)).then(function (snap) {
         if (snap.exists()) { S = withDef(snap.data()); rollover(); $("memo").value = S.memo; renderAll(); setSync("クラウドと同期しました") }
         else { save() }
+        maybeIntro();
       }).catch(function () { setSync("読み込めませんでした。Firestoreのルールと接続を確認してください") });
     });
-  }).catch(function () { setSync("クラウドに接続できません(この端末にのみ保存中)") });
+  }).catch(function () { setSync("クラウドに接続できません(この端末にのみ保存中)"); setTimeout(maybeIntro, 300) });
 })();
 
 /* ---- あいさつの表示 ---- */
