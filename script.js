@@ -16,6 +16,70 @@
   var today = ds(new Date());
   var diff = function (s) { return Math.round((new Date(s + "T00:00:00") - new Date(today + "T00:00:00")) / 864e5) };
 
+  /* ---- データの検証(取り込み・クラウド・保存データを、安全な形に整える) ---- */
+  var MAXYEN = 100000000, YEN_MSG = "金額は、1〜100,000,000円の整数で入力してください";
+  var CATLIST = ["食費", "日用品", "交通", "娯楽", "その他"], USELIST = ["少なめ", "ふつう", "多め", "共有"];
+  function cleanStr(v, n) { return String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n) }
+  function okId(v) { return typeof v === "string" && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : uid() }
+  function okDate(v) { return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(new Date(v + "T00:00:00").getTime()) ? v : "" }
+  function okInt(v, lo, hi) { var n = typeof v === "number" ? v : NaN; return isFinite(n) && Math.floor(n) === n && n >= lo && n <= hi ? n : null }
+  /* 金額は、整数だけ受け付ける(「1e3」などは受け付けない)。全角の数字、カンマ、円記号は許す */
+  function parseYen(v, lo) {
+    var t = String(v == null ? "" : v).replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248) }).replace(/[,，\s円¥￥]/g, "");
+    if (!/^-?\d{1,10}$/.test(t)) return NaN;
+    var n = parseInt(t, 10); return (Math.abs(n) <= MAXYEN && n >= (lo === undefined ? 1 : lo)) ? n : NaN;
+  }
+  function sanitizeState(d) {
+    var skipped = 0, st = { budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} };
+    if (!d || typeof d !== "object" || Array.isArray(d)) return { ok: false, state: st, skipped: 0 };
+    var arr = function (k, max) { return Array.isArray(d[k]) ? d[k].slice(0, max) : [] };
+    var b = okInt(d.budget, 0, MAXYEN * 10); st.budget = b === null ? 0 : b;
+    st.memo = typeof d.memo === "string" ? d.memo.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "").slice(0, 5000) : "";
+    var tg = okDate(d.tgen); if (tg) st.tgen = tg;
+    st.assist = { off: {}, later: {} };
+    if (d.assist && typeof d.assist === "object") ["resume", "food", "budget", "stock", "busy", "todo", "setup"].forEach(function (k) {
+      if (d.assist.off && d.assist.off[k] === true) st.assist.off[k] = true; var lt = d.assist.later ? okDate(d.assist.later[k]) : ""; if (lt) st.assist.later[k] = lt;
+    });
+    arr("exp", 20000).forEach(function (e) {
+      e = e || {}; var a = okInt(e.amt, 1, MAXYEN), dt = okDate(e.date); if (a === null || !dt) { skipped++; return }
+      st.exp.push({ id: okId(e.id), date: dt, amt: a, memo: cleanStr(e.memo, 100), cat: CATLIST.indexOf(e.cat) >= 0 ? e.cat : "その他" });
+    });
+    arr("todos", 2000).forEach(function (t) {
+      t = t || {}; var tx = cleanStr(t.text, 100); if (!tx) { skipped++; return }
+      var o = { id: okId(t.id), text: tx, done: t.done === true, date: okDate(t.date) || today };
+      if (typeof t.rid === "string") o.rid = okId(t.rid); if (t.tid === "trash") o.tid = "trash"; st.todos.push(o);
+    });
+    arr("rec", 200).forEach(function (r) {
+      r = r || {}; var tx = cleanStr(r.text, 100), w = okInt(r.dow, -1, 6); if (!tx || w === null) { skipped++; return }
+      st.rec.push({ id: okId(r.id), text: tx, dow: w });
+    });
+    arr("sched", 2000).forEach(function (s) {
+      s = s || {}; var tx = cleanStr(s.text, 100), dt = okDate(s.date), tm = typeof s.time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(s.time) ? s.time : "";
+      if (!tx || !dt || !tm) { skipped++; return } st.sched.push({ id: okId(s.id), date: dt, time: tm, text: tx });
+    });
+    arr("fridge", 1000).forEach(function (f) {
+      f = f || {}; var nm = cleanStr(f.name, 50); if (!nm) { skipped++; return } st.fridge.push({ id: okId(f.id), name: nm, exp: okDate(f.exp), est: f.est === true });
+    });
+    arr("shop", 1000).forEach(function (s) {
+      s = s || {}; var nm = cleanStr(s.name, 50); if (!nm) { skipped++; return } st.shop.push({ id: okId(s.id), name: nm, bought: s.bought === true });
+    });
+    arr("fixed", 200).forEach(function (x) {
+      x = x || {}; var nm = cleanStr(x.name, 50), a = okInt(x.amt, 1, MAXYEN), dy = okInt(x.day, 1, 31); if (!nm || a === null || dy === null) { skipped++; return }
+      st.fixed.push({ id: okId(x.id), name: nm, amt: a, day: dy });
+    });
+    arr("stock", 500).forEach(function (k) {
+      k = k || {}; var nm = cleanStr(k.name, 50); if (!nm) { skipped++; return }
+      var bt = okDate(k.bought) || today, h = (Array.isArray(k.hist) ? k.hist : []).map(okDate).filter(Boolean).slice(0, 500);
+      if (h.indexOf(bt) < 0) h.push(bt); h.sort();
+      var o = { id: okId(k.id), name: nm, bought: h[h.length - 1], hist: h, base: okInt(k.base, 1, 3650) || 30, cycle: okInt(k.cycle, 1, 3650) || 30 };
+      if (k.manual === true) o.manual = true; if (USELIST.indexOf(k.use) >= 0) o.use = k.use; st.stock.push(o);
+    });
+    if (d.meals && typeof d.meals === "object") Object.keys(d.meals).slice(0, 400).forEach(function (k) { if (okDate(k) && typeof d.meals[k] === "string") st.meals[k] = cleanStr(d.meals[k], 50) });
+    if (d.trash && typeof d.trash === "object") Object.keys(d.trash).forEach(function (k) { if (/^[0-6]$/.test(k) && typeof d.trash[k] === "string") st.trash[k] = cleanStr(d.trash[k], 30) });
+    if (d.codes && typeof d.codes === "object") Object.keys(d.codes).slice(0, 5000).forEach(function (k) { if (/^\d{8,14}$/.test(k) && typeof d.codes[k] === "string") st.codes[k] = cleanStr(d.codes[k], 80) });
+    return { ok: true, state: st, skipped: skipped };
+  }
+
   var S = load(K, null);
   if (!S) { /* 旧バージョンのデータを引き継ぐ */
     S = {
@@ -25,7 +89,7 @@
       memo: load("ls_memo", "")
     };
   }
-  S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} }, S);
+  S = sanitizeState(S).state;
 
   var RECIPES = [["親子丼", ["卵", "鶏肉", "玉ねぎ", "ご飯"]], ["野菜炒め", ["キャベツ", "にんじん", "豚肉", "もやし", "ピーマン"]], ["オムライス", ["卵", "ご飯", "玉ねぎ", "ケチャップ", "鶏肉"]], ["カレー", ["じゃがいも", "にんじん", "玉ねぎ", "豚肉", "カレールー"]], ["豚汁", ["豚肉", "大根", "にんじん", "味噌", "じゃがいも"]], ["チャーハン", ["ご飯", "卵", "ネギ", "ハム"]], ["焼きそば", ["麺", "キャベツ", "豚肉", "もやし"]], ["ナポリタン", ["パスタ", "玉ねぎ", "ピーマン", "ソーセージ", "ケチャップ"]], ["肉じゃが", ["じゃがいも", "牛肉", "玉ねぎ", "にんじん"]], ["卵かけご飯と味噌汁", ["卵", "ご飯", "味噌", "豆腐"]], ["麻婆豆腐", ["豆腐", "ひき肉", "ネギ"]], ["きのこパスタ", ["パスタ", "きのこ", "ベーコン"]], ["卵焼き", ["卵"]], ["味噌汁", ["味噌", "豆腐", "ネギ"]], ["納豆ご飯", ["納豆", "ご飯"]], ["ハムエッグ", ["ハム", "卵"]], ["玉ねぎと卵の炒め物", ["玉ねぎ", "卵"]], ["野菜スープ", ["キャベツ", "にんじん", "玉ねぎ"]], ["豚の生姜焼き", ["豚肉", "玉ねぎ", "生姜"]], ["豚キムチ", ["豚肉", "キムチ"]], ["ツナマヨおにぎり", ["ご飯", "ツナ", "マヨネーズ"]], ["にんじんしりしり", ["にんじん", "卵", "ツナ"]], ["お好み焼き", ["キャベツ", "卵", "小麦粉", "豚肉"]], ["豆腐ステーキ", ["豆腐", "ネギ"]], ["回鍋肉", ["キャベツ", "豚肉", "ピーマン"]], ["鶏の照り焼き", ["鶏肉"]], ["肉豆腐", ["牛肉", "豆腐", "ネギ"]], ["スクランブルエッグ", ["卵", "牛乳", "バター"]], ["冷ややっこ", ["豆腐", "ネギ"]], ["焼きうどん", ["うどん", "キャベツ", "豚肉"]], ["ほうれん草のおひたし", ["ほうれん草"]], ["きのこの味噌汁", ["きのこ", "味噌", "豆腐"]], ["ミートソースパスタ", ["パスタ", "ひき肉", "玉ねぎ", "トマト"]], ["クリームシチュー", ["じゃがいも", "にんじん", "玉ねぎ", "鶏肉", "牛乳"]], ["鮭のバター焼き", ["鮭", "バター"]], ["フレンチトースト", ["パン", "卵", "牛乳"]], ["サラダ", ["レタス", "トマト", "きゅうり"]], ["鶏のから揚げ", ["鶏肉"]], ["キャベツと卵の炒め物", ["キャベツ", "卵"]], ["チーズオムレツ", ["卵", "チーズ"]], ["ひき肉とキャベツの炒め物", ["ひき肉", "キャベツ"]]];
   var SYN = [[/たまご|タマゴ|玉子/g, "卵"], [/ごはん|ゴハン|白米|白飯/g, "ご飯"], [/たまねぎ|タマネギ|玉葱/g, "玉ねぎ"], [/長ねぎ|青ねぎ|小ねぎ|万能ねぎ|ねぎ/g, "ネギ"], [/人参|ニンジン/g, "にんじん"], [/ジャガイモ|馬鈴薯/g, "じゃがいも"], [/とうふ|トウフ/g, "豆腐"], [/みそ|ミソ/g, "味噌"], [/豚バラ|豚こま|豚コマ|ぶた肉/g, "豚肉"], [/鶏もも|鶏むね|とり肉|鳥肉|チキン/g, "鶏肉"], [/合いびき|合挽き|豚ひき|牛ひき|挽き肉|ミンチ/g, "ひき肉"], [/きゃべつ/g, "キャベツ"], [/なっとう|ナットウ/g, "納豆"]];
@@ -66,20 +130,21 @@
       bar.classList.toggle("over", remain < 0);
     }
     renderCats(mine, sm);
-    $("expList").innerHTML = todayEx.map(function (e) { return '<li><span class="tx">' + esc((e.cat ? e.cat + " " : "") + (e.memo || "支出")) + '</span><b>' + e.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="edel" data-id="' + e.id + '" aria-label="削除">×</button></li>' }).join("");
+    $("expList").innerHTML = todayEx.map(function (e) { return '<li><span class="tx">' + esc((e.cat ? e.cat + " " : "") + (e.memo || "支出")) + '</span><b>' + e.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="edel" data-id="' + esc(e.id) + '" aria-label="削除">×</button></li>' }).join("");
   }
 
   var CATS = ["食費", "日用品", "交通", "娯楽", "その他"];
+  var CATCOL = { "食費": "#17695F", "日用品": "#3B7DD8", "交通": "#D99A1E", "娯楽": "#B0508F", "その他": "#7A8A8F" };
   function renderCats(mine, total) {
     $("cats").innerHTML = total ? CATS.map(function (c) {
       var v = mine.filter(function (e) { return (e.cat || "その他") === c }).reduce(function (a, e) { return a + e.amt }, 0);
-      return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="width:' + Math.round(v / total * 100) + '%"></i></div><b>' + v.toLocaleString("ja-JP") + '円</b></div>' : "";
+      return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="background:' + (CATCOL[c] || "#17695F") + ';width:' + Math.round(v / total * 100) + '%"></i></div><b>' + v.toLocaleString("ja-JP") + '円</b></div>' : "";
     }).join("") : "";
   }
   function renderShop() {
     $("shopList").innerHTML = S.shop.length ? S.shop.map(function (x) {
-      return '<li><button class="chk" type="button" data-a="shdone" data-id="' + x.id + '" aria-pressed="' + x.bought + '" aria-label="購入済み切替">' + (x.bought ? "✓" : "") + '</button><span class="tx' + (x.bought ? " done" : "") + '">' + esc(x.name) + '</span><button class="x" type="button" data-a="shdel" data-id="' + x.id + '" aria-label="削除">×</button></li>';
-    }).join("") : '<li><p class="empty">買うものはありません</p></li>';
+      return '<li><button class="chk" type="button" data-a="shdone" data-id="' + esc(x.id) + '" aria-pressed="' + x.bought + '" aria-label="購入済み切替">' + (x.bought ? "✓" : "") + '</button><span class="tx' + (x.bought ? " done" : "") + '">' + esc(x.name) + '</span><button class="x" type="button" data-a="shdel" data-id="' + esc(x.id) + '" aria-label="削除">×</button></li>';
+    }).join("") : '<li><p class="empty">買うものは、まだありません。足りない食材は、「ごはん」の提案から追加できます</p></li>';
     $("toFridge").classList.toggle("hidden", !S.shop.some(function (x) { return x.bought }));
   }
 
@@ -97,8 +162,8 @@
     $("fixTotal").textContent = S.fixed.length ? "合計 " + tot.toLocaleString("ja-JP") + "円/月" : "";
     $("fixList").innerHTML = S.fixed.length ? S.fixed.slice().sort(function (a, b) { return nextDue(a.day) - nextDue(b.day) }).map(function (x) {
       var d = nextDue(x.day);
-      return '<li><span class="tx">' + esc(x.name) + ' <small>毎月' + x.day + '日(' + (d === 0 ? "今日" : "あと" + d + "日") + ')</small></span><b>' + x.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="fxdel" data-id="' + x.id + '" aria-label="削除">×</button></li>';
-    }).join("") : '<li><p class="empty">固定費はまだありません</p></li>';
+      return '<li><span class="tx">' + esc(x.name) + ' <small>毎月' + x.day + '日(' + (d === 0 ? "今日" : "あと" + d + "日") + ')</small></span><b>' + x.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="fxdel" data-id="' + esc(x.id) + '" aria-label="削除">×</button></li>';
+    }).join("") : '<li><p class="empty">家賃やサブスクを登録すると、「今日使えるお金」が正確になります</p></li>';
   }
   /* ---- 日用品・食材の判定と、賞味期限・買い替えの目安 ---- */
   var DAILY = [["シャンプー", 45], ["リンス", 45], ["コンディショナー", 45], ["トリートメント", 45], ["ボディソープ", 35], ["ハンドソープ", 40], ["洗顔", 40], ["歯みがき", 45], ["歯磨き", 45], ["ハミガキ", 45], ["歯ブラシ", 60], ["洗剤", 40], ["柔軟剤", 45], ["漂白", 60], ["トイレットペーパー", 30], ["ティッシュ", 30], ["キッチンペーパー", 30], ["ラップ", 60], ["アルミホイル", 90], ["ゴミ袋", 45], ["ごみ袋", 45], ["スポンジ", 30], ["除菌", 30], ["掃除", 60], ["マスク", 30], ["綿棒", 90], ["カミソリ", 30], ["日焼け止め", 60], ["化粧水", 45], ["乳液", 45], ["電池", 90]];
@@ -164,10 +229,11 @@
       var st = stockState(k), b = new Date(k.bought + "T00:00:00");
       var tag = st.due ? '<small>そろそろ買い時</small>' : st.soon ? '<small class="soon">もうすぐ買い時</small>' : '';
       var last = (b.getMonth() + 1) + "/" + b.getDate() + "に購入(" + (st.el <= 0 ? "今日" : st.el + "日前") + ")";
-      return '<li><span class="tx">' + esc(k.name) + ' ' + tag + '<span class="sub2">' + last + '</span><button class="linkbtn" type="button" data-a="stcycle" data-id="' + k.id + '">目安 ' + st.c + '日ごと(' + st.src + ') ✎</button><button class="linkbtn" type="button" data-a="stuse" data-id="' + k.id + '">使う量: ' + (k.use || "ふつう") + ' ✎</button></span>' +
-        (st.due ? '<button class="btn b-gh sm" type="button" data-a="stshop" data-id="' + k.id + '">買い物へ</button>' : '') +
-        '<button class="btn b-gh sm" type="button" data-a="stbuy" data-id="' + k.id + '">買った</button>' +
-        '<button class="x" type="button" data-a="stdel" data-id="' + k.id + '" aria-label="削除">×</button></li>';
+      return '<li class="stk"><div class="stk-top"><span class="nm">' + esc(k.name) + '</span>' + tag +
+        '<button class="btn b-gh sm" type="button" data-a="stbuy" data-id="' + esc(k.id) + '">買った</button>' +
+        '<button class="x" type="button" data-a="stdel" data-id="' + esc(k.id) + '" aria-label="削除">×</button></div>' +
+        '<div class="sub2">' + last + ' ・ <button class="linkbtn" type="button" data-a="stcycle" data-id="' + esc(k.id) + '">目安 ' + st.c + '日ごと(' + st.src + ') ✎</button> ・ <button class="linkbtn" type="button" data-a="stuse" data-id="' + esc(k.id) + '">使う量: ' + (k.use || "ふつう") + ' ✎</button></div>' +
+        (st.due ? '<div class="stk-btns"><button class="btn b-gh sm" type="button" data-a="stshop" data-id="' + esc(k.id) + '">買い物リストへ</button></div>' : '') + '</li>';
     }).join("") : '<li><p class="empty">日用品はまだありません。レシートを登録すると、自動で入ります</p></li>';
   }
 
@@ -175,8 +241,8 @@
   function renderTodos() {
     var l = $("todoList");
     l.innerHTML = S.todos.length ? S.todos.map(function (t) {
-      return '<li><button class="chk" type="button" data-a="tdone" data-id="' + t.id + '" aria-pressed="' + t.done + '" aria-label="完了切替">' + (t.done ? "✓" : "") + '</button><span class="tx' + (t.done ? " done" : "") + '">' + esc(t.text) + (t.rid ? ' <small>🔁</small>' : '') + '</span><button class="x" type="button" data-a="tdel" data-id="' + t.id + '" aria-label="削除">×</button></li>';
-    }).join("") : '<li><p class="empty">やることはありません</p></li>';
+      return '<li><button class="chk" type="button" data-a="tdone" data-id="' + esc(t.id) + '" aria-pressed="' + t.done + '" aria-label="完了切替">' + (t.done ? "✓" : "") + '</button><span class="tx' + (t.done ? " done" : "") + '">' + esc(t.text) + (t.rid ? ' <small>🔁</small>' : '') + '</span><button class="x" type="button" data-a="tdel" data-id="' + esc(t.id) + '" aria-label="削除">×</button></li>';
+    }).join("") : '<li><p class="empty">今日のやることは、まだありません。下の欄から追加できます</p></li>';
     var d = S.todos.filter(function (t) { return t.done }).length;
     $("todoProg").textContent = S.todos.length ? d + "/" + S.todos.length + " 完了" : "";
   }
@@ -214,10 +280,10 @@
   /* ---- 予定 ---- */
   function renderSched() {
     var l = $("tl");
-    if (!S.sched.length) { l.innerHTML = '<li><p class="empty">予定はまだありません</p></li>'; return }
+    if (!S.sched.length) { l.innerHTML = '<li><p class="empty">予定は、まだありません。日付と時刻を入れて追加できます</p></li>'; return }
     l.innerHTML = S.sched.slice().sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time) }).map(function (s) {
       var d = s.date === today ? "" : (+s.date.slice(5, 7)) + "/" + (+s.date.slice(8)) + " ";
-      return '<li><b>' + d + s.time + '</b><span class="tx">' + esc(s.text) + '</span><button class="x" type="button" data-a="sdel" data-id="' + s.id + '" aria-label="削除">×</button></li>';
+      return '<li><b>' + d + s.time + '</b><span class="tx">' + esc(s.text) + '</span><button class="x" type="button" data-a="sdel" data-id="' + esc(s.id) + '" aria-label="削除">×</button></li>';
     }).join("");
   }
 
@@ -228,15 +294,15 @@
     var l = $("fridge"), n = frSel ? Object.keys(frSel).filter(function (k) { return frSel[k] }).length : 0;
     $("frSelBtn").classList.toggle("hidden", !!frSel || !S.fridge.length); $("frBulk").classList.toggle("hidden", !frSel);
     $("frDel").textContent = "選んだものを消す(" + n + ")"; $("frDel").disabled = !n;
-    if (!S.fridge.length) { l.innerHTML = '<li style="background:none;padding:0"><p class="empty">まだ何も登録されていません</p></li>'; return }
+    if (!S.fridge.length) { l.innerHTML = '<li style="background:none;padding:0"><p class="empty">冷蔵庫は空です。食材を追加するか、レシートを登録すると自動で入ります</p></li>'; return }
     l.innerHTML = S.fridge.slice().sort(function (a, b) { return (a.exp || "9999").localeCompare(b.exp || "9999") }).map(function (x) {
       var cls = "", lb = "";
       if (x.exp) { var d = diff(x.exp); lb = (d < 0 ? "期限切れ" : d === 0 ? "今日まで" : "あと" + d + "日") + (x.est ? "(目安)" : ""); cls = d <= 0 ? "bad" : d <= 2 ? "warn" : "" }
       if (frSel) {
         var on = !!frSel[x.id];
-        return '<li class="' + cls + ' pm' + (on ? " sel" : "") + '"><button type="button" class="pick" data-a="fpick" data-id="' + x.id + '" aria-pressed="' + on + '"><span class="ck">' + (on ? "✓" : "") + '</span><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '</button></li>';
+        return '<li class="' + cls + ' pm' + (on ? " sel" : "") + '"><button type="button" class="pick" data-a="fpick" data-id="' + esc(x.id) + '" aria-pressed="' + on + '"><span class="ck">' + (on ? "✓" : "") + '</span><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '</button></li>';
       }
-      return '<li class="' + cls + '"><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '<button class="x" type="button" data-a="fdel" data-id="' + x.id + '" aria-label="' + esc(x.name) + 'を削除">×</button></li>';
+      return '<li class="' + cls + '"><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '<button class="x" type="button" data-a="fdel" data-id="' + esc(x.id) + '" aria-label="' + esc(x.name) + 'を削除">×</button></li>';
     }).join("");
   }
 
@@ -263,6 +329,7 @@
     el.innerHTML = T.map(function (x) { return "<div" + (x[2] ? ' class="alert"' : "") + "><small>" + x[0] + "</small><b>" + esc(x[1]) + "</b></div>" }).join("");
     var tm = document.querySelector('.tab[data-t="meal"]'), tb = document.querySelector('.tab[data-t="shop"]');
     if (tm) tm.classList.toggle("alert", soon.length > 0); if (tb) tb.classList.toggle("alert", due.length > 0);
+    renderAssist();
   }
   function renderAll() {
     var w = ["日", "月", "火", "水", "木", "金", "土"], n = new Date();
@@ -287,14 +354,15 @@
     var dim = new Date(+m.slice(0, 4), +m.slice(5), 0).getDate(), days = new Array(dim).fill(0);
     list.forEach(function (e) { days[+e.date.slice(8) - 1] += e.amt });
     var mx = Math.max.apply(null, days.concat([1]));
-    $("mChart").innerHTML = '<div class="dchart" aria-hidden="true">' + days.map(function (v, i) { return '<i' + (isNow && i + 1 === +today.slice(8) ? ' class="now"' : '') + ' style="height:' + Math.round(v / mx * 100) + '%" title="' + (i + 1) + '日 ' + yen(v) + '"></i>' }).join("") + '</div><div class="dlab"><span>1日</span><span>' + Math.ceil(dim / 2) + '日</span><span>' + dim + '日</span></div>';
+    $("mChart").innerHTML = '<div class="dchart" aria-hidden="true">' + days.map(function (v, i) { return '<i' + (isNow && i + 1 === +today.slice(8) ? ' class="now"' : '') + ' style="height:' + Math.round(v / mx * 100) + '%" data-i="' + (i + 1) + '" data-v="' + v + '" title="' + (i + 1) + '日 ' + yen(v) + '"></i>' }).join("") + '</div><div class="dlab"><span>1日</span><span>' + Math.ceil(dim / 2) + '日</span><span>' + dim + '日</span></div>';
+    $("mInfo").textContent = "棒を押すと、その日の金額が出ます";
     $("mCats").innerHTML = total ? CATS.map(function (c) {
       var v = list.filter(function (e) { return (e.cat || "その他") === c }).reduce(function (a, e) { return a + e.amt }, 0), pc = Math.round(v / total * 100);
-      return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="width:' + pc + '%"></i></div><b>' + yen(v) + '(' + pc + '%)</b></div>' : "";
+      return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="background:' + (CATCOL[c] || "#17695F") + ';width:' + pc + '%"></i></div><b>' + yen(v) + '(' + pc + '%)</b></div>' : "";
     }).join("") : "";
     $("mList").innerHTML = list.length ? list.map(function (e) {
-      return '<li><span class="tx"><small class="d">' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '</small> ' + esc((e.cat || "その他") + " " + (e.memo || "")) + '</span><b>' + yen(e.amt) + '</b><button class="x" type="button" data-a="eedit" data-id="' + e.id + '" aria-label="直す">✎</button><button class="x" type="button" data-a="edel" data-id="' + e.id + '" aria-label="削除">×</button></li>';
-    }).join("") : '<li><p class="empty">この月の支出は、まだありません</p></li>';
+      return '<li><span class="tx"><small class="d">' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '</small> ' + esc((e.cat || "その他") + " " + (e.memo || "")) + '</span><b>' + yen(e.amt) + '</b><button class="x" type="button" data-a="eedit" data-id="' + esc(e.id) + '" aria-label="直す">✎</button><button class="x" type="button" data-a="edel" data-id="' + esc(e.id) + '" aria-label="削除">×</button></li>';
+    }).join("") : '<li><p class="empty">この月の支出は、まだありません。レシートか、ホームの「使った」で記録できます</p></li>';
   }
   /* ---- 削除の「元に戻す」 ---- */
   var toastTimer = null, toastUndo = null;
@@ -310,21 +378,235 @@
     $("intro").classList.remove("hidden");
   }
 
+  /* ---- アプリ内ダイアログ(prompt・confirm・alert の代わり) ---- */
+  var dlgNoEsc = false, dlgOpener = null;
+  function closeDialog() { $("dlg").classList.add("hidden") }
+  function openDialog(o) {
+    var box = $("dlgBody"), btns = $("dlgBtns"); dlgNoEsc = !!o.noEsc; if ($("dlg").classList.contains("hidden")) dlgOpener = document.activeElement;   /* 開く前の位置を覚える(一覧は、開いた後に描き直されるため) */
+    $("dlgT").textContent = o.title || ""; $("dlgMsg").textContent = o.msg || ""; $("dlgMsg").classList.toggle("hidden", !o.msg);
+    box.innerHTML = ""; btns.innerHTML = ""; $("dlgErr").textContent = "";
+    (o.fields || []).forEach(function (f) {
+      if (f.type === "checks") {
+        var g = document.createElement("div"); g.className = "dlg-checks"; g.dataset.field = f.id;
+        f.options.forEach(function (op) {
+          var l = document.createElement("label"), cb = document.createElement("input"), t = document.createElement("span"); l.className = "dlg-check";
+          cb.type = "checkbox"; cb.value = op.value; cb.checked = !!op.checked; t.textContent = op.label; l.appendChild(cb); l.appendChild(t); g.appendChild(l);
+        });
+        if (f.selectAll) {
+          var all = document.createElement("button"); all.type = "button"; all.className = "linkbtn"; all.textContent = [].some.call(g.querySelectorAll("input"), function (c) { return !c.checked }) ? "すべて選ぶ" : "すべて解除";
+          all.addEventListener("click", function () { var cs = g.querySelectorAll("input"), on = [].some.call(cs, function (c) { return !c.checked });[].forEach.call(cs, function (c) { c.checked = on }); all.textContent = on ? "すべて解除" : "すべて選ぶ" });
+          box.appendChild(all);
+        }
+        box.appendChild(g); return;
+      }
+      var wrap = document.createElement("label"), sp = document.createElement("span"), el; wrap.className = "fld"; sp.textContent = f.label; wrap.appendChild(sp);
+      if (f.type === "select") {
+        el = document.createElement("select");
+        f.options.forEach(function (op) { var oe = document.createElement("option"); oe.value = typeof op === "string" ? op : op.value; oe.textContent = typeof op === "string" ? op : op.label; el.appendChild(oe) });
+        el.value = f.value;
+      } else {
+        el = document.createElement("input"); el.type = "text"; if (f.type === "number") el.inputMode = "numeric";
+        el.value = f.value == null ? "" : f.value; if (f.max) el.maxLength = f.max; if (f.placeholder) el.placeholder = f.placeholder;
+      }
+      el.dataset.field = f.id; wrap.appendChild(el);
+      if (f.note) { var n = document.createElement("small"); n.className = "label"; n.textContent = f.note; wrap.appendChild(n) }
+      box.appendChild(wrap);
+    });
+    $("dlgForm").onsubmit = function (e) { e.preventDefault(); var p = btns.querySelector("[data-primary]"); if (p) p.click() };
+    (o.buttons || []).forEach(function (b, i) {
+      var bt = document.createElement("button"); bt.type = "button"; bt.className = "btn " + (b.primary ? "b-pri" : b.danger ? "b-danger" : "b-gh"); bt.textContent = b.label;
+      if (b.primary) bt.dataset.primary = "1"; if (i === 0 && !b.primary && !o.noEsc) bt.dataset.cancel = "1";
+      bt.addEventListener("click", function () {
+        var vals = {};
+        box.querySelectorAll("[data-field]").forEach(function (el) {
+          vals[el.dataset.field] = el.classList.contains("dlg-checks") ? [].slice.call(el.querySelectorAll("input:checked")).map(function (c) { return c.value }) : el.value;
+        });
+        var r = b.fn ? b.fn(vals) : null; if (typeof r === "string") { $("dlgErr").textContent = r; return } closeDialog();
+      });
+      btns.appendChild(bt);
+    });
+    $("dlg").classList.remove("hidden");
+  }
+  function info(msg, title) { openDialog({ title: title || "お知らせ", msg: msg, buttons: [{ label: "閉じる", primary: true }] }) }
+  /* 元に戻せる変更:変更の前の状態を保存して、お知らせに「元に戻す」を付ける */
+  function undoable(msg, fn) {
+    var snap = JSON.stringify(S); fn(); save(); renderAll();
+    showToast(msg, function () { S = withDef(JSON.parse(snap)); save(); renderAll(); $("memo").value = S.memo });
+  }
+  /* ---- ダイアログ・案内・ログイン画面の、キーボードとフォーカスの管理 ---- */
+  (function () {
+    var ids = ["dlg", "intro", "login"], last = null, lastInfo = null, active = null;
+    function focusables(el) { return [].slice.call(el.querySelectorAll("input:not([type=hidden]),select,textarea,button")).filter(function (e) { return !e.disabled && e.offsetParent !== null }) }
+    function sync() {
+      var top = null; ids.forEach(function (id) { if (!top && !$(id).classList.contains("hidden")) top = $(id) });
+      if (top && !active) { last = (top.id === "dlg" && dlgOpener && dlgOpener !== document.body) ? dlgOpener : document.activeElement; lastInfo = last && last.dataset ? { a: last.dataset.a, id: last.dataset.id } : null }   /* 背景を操作不可にする前に、いまの位置を覚える */
+      [].forEach.call(document.body.children, function (c) { if (c.tagName !== "SCRIPT") c.inert = !!top && c !== top && c.id !== "toast" });
+      if (top && top !== active) { var f = focusables(top)[0]; if (f) f.focus() }
+      if (!top && active) {
+        var back = last && document.body.contains(last) ? last : (lastInfo && lastInfo.a ? document.querySelector('[data-a="' + lastInfo.a + '"][data-id="' + lastInfo.id + '"]') : null);
+        if (back) { try { back.focus() } catch (e) { } } else if ($("main")) { $("main").setAttribute("tabindex", "-1"); $("main").focus() }
+        last = null; lastInfo = null; dlgOpener = null;
+      }
+      active = top;
+    }
+    var mo = new MutationObserver(sync); ids.forEach(function (id) { mo.observe($(id), { attributes: true, attributeFilter: ["class"] }) });
+    document.addEventListener("keydown", function (e) {
+      if (!active) return;
+      if (e.key === "Escape") {
+        if (active.id === "dlg" && !dlgNoEsc) { var c = active.querySelector("[data-cancel]") || active.querySelector("button"); if (c) c.click(); e.preventDefault() }
+        else if (active.id === "intro") { $("introOk").click(); e.preventDefault() }
+      } else if (e.key === "Tab") {
+        var f = focusables(active); if (!f.length) return; var a = f[0], z = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === a) { z.focus(); e.preventDefault() } else if (!e.shiftKey && document.activeElement === z) { a.focus(); e.preventDefault() }
+      }
+    });
+    sync();
+  })();
+
+  /* ---- 今日の生活アシスト(保存されているデータだけを使った、ルールベースの提案) ---- */
+  var QUICK = ["スクランブルエッグ", "冷ややっこ", "チーズオムレツ", "キャベツと卵の炒め物", "ひき肉とキャベツの炒め物", "野菜炒め"];   /* 作る時間が短い料理(目安。筆者の判断) */
+  var RESUME_DAYS = 0;
+  (function () {   /* 7日以上あいて開いたときは、その日だけ「おかえりなさい」を出す */
+    try {
+      var prev = localStorage.getItem("ls_last_open"), rec = JSON.parse(localStorage.getItem("ls_resume") || "null");
+      if (prev && prev !== today) { var d = Math.round((new Date(today + "T00:00:00") - new Date(prev + "T00:00:00")) / 864e5); if (d >= 7) { rec = { date: today, days: d }; localStorage.setItem("ls_resume", JSON.stringify(rec)) } }
+      localStorage.setItem("ls_last_open", today); if (rec && rec.date === today) RESUME_DAYS = rec.days;
+    } catch (e) { }
+  })();
+  function assistData() { if (!S.assist) S.assist = { off: {}, later: {} }; return S.assist }
+  function fridgeHas(r) {
+    var f = S.fridge.map(function (x) { return norm(x.name) });
+    return r[1].every(function (i) { return f.some(function (n) { return n.indexOf(i) >= 0 || i.indexOf(n) >= 0 }) });
+  }
+  function nameList(xs, n) { return xs.slice(0, n).map(function (x) { return x.name }).join("・") + (xs.length > n ? " ほか" + (xs.length - n) + "品" : "") }
+  function moneyNow() {
+    var ym = today.slice(0, 7), dim = new Date(+ym.slice(0, 4), +ym.slice(5), 0).getDate(), left = dim - Number(today.slice(8)) + 1;
+    var mine = S.exp.filter(function (e) { return e.date.slice(0, 7) === ym }), sum = function (l) { return l.reduce(function (s, e) { return s + e.amt }, 0) };
+    var st = sum(mine.filter(function (e) { return e.date === today })), sm = sum(mine), fx = S.fixed.reduce(function (a, x) { return a + x.amt }, 0);
+    var daily = Math.floor((S.budget - fx - (sm - st)) / left);
+    return { remainMonth: S.budget - fx - sm, remainToday: daily - st, fx: fx };
+  }
+  function yenTxt(n) { return n.toLocaleString("ja-JP") + "円" }
+  function computeAssists() {
+    var a = assistData(), out = [], hid = function (k) { return a.off[k] || a.later[k] === today };
+    var undone = S.todos.filter(function (t) { return !t.done }), expired = S.fridge.filter(function (x) { return x.exp && diff(x.exp) < 0 });
+    var soon = S.fridge.filter(function (x) { return x.exp && diff(x.exp) <= 2 }).sort(function (x, y) { return x.exp.localeCompare(y.exp) });
+    if (RESUME_DAYS && !hid("resume") && (undone.length || expired.length)) {
+      var ra = []; if (undone.length) ra.push({ label: "やることを整理する", run: "todo" }); if (expired.length) ra.push({ label: "期限切れの食材を整理する", run: "expired" });
+      out.push({ kind: "resume", pr: 0, icon: "👋", title: "おかえりなさい。" + RESUME_DAYS + "日ぶりです", why: "久しぶりでも大丈夫です。たまっている項目を、ここから片づけられます(元に戻せます)", acts: ra });
+    }
+    if (soon.length && !hid("food")) out.push({ kind: "food", pr: 1, icon: "🧊", title: nameList(soon, 3) + " を、今日のうちに使いましょう", why: "賞味期限" + (soon.some(function (x) { return x.est }) ? "(目安を含む)" : "") + "が、2日以内か、過ぎている食材です", acts: [{ label: "使える料理を見る", run: "food" }] });
+    if (S.budget && !hid("budget")) {
+      var m = moneyNow(), net = S.budget - m.fx, low = "";
+      if (m.remainMonth < 0) low = "今月の予算を、" + yenTxt(-m.remainMonth) + "こえています";
+      else if (m.remainToday < 0) low = "今日使えるお金を、" + yenTxt(-m.remainToday) + "こえています";
+      else if (net > 0 && m.remainMonth / net <= 0.1) low = "今月の残りが、あと " + yenTxt(m.remainMonth) + " です";
+      if (low) out.push({ kind: "budget", pr: 2, icon: "💴", title: low, why: "今月の残り = 予算 − 固定費 − 今月の支出 で計算しています(" + yenTxt(m.remainMonth) + ")", acts: [{ label: "家計を見る", run: "budget" }] });
+    }
+    var due = S.stock.filter(function (k) { return stockState(k).due });
+    if (due.length && !hid("stock")) {
+      var pend = due.filter(function (k) { return !S.shop.some(function (x) { return x.name === k.name && !x.bought }) });
+      out.push({ kind: "stock", pr: 3, icon: "🧻", title: nameList(due, 3) + " が、買い時です", why: "買ってから、目安の日数がたちました(推定です。実際の残りとは、ちがうことがあります)", acts: [pend.length ? { label: "買い物リストに入れる", run: "stock" } : { label: "買い物リストを見る", run: "shopgo" }] });
+    }
+    var ts = S.sched.filter(function (s) { return s.date === today });
+    if (ts.length >= 3 && !S.meals[today] && !hid("busy")) {
+      var q = RECIPES.filter(function (r) { return QUICK.indexOf(r[0]) >= 0 && fridgeHas(r) });
+      if (q.length) out.push({ kind: "busy", pr: 4, icon: "🍳", title: "今日は予定が" + ts.length + "件あります。短く作れそうな料理:" + q[0][0], why: "冷蔵庫の食材だけで作れる料理のうち、作る時間が短いもの(目安)です", acts: [{ label: "今夜は「" + q[0][0] + "」にする", run: "busy" }] });
+    }
+    if (undone.length >= 5 && !hid("todo")) {
+      var old = undone.filter(function (t) { return t.date < today }).length;
+      out.push({ kind: "todo", pr: 5, icon: "✅", title: "やることが、" + undone.length + "件たまっています", why: "未完了の項目です" + (old ? "(昨日以前から " + old + "件)" : "") + "。今日はやらないものを、いったん外しても大丈夫です(元に戻せます)", acts: [{ label: "整理する", run: "todo" }] });
+    }
+    if (!S.budget && !hid("setup")) out.push({ kind: "setup", pr: 6, icon: "⚙️", title: "予算を設定すると、今日使えるお金が分かります", why: "いまは予算が未設定のため、「今日使えるお金」を計算できません", acts: [{ label: "予算を設定する", run: "setup" }] });
+    return out.sort(function (x, y) { return x.pr - y.pr });
+  }
+  function goTab(t) { document.querySelector('.tab[data-t="' + t + '"]').click() }
+  function tidyTodos() {
+    var u = S.todos.filter(function (t) { return !t.done });
+    openDialog({
+      title: "やることを整理する", msg: "今日はやらないものを選ぶと、リストから外します。外したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (t) { return { value: t.id, label: t.text + (t.date < today ? "(" + (+t.date.slice(5, 7)) + "/" + (+t.date.slice(8)) + "から)" : "") } }) }],
+      buttons: [{ label: "やめる" }, {
+        label: "選んだものを外す", primary: true, fn: function (v) {
+          if (!v.ids.length) return "外すものを選んでください";
+          undoable(v.ids.length + "件を外しました", function () { S.todos = S.todos.filter(function (t) { return v.ids.indexOf(t.id) < 0 }) });
+        }
+      }]
+    });
+  }
+  function tidyExpired() {
+    var u = S.fridge.filter(function (x) { return x.exp && diff(x.exp) < 0 });
+    openDialog({
+      title: "期限切れの食材を整理する", msg: "消す食材を選んでください(実際の状態は、パッケージで確認してください)。消したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (x) { return { value: x.id, label: x.name + "(" + (+x.exp.slice(5, 7)) + "/" + (+x.exp.slice(8)) + (x.est ? "・目安" : "") + ")", checked: true } }) }],
+      buttons: [{ label: "やめる" }, {
+        label: "選んだものを消す", primary: true, fn: function (v) {
+          if (!v.ids.length) return "消す食材を選んでください";
+          undoable(v.ids.length + "品を消しました", function () { S.fridge = S.fridge.filter(function (x) { return v.ids.indexOf(x.id) < 0 }); $("sug").innerHTML = "" });
+        }
+      }]
+    });
+  }
+  function runAssist(k) {
+    if (k === "food") { goTab("meal"); $("mealSug").click(); return }
+    if (k === "budget") { goTab("money"); return }
+    if (k === "shopgo") { goTab("shop"); return }
+    if (k === "setup") { $("budgetBtn").click(); return }
+    if (k === "todo") { tidyTodos(); return }
+    if (k === "expired") { tidyExpired(); return }
+    if (k === "stock") {
+      undoable("買い物リストに入れました", function () { S.stock.filter(function (x) { return stockState(x).due }).forEach(function (x) { if (!S.shop.some(function (y) { return y.name === x.name && !y.bought })) S.shop.push({ id: uid(), name: x.name, bought: false }) }) });
+      return;
+    }
+    if (k === "busy") {
+      var q = RECIPES.filter(function (r) { return QUICK.indexOf(r[0]) >= 0 && fridgeHas(r) })[0]; if (!q) return;
+      undoable("今夜のご飯を「" + q[0] + "」にしました", function () { S.meals[today] = q[0] });
+    }
+  }
+  function renderAssist() {
+    var card = $("assistCard"); if (!card) return;
+    var list = computeAssists().slice(0, 3), offN = Object.keys(assistData().off).length;
+    card.classList.toggle("hidden", !list.length && !offN);
+    $("assistList").innerHTML = list.map(function (x) {
+      return '<li class="as" data-k="' + x.kind + '"><div class="as-main"><span class="as-ic" aria-hidden="true">' + x.icon + '</span><div><b>' + esc(x.title) + '</b><small class="why">' + esc(x.why) + '</small></div></div><div class="as-btns">' +
+        x.acts.map(function (t) { return '<button class="btn b-pri sm" type="button" data-as="run" data-run="' + t.run + '">' + esc(t.label) + '</button>' }).join("") +
+        '<button class="btn b-gh sm" type="button" data-as="later">あとで</button><button class="btn b-gh sm" type="button" data-as="off">表示しない</button></div></li>';
+    }).join("");
+    $("assistFoot").innerHTML = offN ? '<button class="linkbtn" type="button" data-as="reset">表示しないにした提案を、また表示する(' + offN + '種類)</button>' : "";
+  }
+  $("assistCard").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-as]"); if (!b) return; var li = b.closest("li.as"), k = li && li.dataset.k, a = assistData(), w = b.dataset.as;
+    if (w === "run") runAssist(b.dataset.run);
+    else if (w === "later") { a.later[k] = today; save(); renderAll(); showToast("今日は、この提案を表示しません", null) }
+    else if (w === "off") { a.off[k] = true; save(); renderAll(); showToast("この提案は、表示しません(下のリンクで、また表示できます)", null) }
+    else if (w === "reset") { a.off = {}; save(); renderAll() }
+  });
+
   /* ---- 操作(クリック) ---- */
   var by = function (list, id) { return list.filter(function (x) { return x.id !== id }) };
   var act = {
     eedit: function (id) {
       var e = S.exp.filter(function (x) { return x.id === id })[0]; if (!e) return;
-      var a = prompt("金額(円・税込)", e.amt); if (a === null) return;
-      var n = parseInt(a, 10); if (!isNaN(n) && n > 0) e.amt = n;
-      var m = prompt("メモ", e.memo || ""); if (m === null) return; e.memo = m.trim();
-      var c = prompt("カテゴリ(" + CATS.join("・") + ")", e.cat || "その他"); if (c !== null && CATS.indexOf(c.trim()) >= 0) e.cat = c.trim();
+      openDialog({
+        title: "支出を直す", fields: [{ id: "amt", type: "number", label: "金額(円・税込)", value: e.amt }, { id: "memo", type: "text", label: "メモ", value: e.memo || "", max: 100 }, { id: "cat", type: "select", label: "カテゴリ", options: CATS, value: e.cat || "その他" }],
+        buttons: [{ label: "やめる" }, {
+          label: "保存", primary: true, fn: function (v) {
+            var n = parseYen(v.amt); if (isNaN(n)) return YEN_MSG;
+            e.amt = n; e.memo = cleanStr(v.memo, 100); if (CATS.indexOf(v.cat) >= 0) e.cat = v.cat; save(); renderAll(); showToast("直しました", null);
+          }
+        }]
+      });
     },
     edel: function (id) { S.exp = by(S.exp, id) },
     tdone: function (id) { S.todos.forEach(function (t) { if (t.id === id) t.done = !t.done }) },
     tdel: function (id) {
-      var t = S.todos.filter(function (x) { return x.id === id })[0];
-      if (t && t.rid && confirm("この繰り返しタスクをやめますか?\nOK=今後も削除 / キャンセル=今日だけ削除")) S.rec = by(S.rec, t.rid);
+      var t = S.todos.filter(function (x) { return x.id === id })[0]; if (!t) return;
+      if (t.rid) {
+        openDialog({
+          title: "くり返しのやること", msg: "「" + t.text + "」は、くり返しの設定があります。どちらにしますか?",
+          buttons: [{ label: "やめる" }, { label: "今日の分だけ消す", fn: function () { undoable("今日の分を消しました", function () { S.todos = by(S.todos, id) }) } },
+          { label: "今後もやめる", primary: true, fn: function () { undoable("くり返しをやめました", function () { S.rec = by(S.rec, t.rid); S.todos = by(S.todos, id) }) } }]
+        });
+        return;
+      }
       S.todos = by(S.todos, id);
     },
     sdel: function (id) { S.sched = by(S.sched, id) },
@@ -338,14 +620,24 @@
     stbuy: function (id) { var k = S.stock.filter(function (x) { return x.id === id })[0]; if (k) addStock(k.name, today) },
     stuse: function (id) {
       var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
-      var names = ["少なめ", "ふつう", "多め", "共有"], cur = names.indexOf(k.use || "ふつう") + 1;
-      var v = prompt("使う量を選んでください(番号)\n1: 少なめ\n2: ふつう\n3: 多め(髪が長い・使う回数が多いなど)\n4: 家族・同居人と共有", cur); if (v === null) return;
-      var n = parseInt(v, 10); if (n >= 1 && n <= 4) k.use = names[n - 1];
+      openDialog({
+        title: "使う量を選ぶ", msg: "目安の日数に反映します(買った間隔が記録されると、自動で、実際の買い方に合っていきます)。",
+        fields: [{ id: "use", type: "select", label: "使う量", value: k.use || "ふつう", options: [{ value: "少なめ", label: "少なめ" }, { value: "ふつう", label: "ふつう" }, { value: "多め", label: "多め(髪が長い・使う回数が多いなど)" }, { value: "共有", label: "家族・同居人と共有" }] }],
+        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) { if (USELIST.indexOf(v.use) >= 0) k.use = v.use; save(); renderAll() } }]
+      });
     },
     stcycle: function (id) {
       var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
-      var v = prompt("何日ごとに買い足しますか?\n(空欄にすると、買った間隔から自動で計算します)", k.manual ? k.cycle : ""); if (v === null) return;
-      var n = parseInt(v, 10); if (!isNaN(n) && n >= 1) { k.manual = true; k.cycle = n } else if (v.trim() === "") k.manual = false;
+      openDialog({
+        title: "何日ごとに買い足しますか?", fields: [{ id: "n", type: "number", label: "日数(1〜3650)", value: k.manual ? k.cycle : "", note: "空欄にすると、買った間隔から自動で計算します" }],
+        buttons: [{ label: "やめる" }, {
+          label: "保存", primary: true, fn: function (v) {
+            var t = String(v.n).trim(), n = /^\d{1,4}$/.test(t) ? parseInt(t, 10) : NaN;
+            if (t === "") k.manual = false; else if (n >= 1 && n <= 3650) { k.manual = true; k.cycle = n } else return "日数は、1〜3650の整数で入力してください";
+            save(); renderAll();
+          }
+        }]
+      });
     },
     stshop: function (id) { S.stock.forEach(function (k) { if (k.id === id && !S.shop.some(function (x) { return x.name === k.name && !x.bought })) S.shop.push({ id: uid(), name: k.name, bought: false }) }) },
     tofridge: function () { S.shop.filter(function (x) { return x.bought }).forEach(function (x) { var st = S.stock.filter(function (y) { return y.name === x.name })[0]; if (st || kindOf(x.name, "") === "日用品") addStock(x.name, today); else addFridge(x.name, today) }); S.shop = S.shop.filter(function (x) { return !x.bought }) },
@@ -355,7 +647,8 @@
     var b = e.target.closest("[data-a]"); if (!b) return;
     var del = /del$/.test(b.dataset.a), snap = del ? JSON.stringify(S) : null;   /* 削除は、あとで元に戻せるように */
     act[b.dataset.a](b.dataset.id, b); save(); renderAll();
-    if (snap) showToast("削除しました", function () { S = withDef(JSON.parse(snap)); save(); renderAll() });
+    if (snap && snap !== JSON.stringify(S)) showToast("削除しました", function () { S = withDef(JSON.parse(snap)); save(); renderAll() });
+    var AM = { stbuy: "買った日を記録しました", stshop: "買い物リストに追加しました" }; if (AM[b.dataset.a]) showToast(AM[b.dataset.a], null);
   });
 
   /* ---- フォーム ---- */
@@ -389,13 +682,20 @@
   $("introHelp").addEventListener("click", function () { $("introOk").click(); document.querySelector('.tab[data-t="help"]').click() });
 
   $("expForm").addEventListener("submit", function (e) {
-    e.preventDefault(); var a = parseInt($("expAmt").value, 10); if (isNaN(a) || a <= 0) return;
+    e.preventDefault(); var a = parseYen($("expAmt").value); if (isNaN(a)) { showToast(YEN_MSG, null); return }
     S.exp.push({ id: uid(), date: today, amt: a, memo: $("expMemo").value.trim(), cat: $("expCat").value });
     $("expAmt").value = ""; $("expMemo").value = ""; save(); renderMoney();
   });
   $("budgetBtn").addEventListener("click", function () {
-    var v = prompt("今月使えるお金の総額(円)を入力してください(固定費を含む)", S.budget || ""); if (v === null) return;
-    var n = parseInt(v, 10); if (!isNaN(n) && n >= 0) { S.budget = n; save(); renderMoney() }
+    openDialog({
+      title: "今月の予算", fields: [{ id: "n", type: "number", label: "今月使えるお金の総額(円・固定費を含む)", value: S.budget || "" }],
+      buttons: [{ label: "やめる" }, {
+        label: "保存", primary: true, fn: function (v) {
+          var n = parseYen(v.n, 0); if (isNaN(n)) return "予算は、0〜100,000,000円の整数で入力してください";
+          S.budget = n; save(); renderMoney(); showToast("予算を設定しました", null);
+        }
+      }]
+    });
   });
   $("todoForm").addEventListener("submit", function (e) {
     e.preventDefault(); var text = $("todoIn").value.trim(); if (!text) return;
@@ -425,6 +725,7 @@
   $("memo").value = S.memo;
   $("trashGrid").innerHTML = W.map(function (w, i) { return '<label>' + w + '<input type="text" data-d="' + i + '" placeholder="なし"></label>' }).join("");
   $("trashBtn").addEventListener("click", function () {
+    $("trashBtn").closest(".card").classList.remove("folded");
     var ed = $("trashEdit"), hid = ed.classList.toggle("hidden");
     if (!hid) ed.querySelectorAll("input").forEach(function (i) { i.value = S.trash[i.dataset.d] || "" });
   });
@@ -433,13 +734,15 @@
     S.trash = t; S.tgen = ""; $("trashEdit").classList.add("hidden"); rollover(); renderAll();
   });
   $("fixForm").addEventListener("submit", function (e) {
-    e.preventDefault(); var a = parseInt($("fixAmt").value, 10), d = parseInt($("fixDay").value, 10), n = $("fixName").value.trim();
-    if (!n || isNaN(a) || a <= 0 || isNaN(d) || d < 1 || d > 31) return;
+    e.preventDefault(); var a = parseYen($("fixAmt").value), d = parseInt($("fixDay").value, 10), n = cleanStr($("fixName").value, 50);
+    if (!n) return; if (isNaN(a)) { showToast(YEN_MSG, null); return }
+    if (isNaN(d) || d < 1 || d > 31) { showToast("支払日は、1〜31の数字で入力してください", null); return }
     S.fixed.push({ id: uid(), name: n, amt: a, day: d }); $("fixName").value = ""; $("fixAmt").value = ""; $("fixDay").value = ""; save(); renderAll();
   });
   $("stockForm").addEventListener("submit", function (e) {
-    e.preventDefault(); var n = $("stName").value.trim(), c = parseInt($("stCycle").value, 10);
-    if (!n) return; addStock(n, $("stDate").value || today, isNaN(c) || c < 1 ? 0 : c, $("stUse").value);
+    e.preventDefault(); var n = cleanStr($("stName").value, 50), cv = $("stCycle").value.trim(), c = /^\d{1,4}$/.test(cv) ? parseInt(cv, 10) : NaN;
+    if (!n) return; if (cv && (isNaN(c) || c < 1 || c > 3650)) { showToast("日数は、1〜3650の整数で入力してください", null); return }
+    addStock(n, $("stDate").value || today, isNaN(c) ? 0 : c, $("stUse").value);
     $("stName").value = ""; $("stCycle").value = ""; $("stUse").value = "ふつう"; save(); renderAll();
   });
   $("shopForm").addEventListener("submit", function (e) {
@@ -456,17 +759,25 @@
   });
   $("importBtn").addEventListener("click", function () { $("importFile").click() });
   $("importFile").addEventListener("change", function (e) {
-    var f = e.target.files[0]; if (!f) return;
-    var r = new FileReader();
-    r.onload = function () {
-      try {
-        var d = JSON.parse(r.result); if (!d || !Array.isArray(d.todos)) throw 0;
-        if (!confirm("現在のデータを上書きして読み込みます。よろしいですか?")) return;
-        S = Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} }, d);
-        rollover(); $("memo").value = S.memo; renderAll();
-      } catch (x) { alert("読み込めませんでした。バックアップファイルを確認してください。") }
+    var f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { info("ファイルが大きすぎます(5MBまで)。バックアップのファイルを選んでください。", "読み込めませんでした"); return }
+    var rd = new FileReader();
+    rd.onload = function () {
+      var d; try { d = JSON.parse(rd.result) } catch (x) { info("バックアップ(JSON)のファイルを選んでください。", "読み込めませんでした"); return }
+      var r = sanitizeState(d);
+      if (!r.ok || !Array.isArray(d.todos)) { info("Life Support のバックアップファイルではないようです。「バックアップを書き出す」で作ったファイルを選んでください。", "読み込めませんでした"); return }
+      var n = r.state;
+      openDialog({
+        title: "バックアップを読み込みます", msg: "現在のデータを置き換えます。\n" + sumTxt(n) + (r.skipped ? "\n(読み込めない項目 " + r.skipped + "件は、読み飛ばします)" : "") + "\n読み込んだあとも、「元に戻す」で、元のデータに戻せます。",
+        buttons: [{ label: "やめる" }, {
+          label: "読み込む", primary: true, fn: function () {
+            var before = JSON.stringify(S); S = n; rollover(); $("memo").value = S.memo; renderAll();
+            showToast("バックアップを読み込みました", function () { S = withDef(JSON.parse(before)); save(); renderAll(); $("memo").value = S.memo });
+          }
+        }]
+      });
     };
-    r.readAsText(f); e.target.value = "";
+    rd.readAsText(f);
   });
 
   /* アプリを開いたまま日付をまたいだ場合に更新 */
@@ -586,7 +897,7 @@
     return rcWorker;
   }
   function rcSumText() {
-    var s = rcItems.reduce(function (a, x) { return a + (x.price || 0) }, 0), t = parseInt($("rcTotal").value, 10) || 0, h = "";
+    var s = rcItems.reduce(function (a, x) { return a + (x.price || 0) }, 0), t = parseYen($("rcTotal").value) || 0, h = "";
     $("rcSum").textContent = rcItems.length ? "品物の合計(税込) " + s.toLocaleString("ja-JP") + "円" : "";
     if (rcItems.length) {
       var btn = function (k, label) { return '<button class="btn b-gh" type="button" data-fix="' + k + '">' + label + '</button>' };
@@ -618,7 +929,7 @@
       if (kk !== "なし" && (it.kind || "なし") === "なし") { it.kind = kk; var sel = t.parentNode.querySelector("select"); if (sel) sel.value = kk }
     }
     if (t.dataset.k !== undefined) rcItems[+t.dataset.k].kind = t.value;
-    if (t.dataset.p !== undefined) { rcItems[+t.dataset.p].price = parseInt(t.value, 10) || 0; rcSumText() }
+    if (t.dataset.p !== undefined) { rcItems[+t.dataset.p].price = parseYen(t.value, -MAXYEN) || 0; rcSumText() }
   });
   $("rcItems").addEventListener("click", function (e) {
     var b = e.target.closest("[data-rm]"); if (b) { rcItems.splice(+b.dataset.rm, 1); renderRc() }
@@ -626,7 +937,7 @@
   $("rcTotal").addEventListener("input", rcSumText);
   $("rcFix").addEventListener("click", function (e) {
     var b = e.target.closest("[data-fix]"); if (!b) return;
-    var s = rcItems.reduce(function (a, x) { return a + (x.price || 0) }, 0), t = parseInt($("rcTotal").value, 10) || 0, k = b.dataset.fix;
+    var s = rcItems.reduce(function (a, x) { return a + (x.price || 0) }, 0), t = parseYen($("rcTotal").value) || 0, k = b.dataset.fix;
     if (k === "total") $("rcTotal").value = s;
     else if (k === "add") rcItems.push({ name: "その他(差額)", price: t - s, kind: "なし" });
     else if (k === "disc") rcItems.push({ name: "値引き", price: t - s, kind: "なし" });
@@ -641,7 +952,7 @@
     $("rcRes").classList.remove("hidden"); $("rcMsg").textContent = "品物と合計を入力して、登録してください";
   });
   $("rcBtn").addEventListener("click", function () { $("rcFile").click() });
-  var RC_SITE_KEY = "";   /* reCAPTCHA Enterprise のサイトキー(App Check用)。入れるとAI読み取りが使えます */
+  var RC_SITE_KEY = "6LcriOwtAAAAADgESq50oXzRgD-Odtm-GmYm9DSN";   /* reCAPTCHA Enterprise のサイトキー(App Check用)。入れるとAI読み取りが使えます */
   var AI_MODEL = "gemini-3.5-flash";
   var aiP = null;
   function loadAI() {
@@ -737,12 +1048,7 @@
     $("rcMsg").textContent = !p.items.length ? "品物を読み取れませんでした。レシート全体が写るように、明るい場所で撮り直してください"
       : (ai ? "AIで読み取りました。" : "簡易読み取りです(精度が低いため、必ず内容を確認してください)。") + (p.retried ? "合計が合わなかったため、AIが読み直しました。" : "") + (p.taxNote ? p.taxNote + "。" : "") + "内容を確認して登録してください";
   }
-  $("rcFile").addEventListener("change", function (e) {
-    var f = e.target.files[0]; if (!f) return; e.target.value = "";
-    $("rcRes").classList.add("hidden");
-    var ok = false; try { ok = localStorage.getItem("ls_ai_ok") === "1" } catch (x) { }
-    var useAI = (ok || confirm("レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n送ってよろしいですか?\n(キャンセルすると、端末の中だけで読み取る簡易読み取りを使います)"));
-    if (useAI && !ok) { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } }
+  function runRc(f, useAI) {
     $("rcMsg").textContent = useAI ? "AIで読み取り中…(数秒かかります)" : "準備中…(初回は日本語データの読み込みで少し時間がかかります)";
     (useAI ? readAI(f).then(function (p) { showRc(p, true) }, function (err) {
       var why = "AI読み取りエラー: " + String(err && (err.code || err.message) || err);
@@ -753,19 +1059,35 @@
         rcWorker = null; rcItems = []; $("rcTotal").value = ""; $("rcMemo").value = ""; $("rcDate").value = today; renderRc(); $("rcRes").classList.remove("hidden");
         $("rcMsg").textContent = "読み取れませんでした。撮り直すか、下に手入力してください";
       });
+  }
+  $("rcFile").addEventListener("change", function (e) {
+    var f = e.target.files[0]; if (!f) return; e.target.value = "";
+    $("rcRes").classList.add("hidden");
+    var ok = false; try { ok = localStorage.getItem("ls_ai_ok") === "1" } catch (x) { }
+    if (ok) { runRc(f, true); return }
+    openDialog({
+      title: "写真をAIに送ります", msg: "レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n「送らない」を選ぶと、端末の中だけで読み取る簡易読み取りを使います(精度は低めです)。", noEsc: true,
+      buttons: [{ label: "送らない(端末内で読み取る)", fn: function () { runRc(f, false) } }, { label: "送って読み取る", primary: true, fn: function () { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } runRc(f, true) } }]
+    });
   });
-  $("rcAdd").addEventListener("click", function () {
-    var a = parseInt($("rcTotal").value, 10); if (isNaN(a) || a <= 0) { $("rcMsg").textContent = "合計金額を入力してください"; return }
-    var sm = rcItems.reduce(function (x, y) { return x + (y.price || 0) }, 0);
-    if (rcItems.length && sm !== a && !confirm("品物の合計(" + sm.toLocaleString("ja-JP") + "円)と、登録する合計(" + a.toLocaleString("ja-JP") + "円)がちがいます。\nこのまま " + a.toLocaleString("ja-JP") + "円 で登録しますか?")) return;
+  function registerReceipt(a) {
     var d = $("rcDate").value || today, nf = 0, nd = 0;
     rcItems.forEach(function (x) {
-      var nm = (x.name || "").trim(); if (!nm || x.price < 0) return;
+      var nm = cleanStr(x.name, 50); if (!nm || x.price < 0) return;
       if (x.kind === "食材") { if (addFridge(nm, d)) nf++ } else if (x.kind === "日用品") { addStock(nm, d); nd++ }
     });
-    S.exp.push({ id: uid(), date: d, amt: a, memo: $("rcMemo").value.trim() || "レシート", cat: $("rcCat").value });
+    S.exp.push({ id: uid(), date: d, amt: a, memo: cleanStr($("rcMemo").value, 100) || "レシート", cat: $("rcCat").value });
     save(); renderAll(); $("rcRes").classList.add("hidden");
     $("rcMsg").textContent = (d === today ? "今日の支出に登録しました" : d + " の支出として登録しました") + (nf || nd ? "。冷蔵庫に" + nf + "品(賞味期限は目安)、日用品に" + nd + "品を入れました" : "");
+  }
+  $("rcAdd").addEventListener("click", function () {
+    var a = parseYen($("rcTotal").value); if (isNaN(a)) { $("rcMsg").textContent = "合計金額は、1〜100,000,000円の整数で入力してください"; return }
+    var sm = rcItems.reduce(function (x, y) { return x + (y.price || 0) }, 0), d = $("rcDate").value || today, warns = [];
+    if (rcItems.length && sm !== a) warns.push("品物の合計(" + yenTxt(sm) + ")と、登録する合計(" + yenTxt(a) + ")が、ちがいます。");
+    var dup = S.exp.filter(function (e) { return e.date === d && e.amt === a })[0];
+    if (dup) warns.push("同じ日(" + d + ")に、同じ金額(" + yenTxt(a) + ")の支出が、すでにあります(" + (dup.memo || "メモなし") + ")。同じレシートを、二重に登録していないか、確認してください。");
+    if (!warns.length) { registerReceipt(a); return }
+    openDialog({ title: "登録する前に、確認してください", msg: warns.join("\n"), buttons: [{ label: "戻って直す" }, { label: "このまま登録する", primary: true, fn: function () { registerReceipt(a) } }] });
   });
 
   /* ---- バーコード・QR読み取り ---- */
@@ -839,25 +1161,111 @@
   });
   document.querySelector(".tabs").addEventListener("click", function () { if (scQr) scEnd() });
 
+  /* ---- 入力欄の名前を、欄の上に小さく残す ---- */
+  function labelize() {
+    document.querySelectorAll(".card .row > input:not([type=file]):not([type=checkbox]), .card .row > select").forEach(function (el) {
+      if (el.parentNode.classList.contains("fld")) return;
+      var cap = (el.getAttribute("aria-label") || el.getAttribute("placeholder") || "").replace(/\(例[:：].*$/, "").replace(/を追加$/, "").trim(); if (!cap) return;
+      var cs = getComputedStyle(el), w = document.createElement("label"), sp = document.createElement("span");
+      w.className = "fld"; w.style.flex = cs.flex; w.style.minWidth = (cs.minWidth === "auto" ? "0" : cs.minWidth); sp.textContent = cap; w.appendChild(sp);
+      el.parentNode.insertBefore(w, el); w.appendChild(el); el.style.flex = "none";
+    });
+  }
+  /* ---- メモ・ゴミ出しは、ふだんは折りたたむ ---- */
+  (function () {
+    var st = null; try { st = JSON.parse(localStorage.getItem("ls_fold") || "null") } catch (e) { } st = st || { "h-memo": true, "h-trash": true };
+    document.querySelectorAll(".card.fold").forEach(function (c) {
+      var id = c.getAttribute("aria-labelledby"); c.classList.toggle("folded", st[id] !== false);
+      c.querySelector(".card-head").addEventListener("click", function (e) {
+        if (e.target.closest("button")) return; c.classList.toggle("folded"); st[id] = c.classList.contains("folded");
+        try { localStorage.setItem("ls_fold", JSON.stringify(st)) } catch (x) { }
+      });
+    });
+  })();
+  /* ---- 追加したときの、短いお知らせ ---- */
+  var ADDMSG = { expForm: "支出を記録しました", todoForm: "やることを追加しました", schForm: "予定を追加しました", frForm: "冷蔵庫に追加しました", stockForm: "日用品を追加しました", shopForm: "買い物リストに追加しました", fixForm: "固定費を追加しました" };
+  document.addEventListener("submit", function (e) { e.target._snap = JSON.stringify(S) }, true);
+  document.addEventListener("submit", function (e) { var f = e.target, m = ADDMSG[f.id]; if (m && f._snap !== JSON.stringify(S)) showToast(m, null) });
+  $("homeRc").addEventListener("click", function () { document.querySelector('.tab[data-t="money"]').click(); $("rcFile").click() });
+  $("mChart").addEventListener("click", function (e) {
+    var b = e.target.closest("i[data-i]"); if (!b) return;
+    $("mInfo").textContent = (+curMonth().slice(5)) + "月" + b.dataset.i + "日: " + (+b.dataset.v).toLocaleString("ja-JP") + "円";
+  });
+  [["todoIn", 100], ["schText", 100], ["expMemo", 100], ["frName", 50], ["shopIn", 50], ["stName", 50], ["fixName", 50], ["mealIn", 50], ["rcMemo", 100], ["scName", 80], ["memo", 5000]].forEach(function (p) { var el = $(p[0]); if (el) el.maxLength = p[1] });
+  ["expAmt", "fixAmt", "rcTotal"].forEach(function (id) { var el = $(id); if (el) el.max = MAXYEN });
+  labelize();
+
   /* ---- Firebase(ログイン+クラウド保存) ---- */
   var CFG = { apiKey: "AIzaSyCLdsMHrKRwEzyrB_HPiRitPErjIIHWdZ4", authDomain: "life-support-a2a21.firebaseapp.com", projectId: "life-support-a2a21", storageBucket: "life-support-a2a21.firebasestorage.app", messagingSenderId: "789058079447", appId: "1:789058079447:web:7a4e3113758af4d3f0fe92" };
   var BASE = "https://www.gstatic.com/firebasejs/12.19.0/", A = null, F = null, auth = null, db = null, cuid = null, timer = null;
   var show = function (id, on) { $(id).classList.toggle("hidden", !on) };
   function setSync(t) { $("sync").textContent = t }
   function withDef(o) { return Object.assign({ budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} }, o) }
-  function push() { return F.setDoc(F.doc(db, "users", cuid), JSON.parse(JSON.stringify(S))) }
-  function cloudSave() {
-    if (!cuid) return; setSync("同期中…"); clearTimeout(timer);
-    timer = setTimeout(function () { push().then(function () { setSync("クラウドに保存済み") }).catch(function () { setSync("クラウドに保存できませんでした(通信やルールを確認)") }) }, 700);
+  var syncPaused = false, bannerFn = null;
+  function showBanner(msg, fn, label) {
+    $("banner").classList.toggle("hidden", !msg); $("bannerMsg").textContent = msg || ""; bannerFn = fn || null;
+    $("bannerBtn").classList.toggle("hidden", !fn); $("bannerBtn").textContent = label || "もう一度保存";
   }
-  function authErr(e) {
-    var m = { "auth/invalid-credential": "メールアドレスまたはパスワードが違います", "auth/invalid-email": "メールアドレスの形式が正しくありません", "auth/email-already-in-use": "このメールアドレスはすでに登録されています", "auth/weak-password": "パスワードは6文字以上にしてください", "auth/network-request-failed": "通信できません。接続を確認してください", "auth/operation-not-allowed": "メール/パスワードのログインが有効になっていません", "auth/operation-not-supported-in-this-environment": "ファイルを直接開いている間はログインできません。Live Serverなどで開いてください", "auth/unauthorized-domain": "このアドレスがFirebaseの「承認済みドメイン」に登録されていません" };
-    $("authMsg").textContent = m[e.code] || ("エラー: " + (e.code || e.message));
+  $("bannerBtn").addEventListener("click", function () { if (bannerFn) bannerFn() });
+  function push() { return F.setDoc(F.doc(db, "users", cuid), JSON.parse(JSON.stringify(S))) }
+  function pushOk() { try { localStorage.setItem("ls_sync_uid", cuid); localStorage.setItem("ls_dirty", "0") } catch (e) { } setSync("クラウドに保存済み"); showBanner("") }
+  function pushFail() {
+    setSync("クラウドに保存できませんでした");
+    showBanner("クラウドに保存できませんでした。データは、この端末には保存されています。通信を確認して、「もう一度保存」を押してください。", function () { setSync("同期中…"); push().then(pushOk).catch(pushFail) });
+  }
+  function cloudSave() {
+    if (!cuid || syncPaused) return; try { localStorage.setItem("ls_dirty", "1") } catch (e) { } setSync("同期中…"); clearTimeout(timer);
+    timer = setTimeout(function () { push().then(pushOk).catch(pushFail) }, 700);
+  }
+  var AUTHMSG = {
+    "auth/invalid-credential": "メールアドレスまたはパスワードが違います。入力を確認してください", "auth/wrong-password": "パスワードが違います。入力を確認するか、「パスワードを忘れた」を使ってください", "auth/user-not-found": "このメールアドレスは登録されていません。「新規登録」を押してください",
+    "auth/invalid-email": "メールアドレスの形式が正しくありません。(例:name@example.com)", "auth/email-already-in-use": "このメールアドレスは、すでに登録されています。「ログイン」を押してください", "auth/weak-password": "パスワードは、6文字以上にしてください",
+    "auth/network-request-failed": "通信できません。電波の良い場所で、もう一度試してください", "auth/too-many-requests": "試した回数が多すぎます。しばらく待ってから、もう一度試してください", "auth/operation-not-allowed": "メールとパスワードでのログインが、まだ有効になっていません(管理者の設定が必要です)", "auth/user-disabled": "このアカウントは、使えない状態です", "auth/missing-password": "パスワードを入力してください"
+  };
+  function authErr(e) { $("authMsg").textContent = AUTHMSG[e && e.code] || ("うまくいきませんでした。通信を確認して、もう一度お試しください(コード: " + (e && (e.code || e.message) || "不明") + ")") }
+  /* ---- ゲスト(この端末)のデータと、クラウドのデータが、ちがうときの扱い ---- */
+  function hasData(x) { return !!(x.budget || x.memo || x.exp.length || x.todos.length || x.rec.length || x.sched.length || x.fridge.length || x.shop.length || x.fixed.length || x.stock.length || Object.keys(x.meals).length || Object.keys(x.trash).length || Object.keys(x.codes).length) }
+  function sumTxt(x) { return "支出 " + x.exp.length + "件・ToDo " + x.todos.length + "件・冷蔵庫 " + x.fridge.length + "件・日用品 " + x.stock.length + "件" }
+  function mergeStates(a, b) {   /* a = この端末、b = クラウド。同じ id は、クラウドを優先して、足りないものを足す */
+    var m = sanitizeState(b).state, x = sanitizeState(a).state;
+    ["exp", "todos", "rec", "sched", "fridge", "shop", "fixed"].forEach(function (k) { var ids = {}; m[k].forEach(function (i) { ids[i.id] = 1 }); x[k].forEach(function (i) { if (!ids[i.id]) m[k].push(i) }) });
+    x.stock.forEach(function (k) {
+      var same = m.stock.filter(function (y) { return y.name === k.name })[0];
+      if (!same) { var ids = {}; m.stock.forEach(function (i) { ids[i.id] = 1 }); if (!ids[k.id]) m.stock.push(k); return }
+      var h = same.hist.slice(); k.hist.forEach(function (d) { if (h.indexOf(d) < 0) h.push(d) }); h.sort(); same.hist = h; same.bought = h[h.length - 1];
+    });
+    if (!m.budget) m.budget = x.budget;
+    if (x.memo && x.memo !== m.memo) m.memo = (m.memo ? m.memo + "\n---\n" : "") + x.memo; m.memo = m.memo.slice(0, 5000);
+    ["meals", "trash", "codes"].forEach(function (k) { Object.keys(x[k]).forEach(function (i) { if (!(i in m[k])) m[k][i] = x[k][i] }) });
+    return sanitizeState(m).state;
+  }
+  function useState(st, msg) { S = st; rollover(); $("memo").value = S.memo; renderAll(); setSync(msg) }
+  function askMerge(localS, cloud) {
+    var backup = JSON.stringify(localS); try { localStorage.setItem("ls_backup_login", backup) } catch (e) { }
+    syncPaused = true;
+    function adopt(st, msg) { syncPaused = false; useState(st, msg); showToast(msg, function () { S = withDef(JSON.parse(backup)); save(); renderAll(); $("memo").value = S.memo }) }
+    openDialog({
+      title: "データの扱いを選んでください", noEsc: true,
+      msg: "この端末のデータと、クラウドのデータが、ちがっています。\nこの端末:" + sumTxt(localS) + "\nクラウド:" + sumTxt(cloud) + "\nどれを使いますか?(選んだあとも、「元に戻す」で、この端末のデータに戻せます)",
+      buttons: [{ label: "クラウドのデータを使う", fn: function () { adopt(cloud, "クラウドのデータを使いました") } }, { label: "この端末のデータを使う", fn: function () { adopt(localS, "この端末のデータを使いました") } }, { label: "両方を統合する(おすすめ)", primary: true, fn: function () { adopt(mergeStates(localS, cloud), "両方のデータを統合しました") } }]
+    });
+  }
+  function loadCloud() {
+    setSync("読み込み中…");
+    return F.getDoc(F.doc(db, "users", cuid)).then(function (snap) {
+      if (!snap.exists()) { save(); return }
+      var cloud = sanitizeState(snap.data()).state, localS = sanitizeState(S).state, mine = false;
+      try { mine = localStorage.getItem("ls_sync_uid") === cuid && localStorage.getItem("ls_dirty") !== "1" } catch (e) { }
+      if (!hasData(localS) || mine || JSON.stringify(localS) === JSON.stringify(cloud)) useState(cloud, "クラウドと同期しました"); else askMerge(localS, cloud);
+    }).then(function () { showBanner(""); maybeIntro() }).catch(function () {
+      setSync("読み込めませんでした");
+      showBanner("クラウドのデータを読み込めませんでした。通信やFirestoreのルールを確認して、「もう一度読み込む」を押してください。", loadCloud, "もう一度読み込む");
+    });
   }
 
   /* ログイン画面のボタンは、Firebaseの読み込みを待たずに先に登録する */
   $("guestBtn").addEventListener("click", function () { setTimeout(maybeIntro, 300); show("login", false); show("loginBtn", true); setSync("ログインしていません(この端末にのみ保存)") });
-  $("loginBtn").addEventListener("click", function () { if (!auth) { alert("クラウドに接続できません。通信を確認してください。"); return } show("login", true) });
+  $("loginBtn").addEventListener("click", function () { if (!auth) { info("クラウドに接続できません。通信を確認して、もう一度お試しください。", "ログインできません"); return } show("login", true) });
   $("loginForm").addEventListener("submit", function (e) { e.preventDefault(); if (!auth) return; $("authMsg").textContent = ""; A.signInWithEmailAndPassword(auth, $("authMail").value.trim(), $("authPass").value).catch(authErr) });
   $("resetBtn").addEventListener("click", function () {
     if (!auth) return; var mail = $("authMail").value.trim();
@@ -871,19 +1279,26 @@
   });
   $("logoutBtn").addEventListener("click", function () {
     clearTimeout(timer);
-    (cuid ? push() : Promise.resolve()).catch(function () { }).then(function () { return A.signOut(auth) }).then(function () { try { localStorage.removeItem(K) } catch (x) { } location.reload() });
+    (cuid ? push() : Promise.resolve()).catch(function () { }).then(function () { return A.signOut(auth) }).then(function () { try { localStorage.removeItem(K); localStorage.removeItem("ls_sync_uid"); localStorage.removeItem("ls_dirty") } catch (x) { } location.reload() });
   });
 
+  /* ログインを残すための工夫と、残らない原因のお知らせ */
+  function keepLogin() {
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist() } catch (e) { }   /* ブラウザに、データを消さないよう頼む */
+    var msg = "", ua = navigator.userAgent || "";
+    try { localStorage.setItem("ls_t", "1"); localStorage.removeItem("ls_t") } catch (e) { msg = "このブラウザでは、データを保存できないため、ログインが残りません。プライベートモードをやめるか、SafariかChromeで開いてください" }
+    if (!msg && !window.indexedDB) msg = "このブラウザでは、ログインを保存できません。SafariかChromeで開いてください";
+    if (!msg && /Line\/|FBAN|FBAV|Instagram|Twitter|MicroMessenger|KAKAOTALK/i.test(ua)) msg = "アプリの中のブラウザでは、ログインが残らないことがあります。SafariかChromeで開いて、ホーム画面に追加すると安心です";
+    if ($("authInfo")) $("authInfo").textContent = msg;
+  }
+  try { $("authMail").value = localStorage.getItem("ls_mail") || "" } catch (e) { }   /* メールアドレスは、覚えておく */
   Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-auth.js"), import(BASE + "firebase-firestore.js")]).then(function (m) {
     A = m[1]; F = m[2]; var app = m[0].initializeApp(CFG); auth = A.getAuth(app); db = F.getFirestore(app);
+    A.setPersistence(auth, A.indexedDBLocalPersistence).catch(function () { return A.setPersistence(auth, A.browserLocalPersistence) }).catch(function () { });   /* ログインを、このブラウザに残す */
     A.onAuthStateChanged(auth, function (u) {
       if (!u) { cuid = null; show("login", true); show("logoutBtn", false); show("loginBtn", true); return }
-      cuid = u.uid; show("login", false); show("logoutBtn", true); show("loginBtn", false); setSync("読み込み中…");
-      F.getDoc(F.doc(db, "users", cuid)).then(function (snap) {
-        if (snap.exists()) { S = withDef(snap.data()); rollover(); $("memo").value = S.memo; renderAll(); setSync("クラウドと同期しました") }
-        else { save() }
-        maybeIntro();
-      }).catch(function () { setSync("読み込めませんでした。Firestoreのルールと接続を確認してください") });
+      cuid = u.uid; try { localStorage.setItem("ls_mail", u.email || "") } catch (e) { } keepLogin(); show("login", false); show("logoutBtn", true); show("loginBtn", false); setSync("読み込み中…");
+      loadCloud();
     });
   }).catch(function () { setSync("クラウドに接続できません(この端末にのみ保存中)"); setTimeout(maybeIntro, 300) });
 })();
