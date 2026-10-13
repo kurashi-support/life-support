@@ -797,7 +797,7 @@
   setTab(load("ls_tab", "home"));
 
   /* ---- レシート読み取り(端末内でOCR) ---- */
-  var rcItems = [];
+  var rcOrig = null, rcItems = [];
   function loadOCR() {
     return window.Tesseract ? Promise.resolve() : new Promise(function (ok, ng) {
       var sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"; sc.onload = ok; sc.onerror = ng; document.head.appendChild(sc);
@@ -948,29 +948,31 @@
     var ins = $("rcItems").querySelectorAll("input[data-n]"); if (ins.length) ins[ins.length - 1].focus();
   });
   $("rcManual").addEventListener("click", function () {
-    rcItems = []; $("rcTotal").value = ""; $("rcMemo").value = ""; $("rcDate").value = today; renderRc();
+    rcOrig = null; rcItems = []; $("rcTotal").value = ""; $("rcMemo").value = ""; $("rcDate").value = today; renderRc();
     $("rcRes").classList.remove("hidden"); $("rcMsg").textContent = "品物と合計を入力して、登録してください";
   });
-  $("rcBtn").addEventListener("click", function () { $("rcFile").click() });
+  $("rcBtn").addEventListener("click", function () { warmAI(); $("rcFile").click() });
   var RC_SITE_KEY = "6LcriOwtAAAAADgESq50oXzRgD-Odtm-GmYm9DSN";   /* reCAPTCHA Enterprise のサイトキー(App Check用)。入れるとAI読み取りが使えます */
   var AI_MODEL = "gemini-3.5-flash";
-  var aiP = null;
-  function loadAI() {
-    if (!aiP) aiP = Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-ai.js"), RC_SITE_KEY ? import(BASE + "firebase-app-check.js") : Promise.resolve(null)]).then(function (m) {
+  var AI_THINK = true, acDone = false, aiPs = {};   /* AI_THINK: 考える量を指定する(Gemini 3系は、少ないと速い) */
+  function loadAI(level) {
+    level = AI_THINK ? (level || "LOW") : "plain";
+    if (!aiPs[level]) aiPs[level] = Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-ai.js"), RC_SITE_KEY ? import(BASE + "firebase-app-check.js") : Promise.resolve(null)]).then(function (m) {
       var app = m[0].getApp(), Sc = m[1].Schema;
       if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-      if (RC_SITE_KEY && m[2]) m[2].initializeAppCheck(app, { provider: new m[2].ReCaptchaEnterpriseProvider(RC_SITE_KEY), isTokenAutoRefreshEnabled: true });
+      if (RC_SITE_KEY && m[2] && !acDone) { m[2].initializeAppCheck(app, { provider: new m[2].ReCaptchaEnterpriseProvider(RC_SITE_KEY), isTokenAutoRefreshEnabled: true }); acDone = true }
       var ai = m[1].getAI(app, { backend: new m[1].GoogleAIBackend() });
-      return m[1].getGenerativeModel(ai, {
-        model: AI_MODEL,
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: Sc.object({ properties: { store: Sc.string(), total: Sc.number(), subtotal: Sc.number(), taxIncluded: Sc.boolean(), items: Sc.array({ items: Sc.object({ properties: { name: Sc.string(), price: Sc.number(), rate: Sc.number(), kind: Sc.string() } }) }) } })
-        }
-      });
+      var gc = {
+        responseMimeType: "application/json",
+        responseSchema: Sc.object({ properties: { store: Sc.string(), total: Sc.number(), subtotal: Sc.number(), taxIncluded: Sc.boolean(), items: Sc.array({ items: Sc.object({ properties: { name: Sc.string(), price: Sc.number(), rate: Sc.number(), kind: Sc.string() } }) }) } })
+      };
+      if (level !== "plain") gc.thinkingConfig = { thinkingLevel: (m[1].ThinkingLevel && m[1].ThinkingLevel[level]) || level };
+      return m[1].getGenerativeModel(ai, { model: AI_MODEL, generationConfig: gc });
     });
-    return aiP;
+    return aiPs[level];
   }
+  /* 写真を選ぶあいだに、AIの部品とApp Checkを、先に読み込んでおく(同意ずみのときだけ) */
+  function warmAI() { var ok = false; try { ok = localStorage.getItem("ls_ai_ok") === "1" } catch (e) { } if (ok) loadAI("LOW").catch(function () { aiPs = {} }) }
   var AI_PROMPT = "これはレシートの写真です(斜め・遠い・ピンぼけ・指や背景が写っていることがあります)。買った品物だけを読み取り、JSONで返してください。\n" +
     "【含めるもの】食品に限らず、日用品・衣類・本・飲食店の料理・サービスなど、購入した品物の行すべて。\n" +
     "【含めないもの】店名、住所、電話番号、日付、時刻、レシート番号、お客様番号、レジ番号、担当者、登録番号(Tで始まる番号)、「イートイン」「テイクアウト」などの区分、小計、合計、内税・外税、税率ごとの対象額、お預り、お釣り、支払方法(現金・カード・交通系IC・QR決済・電子マネー)、残高、ポイント、クーポン、広告・アンケート・クイズなどの文章。\n" +
@@ -984,11 +986,11 @@
       var u = URL.createObjectURL(f), im = new Image();
       im.onload = function () {
         URL.revokeObjectURL(u);
-        var k = Math.min(1, 2000 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");
+        var k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas");   /* 長い辺を1600pxまでにして、送る量を減らす */
         c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
         c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
         try { c = cropPaper(c) } catch (e) { }
-        ok(c.toDataURL("image/jpeg", 0.92).split(",")[1]);
+        ok(c.toDataURL("image/jpeg", 0.85).split(",")[1]);
       };
       im.onerror = function () { ng(new Error("画像を読み込めません")) }; im.src = u;
     });
@@ -1012,16 +1014,23 @@
     if (!total) total = sum;
     return { items: items, total: total, store: String(d.store || "").trim(), raw: txt, taxNote: note, gap: target ? sum - target : 0 };
   }
-  function readAI(f) {
-    var model, img;
-    return Promise.all([loadAI(), toB64(f)]).then(function (a) {
+  function readAI(f, stage) {
+    var model, img; stage = stage || function () { };
+    stage("写真を整えています");
+    return Promise.all([loadAI("LOW"), toB64(f)]).then(function (a) {
       model = a[0]; img = { inlineData: { mimeType: "image/jpeg", data: a[1] } };
-      return model.generateContent([AI_PROMPT, img]);
+      stage("AIに送って、読み取っています");
+      return model.generateContent([AI_PROMPT, img]).catch(function (err) {
+        if (!AI_THINK || !/thinking|INVALID_ARGUMENT|400/i.test(String(err && (err.code || err.message) || err))) throw err;
+        AI_THINK = false; aiPs = {};   /* 「考える量」の指定が使えないときは、指定なしで、もう一度 */
+        return loadAI().then(function (m2) { model = m2; return model.generateContent([AI_PROMPT, img]) });
+      });
     }).then(function (r) {
       var txt = r.response.text(), p = parseAI(txt);
       if (!p.gap) return p;
-      var q = "前回の読み取り結果:\n" + txt + "\n\n問題: 品物の金額の合計が、レシートの" + (p.gap > 0 ? "小計・合計より " : "小計・合計より ") + Math.abs(p.gap) + "円 " + (p.gap > 0 ? "多い" : "少ない") + "です。写真をもう一度よく見て、読み間違い・抜け・余計な行(合計や税の行を品物にしていないか)を直した結果を、同じ形式のJSONで返してください。";
-      return model.generateContent([AI_PROMPT, img, q]).then(function (r2) {
+      stage("合計が合わないため、丁寧に読み直しています");
+      var q = "前回の読み取り結果:\n" + txt + "\n\n問題: 品物の金額の合計が、レシートの小計・合計より " + Math.abs(p.gap) + "円 " + (p.gap > 0 ? "多い" : "少ない") + "です。写真をもう一度よく見て、読み間違い・抜け・余計な行(合計や税の行を品物にしていないか)を直した結果を、同じ形式のJSONで返してください。";
+      return loadAI("MEDIUM").then(function (m3) { return m3.generateContent([AI_PROMPT, img, q]) }).then(function (r2) {   /* 速い設定で合わなかったときだけ、丁寧な設定で読み直す */
         var p2 = parseAI(r2.response.text()); p2.retried = true;
         if (Math.abs(p2.gap) <= Math.abs(p.gap)) return p2;
         p.retried = true; return p;
@@ -1042,21 +1051,27 @@
     });
   }
   function showRc(p, ai, note) {
-    rcItems = p.items.map(function (x) { return { name: x.name, price: x.price, kind: kindOf(x.name, x.aiKind) } }); $("rcRaw").textContent = (note ? "[" + note + "]\n" : "") + p.raw;
+    rcItems = p.items.map(function (x) { return { name: x.name, price: x.price, kind: kindOf(x.name, x.aiKind) } });
+    rcOrig = { ai: !!ai, retried: !!p.retried, total: p.total || 0, secs: 0, items: rcItems.map(function (x) { return x.name + "|" + x.price }) };   /* 読み取り直後の内容(あとで、どれだけ直したかを数える) */ $("rcRaw").textContent = (note ? "[" + note + "]\n" : "") + p.raw;
     $("rcTotal").value = p.total || ""; $("rcMemo").value = p.store || ""; $("rcDate").value = today;
     renderRc(); $("rcRes").classList.remove("hidden");
     $("rcMsg").textContent = !p.items.length ? "品物を読み取れませんでした。レシート全体が写るように、明るい場所で撮り直してください"
       : (ai ? "AIで読み取りました。" : "簡易読み取りです(精度が低いため、必ず内容を確認してください)。") + (p.retried ? "合計が合わなかったため、AIが読み直しました。" : "") + (p.taxNote ? p.taxNote + "。" : "") + "内容を確認して登録してください";
   }
   function runRc(f, useAI) {
-    $("rcMsg").textContent = useAI ? "AIで読み取り中…(数秒かかります)" : "準備中…(初回は日本語データの読み込みで少し時間がかかります)";
-    (useAI ? readAI(f).then(function (p) { showRc(p, true) }, function (err) {
+    var t0 = Date.now(), label = "", tick = null, sec = function () { return Math.round((Date.now() - t0) / 1000) };
+    function show() { $("rcMsg").textContent = label + "…(" + sec() + "秒)" }
+    function stage(t) { label = t; show() }
+    function stop() { clearInterval(tick) }
+    if (useAI) { stage("準備しています"); tick = setInterval(show, 1000) } else $("rcMsg").textContent = "準備中…(初回は日本語データの読み込みで少し時間がかかります)";
+    (useAI ? readAI(f, stage).then(function (p) { stop(); showRc(p, true); if (rcOrig) rcOrig.secs = sec(); $("rcMsg").textContent = $("rcMsg").textContent.replace("AIで読み取りました。", "AIで読み取りました(" + sec() + "秒)。") }, function (err) {
+      stop();
       var why = "AI読み取りエラー: " + String(err && (err.code || err.message) || err);
       $("rcMsg").textContent = "AI読み取りを使えませんでした(Firebase の AI Logic の設定が必要です)。簡易読み取りに切り替えます…";
       return readTess(f).then(function (p) { showRc(p, false, why) });
     }) : readTess(f).then(function (p) { showRc(p, false) }))
       .catch(function () {
-        rcWorker = null; rcItems = []; $("rcTotal").value = ""; $("rcMemo").value = ""; $("rcDate").value = today; renderRc(); $("rcRes").classList.remove("hidden");
+        stop(); rcWorker = null; rcOrig = null; rcItems = []; $("rcTotal").value = ""; $("rcMemo").value = ""; $("rcDate").value = today; renderRc(); $("rcRes").classList.remove("hidden");
         $("rcMsg").textContent = "読み取れませんでした。撮り直すか、下に手入力してください";
       });
   }
@@ -1070,7 +1085,27 @@
       buttons: [{ label: "送らない(端末内で読み取る)", fn: function () { runRc(f, false) } }, { label: "送って読み取る", primary: true, fn: function () { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } runRc(f, true) } }]
     });
   });
+  /* ---- AIの読み取りの成績(この端末にだけ記録。写真や中身は、残さない) ---- */
+  function logRc(total) {
+    if (!rcOrig || !rcOrig.ai) { rcOrig = null; return }
+    var cur = rcItems.map(function (x) { return x.name + "|" + x.price }), left = rcOrig.items.slice(), same = 0;
+    cur.forEach(function (c) { var k = left.indexOf(c); if (k >= 0) { left.splice(k, 1); same++ } });
+    var changed = Math.max(rcOrig.items.length, cur.length) - same, tEdit = total !== rcOrig.total;
+    try {
+      var L = JSON.parse(localStorage.getItem("ls_rc_log") || "[]");
+      L.push({ d: today, s: rcOrig.secs, r: rcOrig.retried ? 1 : 0, n: rcOrig.items.length, c: changed, t: tEdit ? 1 : 0 }); localStorage.setItem("ls_rc_log", JSON.stringify(L.slice(-30)));
+    } catch (e) { }
+    rcOrig = null; renderRcStats();
+  }
+  function renderRcStats() {
+    var el = $("rcStats"); if (!el) return; var L = [];
+    try { L = JSON.parse(localStorage.getItem("ls_rc_log") || "[]") } catch (e) { }
+    if (!L.length) { el.textContent = ""; return }
+    var ok = L.filter(function (x) { return !x.c && !x.t }).length, sec = Math.round(L.reduce(function (a, x) { return a + (x.s || 0) }, 0) / L.length);
+    el.textContent = "AIの読み取りの成績(この端末のみ・直近" + L.length + "回): 直さずに登録できたのは " + ok + "回、平均 " + sec + "秒";
+  }
   function registerReceipt(a) {
+    logRc(a);
     var d = $("rcDate").value || today, nf = 0, nd = 0;
     rcItems.forEach(function (x) {
       var nm = cleanStr(x.name, 50); if (!nm || x.price < 0) return;
@@ -1080,6 +1115,7 @@
     save(); renderAll(); $("rcRes").classList.add("hidden");
     $("rcMsg").textContent = (d === today ? "今日の支出に登録しました" : d + " の支出として登録しました") + (nf || nd ? "。冷蔵庫に" + nf + "品(賞味期限は目安)、日用品に" + nd + "品を入れました" : "");
   }
+  renderRcStats();
   $("rcAdd").addEventListener("click", function () {
     var a = parseYen($("rcTotal").value); if (isNaN(a)) { $("rcMsg").textContent = "合計金額は、1〜100,000,000円の整数で入力してください"; return }
     var sm = rcItems.reduce(function (x, y) { return x + (y.price || 0) }, 0), d = $("rcDate").value || today, warns = [];
@@ -1186,7 +1222,7 @@
   var ADDMSG = { expForm: "支出を記録しました", todoForm: "やることを追加しました", schForm: "予定を追加しました", frForm: "冷蔵庫に追加しました", stockForm: "日用品を追加しました", shopForm: "買い物リストに追加しました", fixForm: "固定費を追加しました" };
   document.addEventListener("submit", function (e) { e.target._snap = JSON.stringify(S) }, true);
   document.addEventListener("submit", function (e) { var f = e.target, m = ADDMSG[f.id]; if (m && f._snap !== JSON.stringify(S)) showToast(m, null) });
-  $("homeRc").addEventListener("click", function () { document.querySelector('.tab[data-t="money"]').click(); $("rcFile").click() });
+  $("homeRc").addEventListener("click", function () { warmAI(); document.querySelector('.tab[data-t="money"]').click(); $("rcFile").click() });
   $("mChart").addEventListener("click", function (e) {
     var b = e.target.closest("i[data-i]"); if (!b) return;
     $("mInfo").textContent = (+curMonth().slice(5)) + "月" + b.dataset.i + "日: " + (+b.dataset.v).toLocaleString("ja-JP") + "円";
