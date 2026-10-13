@@ -16,7 +16,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 
 <body>
@@ -25,9 +25,9 @@
       <h2 id="lt" style="margin-bottom:4px">ログイン</h2>
       <p class="label" style="margin:0 0 6px">ログインすると、スマホとパソコンで同じデータを使えます</p>
       <form id="loginForm">
-        <input type="email" id="authMail" placeholder="メールアドレス" autocomplete="email" required>
-        <input type="password" id="authPass" placeholder="パスワード(6文字以上)" autocomplete="current-password" minlength="6"
-          required>
+        <input type="email" id="authMail" placeholder="メールアドレス" autocomplete="username" name="email" required>
+        <input type="password" id="authPass" name="password" placeholder="パスワード(6文字以上)" autocomplete="current-password"
+          minlength="6" required>
         <p id="authMsg" role="alert"></p>
         <button class="btn b-pri">ログイン</button>
       </form>
@@ -380,6 +380,17 @@
           </ul>
         </details>
         <details class="hp">
+          <summary>ログインが毎回求められる</summary>
+          <ul>
+            <li>ログインは、一度すれば、ブラウザに保存されます。次のような場合に、消えることがあります。</li>
+            <li>プライベートモード(シークレットモード)で開いている</li>
+            <li>LINE や Instagram などの、アプリの中のブラウザで開いている</li>
+            <li>ブラウザが、閉じるたびに、サイトのデータを消す設定になっている</li>
+            <li>iPhone の Safari で、しばらく開かなかった</li>
+            <li>対策: Safari や Chrome で開いて、ホーム画面に追加して使うと、ログインが残りやすくなります。「ログアウト」のボタンは、押さないでください。</li>
+          </ul>
+        </details>
+        <details class="hp">
           <summary>スマホのホーム画面に追加したい</summary>
           <ul>
             <li><b>iPhone(Safari)</b>: 共有ボタンから「ホーム画面に追加」を選びます。</li>
@@ -427,13 +438,14 @@
       <button class="btn b-gh" id="importBtn" type="button">バックアップを読み込む</button>
       <input type="file" id="importFile" accept="application/json" class="hidden">
       <p id="sync">この端末にのみ保存されています</p>
+      <p class="label" id="authInfo" style="color:var(--rust)"></p>
       <button class="btn b-gh" id="loginBtn" type="button">ログイン(クラウド保存)</button>
       <button class="btn b-gh hidden" id="logoutBtn" type="button">ログアウト</button>
       <p>バックアップを取っておくと安心です</p>
     </footer>
   </div>
 
-  <script src="script.js?v=8"></script>
+  <script src="script.js?v=9"></script>
 
 </body>
 
