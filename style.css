@@ -1445,3 +1445,17 @@ form.row input[type=text] {
     color: #1b1210
   }
 }
+
+/* 日用品管理: スマホで文字が細く折り返さないよう、ボタンは下の行に並べる */
+#stockList li {
+  flex-wrap: wrap;
+  row-gap: 4px
+}
+
+#stockList li .tx {
+  flex: 1 1 100%
+}
+
+#stockList li .x {
+  margin-left: auto
+}
