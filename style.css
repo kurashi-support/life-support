@@ -604,7 +604,7 @@ ul {
   border-color: var(--teal)
 }
 
-.tab[aria-selected=true] {
+.tab[aria-current="page"] {
   background: var(--teal);
   border-color: var(--teal);
   color: #fff
@@ -1005,7 +1005,7 @@ textarea:focus {
   background: var(--teal-t)
 }
 
-.tab[aria-selected=true] {
+.tab[aria-current="page"] {
   background: var(--teal);
   color: var(--on-teal)
 }
@@ -1028,7 +1028,7 @@ textarea:focus {
     font-size: 13px
   }
 
-  .tab[aria-selected=true] {
+  .tab[aria-current="page"] {
     background: var(--teal-t);
     color: var(--teal)
   }
@@ -1567,170 +1567,30 @@ form.row input[type=text] {
   width: 100%;
   min-width: 0
 }
-
 /* ダイアログ・お知らせの帯・生活アシスト・見やすさ(コントラスト・押しやすさ) */
-@media (prefers-color-scheme: light) {
-  :root {
-    --rust: #B83C18;
-    --gold: #8F5F0B
-  }
-}
-
-#dlg {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overflow-y: auto
-}
-
-.dlg-msg {
-  white-space: pre-line;
-  margin: 6px 0 10px;
-  color: var(--ink)
-}
-
-#dlgBody {
-  display: grid;
-  gap: 10px;
-  margin: 8px 0
-}
-
-#dlgBody input[type=text],
-#dlgBody select {
-  width: 100%
-}
-
-.dlg-btns {
-  flex-wrap: wrap;
-  justify-content: flex-end
-}
-
-.dlg-checks {
-  display: grid;
-  gap: 4px;
-  max-height: 40vh;
-  overflow-y: auto
-}
-
-.dlg-check {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-height: 44px
-}
-
-.dlg-check input {
-  width: 22px;
-  height: 22px;
-  flex: none
-}
-
-.banner {
-  position: sticky;
-  top: 0;
-  z-index: 15;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  background: var(--rust);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 12px;
-  margin-bottom: 12px
-}
-
-.banner .btn {
-  background: #fff;
-  color: #7a2410
-}
-
-@media (prefers-color-scheme: dark) {
-  .banner {
-    color: #1b1210
-  }
-
-  .banner .btn {
-    background: #1b1210;
-    color: #fff
-  }
-}
-
-.assist-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 12px
-}
-
-.as {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 12px
-}
-
-.as-main {
-  display: flex;
-  gap: 10px
-}
-
-.as-ic {
-  font-size: 22px;
-  line-height: 1.4
-}
-
-.as .why {
-  display: block;
-  color: var(--soft);
-  font-size: 13px;
-  line-height: 1.5;
-  margin-top: 2px
-}
-
-.as-btns {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px
-}
-
-.btn.sm,
-.x,
-#mPrev,
-#mNext {
-  min-height: 44px
-}
-
-.x {
-  min-width: 44px
-}
-
-.linkbtn {
-  min-height: 32px;
-  padding: 6px 0
-}
+@media (prefers-color-scheme: light) { :root { --rust: #B83C18; --gold: #8F5F0B } }
+#dlg { position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 92%, transparent); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto }
+.dlg-msg { white-space: pre-line; margin: 6px 0 10px; color: var(--ink) }
+#dlgBody { display: grid; gap: 10px; margin: 8px 0 }
+#dlgBody input[type=text], #dlgBody select { width: 100% }
+.dlg-btns { flex-wrap: wrap; justify-content: flex-end }
+.dlg-checks { display: grid; gap: 4px; max-height: 40vh; overflow-y: auto }
+.dlg-check { display: flex; gap: 10px; align-items: center; min-height: 44px }
+.dlg-check input { width: 22px; height: 22px; flex: none }
+.banner { position: sticky; top: 0; z-index: 15; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--rust); color: #fff; padding: 10px 14px; border-radius: 12px; margin-bottom: 12px }
+.banner .btn { background: #fff; color: #7a2410 }
+@media (prefers-color-scheme: dark) { .banner { color: #1b1210 } .banner .btn { background: #1b1210; color: #fff } }
+.assist-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px }
+.as { border: 1px solid var(--line); border-radius: 14px; padding: 12px }
+.as-main { display: flex; gap: 10px }
+.as-ic { font-size: 22px; line-height: 1.4 }
+.as .why { display: block; color: var(--soft); font-size: 13px; line-height: 1.5; margin-top: 2px }
+.as-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px }
+.btn.sm, .x, #mPrev, #mNext { min-height: 44px }
+.x { min-width: 44px }
+.linkbtn { min-height: 32px; padding: 6px 0 }
 
 /* 見た目は変えずに、押せる範囲だけを44px近くに広げる */
-.chips li .x,
-.linkbtn,
-.chk {
-  position: relative
-}
-
-.chips li .x::after {
-  content: "";
-  position: absolute;
-  inset: -6px -8px
-}
-
-.linkbtn::after {
-  content: "";
-  position: absolute;
-  inset: -9px -4px
-}
+.chips li .x, .linkbtn, .chk { position: relative }
+.chips li .x::after { content: ""; position: absolute; inset: -6px -8px }
+.linkbtn::after { content: ""; position: absolute; inset: -9px -4px }

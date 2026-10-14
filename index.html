@@ -8,6 +8,8 @@
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#F1F4F2" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0E1618" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Life Support">
@@ -16,7 +18,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 
 <body>
@@ -61,8 +63,7 @@
   <div id="toast" class="toast hidden" role="status"><span id="toastMsg"></span><button class="btn sm" id="toastUndo"
       type="button">元に戻す</button></div>
   <div class="page">
-    <div id="banner" class="banner hidden" role="alert"><span id="bannerMsg"></span><button class="btn sm"
-        id="bannerBtn" type="button"></button></div>
+    <div id="banner" class="banner hidden" role="alert"><span id="bannerMsg"></span><button class="btn sm" id="bannerBtn" type="button"></button></div>
     <header class="hero">
       <div class="hero-top">
         <div class="badge" aria-hidden="true">🏠</div>
@@ -74,12 +75,12 @@
       <p class="today" id="today"></p>
     </header>
 
-    <nav class="tabs" role="tablist" aria-label="メニュー">
-      <button class="tab" type="button" role="tab" data-t="home"><span aria-hidden="true">🏠</span>ホーム</button>
-      <button class="tab" type="button" role="tab" data-t="meal"><span aria-hidden="true">🍚</span>ごはん</button>
-      <button class="tab" type="button" role="tab" data-t="shop"><span aria-hidden="true">🛒</span>買い物</button>
-      <button class="tab" type="button" role="tab" data-t="money"><span aria-hidden="true">💴</span>家計</button>
-      <button class="tab" type="button" role="tab" data-t="help"><span aria-hidden="true">📖</span>使い方</button>
+    <nav class="tabs" aria-label="メニュー">
+      <button class="tab" type="button" data-t="home"><span aria-hidden="true">🏠</span>ホーム</button>
+      <button class="tab" type="button" data-t="meal"><span aria-hidden="true">🍚</span>ごはん</button>
+      <button class="tab" type="button" data-t="shop"><span aria-hidden="true">🛒</span>買い物</button>
+      <button class="tab" type="button" data-t="money"><span aria-hidden="true">💴</span>家計</button>
+      <button class="tab" type="button" data-t="help"><span aria-hidden="true">📖</span>使い方</button>
     </nav>
 
     <main class="grid" id="main">
@@ -340,9 +341,8 @@
         <details class="hp" open>
           <summary>🏠 ホーム</summary>
           <ul>
-            <li><b>今日の生活アシスト</b>:
-              保存されているデータから、今日やるとよいこと(期限が近い食材、買い時の日用品、予算など)を、最大3つ提案します。「あとで」「表示しない」も選べます。データがないときは、何も出しません。</li>
-            <li><b>今日使えるお金</b>:
+            <li><b>今日の生活アシスト</b>: 保存されているデータから、今日やるとよいこと(期限が近い食材、買い時の日用品、予算など)を、最大3つ提案します。「あとで」「表示しない」も選べます。データがないときは、何も出しません。</li>
+          <li><b>今日使えるお金</b>:
               「予算を設定」に、今月使えるお金の総額(固定費を含む)を入れます。固定費を引いて、残り日数で割った金額が表示されます。使ったら、金額・カテゴリ・メモを入れて「使った」を押します。</li>
             <li><b>今日やること</b>: 入力して「追加」。「毎日」「毎週」を選ぶと、くり返し入ります。✓で完了、×で削除です。終わらなかったものは、翌日に持ち越されます。</li>
             <li><b>予定</b>: 日付・時刻・内容を入れて「追加」します。</li>
@@ -419,6 +419,7 @@
         <details class="hp">
           <summary>スマホのホーム画面に追加したい</summary>
           <ul>
+            <li>追加すると、アプリのように、全画面で開けます。ネットがないときも、画面は開きます(データの保存・読み込み、AIの読み取りには、ネットが必要です)。</li>
             <li><b>iPhone(Safari)</b>: 共有ボタンから「ホーム画面に追加」を選びます。</li>
             <li><b>Android(Chrome)</b>: 右上のメニューから「ホーム画面に追加」を選びます。</li>
           </ul>
@@ -471,7 +472,7 @@
     </footer>
   </div>
 
-  <script src="script.js?v=15"></script>
+  <script src="script.js?v=17"></script>
 
 </body>
 

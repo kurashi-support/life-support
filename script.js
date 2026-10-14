@@ -394,7 +394,7 @@
         });
         if (f.selectAll) {
           var all = document.createElement("button"); all.type = "button"; all.className = "linkbtn"; all.textContent = [].some.call(g.querySelectorAll("input"), function (c) { return !c.checked }) ? "すべて選ぶ" : "すべて解除";
-          all.addEventListener("click", function () { var cs = g.querySelectorAll("input"), on = [].some.call(cs, function (c) { return !c.checked });[].forEach.call(cs, function (c) { c.checked = on }); all.textContent = on ? "すべて解除" : "すべて選ぶ" });
+          all.addEventListener("click", function () { var cs = g.querySelectorAll("input"), on = [].some.call(cs, function (c) { return !c.checked }); [].forEach.call(cs, function (c) { c.checked = on }); all.textContent = on ? "すべて解除" : "すべて選ぶ" });
           box.appendChild(all);
         }
         box.appendChild(g); return;
@@ -523,27 +523,19 @@
   function goTab(t) { document.querySelector('.tab[data-t="' + t + '"]').click() }
   function tidyTodos() {
     var u = S.todos.filter(function (t) { return !t.done });
-    openDialog({
-      title: "やることを整理する", msg: "今日はやらないものを選ぶと、リストから外します。外したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (t) { return { value: t.id, label: t.text + (t.date < today ? "(" + (+t.date.slice(5, 7)) + "/" + (+t.date.slice(8)) + "から)" : "") } }) }],
-      buttons: [{ label: "やめる" }, {
-        label: "選んだものを外す", primary: true, fn: function (v) {
-          if (!v.ids.length) return "外すものを選んでください";
-          undoable(v.ids.length + "件を外しました", function () { S.todos = S.todos.filter(function (t) { return v.ids.indexOf(t.id) < 0 }) });
-        }
-      }]
-    });
+    openDialog({ title: "やることを整理する", msg: "今日はやらないものを選ぶと、リストから外します。外したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (t) { return { value: t.id, label: t.text + (t.date < today ? "(" + (+t.date.slice(5, 7)) + "/" + (+t.date.slice(8)) + "から)" : "") } }) }],
+      buttons: [{ label: "やめる" }, { label: "選んだものを外す", primary: true, fn: function (v) {
+        if (!v.ids.length) return "外すものを選んでください";
+        undoable(v.ids.length + "件を外しました", function () { S.todos = S.todos.filter(function (t) { return v.ids.indexOf(t.id) < 0 }) });
+      } }] });
   }
   function tidyExpired() {
     var u = S.fridge.filter(function (x) { return x.exp && diff(x.exp) < 0 });
-    openDialog({
-      title: "期限切れの食材を整理する", msg: "消す食材を選んでください(実際の状態は、パッケージで確認してください)。消したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (x) { return { value: x.id, label: x.name + "(" + (+x.exp.slice(5, 7)) + "/" + (+x.exp.slice(8)) + (x.est ? "・目安" : "") + ")", checked: true } }) }],
-      buttons: [{ label: "やめる" }, {
-        label: "選んだものを消す", primary: true, fn: function (v) {
-          if (!v.ids.length) return "消す食材を選んでください";
-          undoable(v.ids.length + "品を消しました", function () { S.fridge = S.fridge.filter(function (x) { return v.ids.indexOf(x.id) < 0 }); $("sug").innerHTML = "" });
-        }
-      }]
-    });
+    openDialog({ title: "期限切れの食材を整理する", msg: "消す食材を選んでください(実際の状態は、パッケージで確認してください)。消したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (x) { return { value: x.id, label: x.name + "(" + (+x.exp.slice(5, 7)) + "/" + (+x.exp.slice(8)) + (x.est ? "・目安" : "") + ")", checked: true } }) }],
+      buttons: [{ label: "やめる" }, { label: "選んだものを消す", primary: true, fn: function (v) {
+        if (!v.ids.length) return "消す食材を選んでください";
+        undoable(v.ids.length + "品を消しました", function () { S.fridge = S.fridge.filter(function (x) { return v.ids.indexOf(x.id) < 0 }); $("sug").innerHTML = "" });
+      } }] });
   }
   function runAssist(k) {
     if (k === "food") { goTab("meal"); $("mealSug").click(); return }
@@ -585,26 +577,20 @@
   var act = {
     eedit: function (id) {
       var e = S.exp.filter(function (x) { return x.id === id })[0]; if (!e) return;
-      openDialog({
-        title: "支出を直す", fields: [{ id: "amt", type: "number", label: "金額(円・税込)", value: e.amt }, { id: "memo", type: "text", label: "メモ", value: e.memo || "", max: 100 }, { id: "cat", type: "select", label: "カテゴリ", options: CATS, value: e.cat || "その他" }],
-        buttons: [{ label: "やめる" }, {
-          label: "保存", primary: true, fn: function (v) {
-            var n = parseYen(v.amt); if (isNaN(n)) return YEN_MSG;
-            e.amt = n; e.memo = cleanStr(v.memo, 100); if (CATS.indexOf(v.cat) >= 0) e.cat = v.cat; save(); renderAll(); showToast("直しました", null);
-          }
-        }]
-      });
+      openDialog({ title: "支出を直す", fields: [{ id: "amt", type: "number", label: "金額(円・税込)", value: e.amt }, { id: "memo", type: "text", label: "メモ", value: e.memo || "", max: 100 }, { id: "cat", type: "select", label: "カテゴリ", options: CATS, value: e.cat || "その他" }],
+        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) {
+          var n = parseYen(v.amt); if (isNaN(n)) return YEN_MSG;
+          e.amt = n; e.memo = cleanStr(v.memo, 100); if (CATS.indexOf(v.cat) >= 0) e.cat = v.cat; save(); renderAll(); showToast("直しました", null);
+        } }] });
     },
     edel: function (id) { S.exp = by(S.exp, id) },
     tdone: function (id) { S.todos.forEach(function (t) { if (t.id === id) t.done = !t.done }) },
     tdel: function (id) {
       var t = S.todos.filter(function (x) { return x.id === id })[0]; if (!t) return;
       if (t.rid) {
-        openDialog({
-          title: "くり返しのやること", msg: "「" + t.text + "」は、くり返しの設定があります。どちらにしますか?",
+        openDialog({ title: "くり返しのやること", msg: "「" + t.text + "」は、くり返しの設定があります。どちらにしますか?",
           buttons: [{ label: "やめる" }, { label: "今日の分だけ消す", fn: function () { undoable("今日の分を消しました", function () { S.todos = by(S.todos, id) }) } },
-          { label: "今後もやめる", primary: true, fn: function () { undoable("くり返しをやめました", function () { S.rec = by(S.rec, t.rid); S.todos = by(S.todos, id) }) } }]
-        });
+            { label: "今後もやめる", primary: true, fn: function () { undoable("くり返しをやめました", function () { S.rec = by(S.rec, t.rid); S.todos = by(S.todos, id) }) } }] });
         return;
       }
       S.todos = by(S.todos, id);
@@ -620,24 +606,18 @@
     stbuy: function (id) { var k = S.stock.filter(function (x) { return x.id === id })[0]; if (k) addStock(k.name, today) },
     stuse: function (id) {
       var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
-      openDialog({
-        title: "使う量を選ぶ", msg: "目安の日数に反映します(買った間隔が記録されると、自動で、実際の買い方に合っていきます)。",
+      openDialog({ title: "使う量を選ぶ", msg: "目安の日数に反映します(買った間隔が記録されると、自動で、実際の買い方に合っていきます)。",
         fields: [{ id: "use", type: "select", label: "使う量", value: k.use || "ふつう", options: [{ value: "少なめ", label: "少なめ" }, { value: "ふつう", label: "ふつう" }, { value: "多め", label: "多め(髪が長い・使う回数が多いなど)" }, { value: "共有", label: "家族・同居人と共有" }] }],
-        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) { if (USELIST.indexOf(v.use) >= 0) k.use = v.use; save(); renderAll() } }]
-      });
+        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) { if (USELIST.indexOf(v.use) >= 0) k.use = v.use; save(); renderAll() } }] });
     },
     stcycle: function (id) {
       var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
-      openDialog({
-        title: "何日ごとに買い足しますか?", fields: [{ id: "n", type: "number", label: "日数(1〜3650)", value: k.manual ? k.cycle : "", note: "空欄にすると、買った間隔から自動で計算します" }],
-        buttons: [{ label: "やめる" }, {
-          label: "保存", primary: true, fn: function (v) {
-            var t = String(v.n).trim(), n = /^\d{1,4}$/.test(t) ? parseInt(t, 10) : NaN;
-            if (t === "") k.manual = false; else if (n >= 1 && n <= 3650) { k.manual = true; k.cycle = n } else return "日数は、1〜3650の整数で入力してください";
-            save(); renderAll();
-          }
-        }]
-      });
+      openDialog({ title: "何日ごとに買い足しますか?", fields: [{ id: "n", type: "number", label: "日数(1〜3650)", value: k.manual ? k.cycle : "", note: "空欄にすると、買った間隔から自動で計算します" }],
+        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) {
+          var t = String(v.n).trim(), n = /^\d{1,4}$/.test(t) ? parseInt(t, 10) : NaN;
+          if (t === "") k.manual = false; else if (n >= 1 && n <= 3650) { k.manual = true; k.cycle = n } else return "日数は、1〜3650の整数で入力してください";
+          save(); renderAll();
+        } }] });
     },
     stshop: function (id) { S.stock.forEach(function (k) { if (k.id === id && !S.shop.some(function (x) { return x.name === k.name && !x.bought })) S.shop.push({ id: uid(), name: k.name, bought: false }) }) },
     tofridge: function () { S.shop.filter(function (x) { return x.bought }).forEach(function (x) { var st = S.stock.filter(function (y) { return y.name === x.name })[0]; if (st || kindOf(x.name, "") === "日用品") addStock(x.name, today); else addFridge(x.name, today) }); S.shop = S.shop.filter(function (x) { return !x.bought }) },
@@ -687,15 +667,11 @@
     $("expAmt").value = ""; $("expMemo").value = ""; save(); renderMoney();
   });
   $("budgetBtn").addEventListener("click", function () {
-    openDialog({
-      title: "今月の予算", fields: [{ id: "n", type: "number", label: "今月使えるお金の総額(円・固定費を含む)", value: S.budget || "" }],
-      buttons: [{ label: "やめる" }, {
-        label: "保存", primary: true, fn: function (v) {
-          var n = parseYen(v.n, 0); if (isNaN(n)) return "予算は、0〜100,000,000円の整数で入力してください";
-          S.budget = n; save(); renderMoney(); showToast("予算を設定しました", null);
-        }
-      }]
-    });
+    openDialog({ title: "今月の予算", fields: [{ id: "n", type: "number", label: "今月使えるお金の総額(円・固定費を含む)", value: S.budget || "" }],
+      buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) {
+        var n = parseYen(v.n, 0); if (isNaN(n)) return "予算は、0〜100,000,000円の整数で入力してください";
+        S.budget = n; save(); renderMoney(); showToast("予算を設定しました", null);
+      } }] });
   });
   $("todoForm").addEventListener("submit", function (e) {
     e.preventDefault(); var text = $("todoIn").value.trim(); if (!text) return;
@@ -767,15 +743,11 @@
       var r = sanitizeState(d);
       if (!r.ok || !Array.isArray(d.todos)) { info("Life Support のバックアップファイルではないようです。「バックアップを書き出す」で作ったファイルを選んでください。", "読み込めませんでした"); return }
       var n = r.state;
-      openDialog({
-        title: "バックアップを読み込みます", msg: "現在のデータを置き換えます。\n" + sumTxt(n) + (r.skipped ? "\n(読み込めない項目 " + r.skipped + "件は、読み飛ばします)" : "") + "\n読み込んだあとも、「元に戻す」で、元のデータに戻せます。",
-        buttons: [{ label: "やめる" }, {
-          label: "読み込む", primary: true, fn: function () {
-            var before = JSON.stringify(S); S = n; rollover(); $("memo").value = S.memo; renderAll();
-            showToast("バックアップを読み込みました", function () { S = withDef(JSON.parse(before)); save(); renderAll(); $("memo").value = S.memo });
-          }
-        }]
-      });
+      openDialog({ title: "バックアップを読み込みます", msg: "現在のデータを置き換えます。\n" + sumTxt(n) + (r.skipped ? "\n(読み込めない項目 " + r.skipped + "件は、読み飛ばします)" : "") + "\n読み込んだあとも、「元に戻す」で、元のデータに戻せます。",
+        buttons: [{ label: "やめる" }, { label: "読み込む", primary: true, fn: function () {
+          var before = JSON.stringify(S); S = n; rollover(); $("memo").value = S.memo; renderAll();
+          showToast("バックアップを読み込みました", function () { S = withDef(JSON.parse(before)); save(); renderAll(); $("memo").value = S.memo });
+        } }] });
     };
     rd.readAsText(f);
   });
@@ -790,7 +762,7 @@
   function setTab(t) {
     if (TABS.indexOf(t) < 0) t = "home";
     document.querySelectorAll(".card[data-tab]").forEach(function (c) { c.classList.toggle("off", c.dataset.tab !== t) });
-    document.querySelectorAll(".tab").forEach(function (b) { b.setAttribute("aria-selected", String(b.dataset.t === t)) });
+    document.querySelectorAll(".tab").forEach(function (b) { if (b.dataset.t === t) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current") });
     try { localStorage.setItem("ls_tab", JSON.stringify(t)) } catch (e) { }
   }
   document.querySelector(".tabs").addEventListener("click", function (e) { var b = e.target.closest(".tab"); if (b) { setTab(b.dataset.t); window.scrollTo(0, 0) } });
@@ -1080,10 +1052,8 @@
     $("rcRes").classList.add("hidden");
     var ok = false; try { ok = localStorage.getItem("ls_ai_ok") === "1" } catch (x) { }
     if (ok) { runRc(f, true); return }
-    openDialog({
-      title: "写真をAIに送ります", msg: "レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n「送らない」を選ぶと、端末の中だけで読み取る簡易読み取りを使います(精度は低めです)。", noEsc: true,
-      buttons: [{ label: "送らない(端末内で読み取る)", fn: function () { runRc(f, false) } }, { label: "送って読み取る", primary: true, fn: function () { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } runRc(f, true) } }]
-    });
+    openDialog({ title: "写真をAIに送ります", msg: "レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n「送らない」を選ぶと、端末の中だけで読み取る簡易読み取りを使います(精度は低めです)。", noEsc: true,
+      buttons: [{ label: "送らない(端末内で読み取る)", fn: function () { runRc(f, false) } }, { label: "送って読み取る", primary: true, fn: function () { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } runRc(f, true) } }] });
   });
   /* ---- AIの読み取りの成績(この端末にだけ記録。写真や中身は、残さない) ---- */
   function logRc(total) {
@@ -1253,11 +1223,9 @@
     if (!cuid || syncPaused) return; try { localStorage.setItem("ls_dirty", "1") } catch (e) { } setSync("同期中…"); clearTimeout(timer);
     timer = setTimeout(function () { push().then(pushOk).catch(pushFail) }, 700);
   }
-  var AUTHMSG = {
-    "auth/invalid-credential": "メールアドレスまたはパスワードが違います。入力を確認してください", "auth/wrong-password": "パスワードが違います。入力を確認するか、「パスワードを忘れた」を使ってください", "auth/user-not-found": "このメールアドレスは登録されていません。「新規登録」を押してください",
+  var AUTHMSG = { "auth/invalid-credential": "メールアドレスまたはパスワードが違います。入力を確認してください", "auth/wrong-password": "パスワードが違います。入力を確認するか、「パスワードを忘れた」を使ってください", "auth/user-not-found": "このメールアドレスは登録されていません。「新規登録」を押してください",
     "auth/invalid-email": "メールアドレスの形式が正しくありません。(例:name@example.com)", "auth/email-already-in-use": "このメールアドレスは、すでに登録されています。「ログイン」を押してください", "auth/weak-password": "パスワードは、6文字以上にしてください",
-    "auth/network-request-failed": "通信できません。電波の良い場所で、もう一度試してください", "auth/too-many-requests": "試した回数が多すぎます。しばらく待ってから、もう一度試してください", "auth/operation-not-allowed": "メールとパスワードでのログインが、まだ有効になっていません(管理者の設定が必要です)", "auth/user-disabled": "このアカウントは、使えない状態です", "auth/missing-password": "パスワードを入力してください"
-  };
+    "auth/network-request-failed": "通信できません。電波の良い場所で、もう一度試してください", "auth/too-many-requests": "試した回数が多すぎます。しばらく待ってから、もう一度試してください", "auth/operation-not-allowed": "メールとパスワードでのログインが、まだ有効になっていません(管理者の設定が必要です)", "auth/user-disabled": "このアカウントは、使えない状態です", "auth/missing-password": "パスワードを入力してください" };
   function authErr(e) { $("authMsg").textContent = AUTHMSG[e && e.code] || ("うまくいきませんでした。通信を確認して、もう一度お試しください(コード: " + (e && (e.code || e.message) || "不明") + ")") }
   /* ---- ゲスト(この端末)のデータと、クラウドのデータが、ちがうときの扱い ---- */
   function hasData(x) { return !!(x.budget || x.memo || x.exp.length || x.todos.length || x.rec.length || x.sched.length || x.fridge.length || x.shop.length || x.fixed.length || x.stock.length || Object.keys(x.meals).length || Object.keys(x.trash).length || Object.keys(x.codes).length) }
@@ -1280,11 +1248,9 @@
     var backup = JSON.stringify(localS); try { localStorage.setItem("ls_backup_login", backup) } catch (e) { }
     syncPaused = true;
     function adopt(st, msg) { syncPaused = false; useState(st, msg); showToast(msg, function () { S = withDef(JSON.parse(backup)); save(); renderAll(); $("memo").value = S.memo }) }
-    openDialog({
-      title: "データの扱いを選んでください", noEsc: true,
+    openDialog({ title: "データの扱いを選んでください", noEsc: true,
       msg: "この端末のデータと、クラウドのデータが、ちがっています。\nこの端末:" + sumTxt(localS) + "\nクラウド:" + sumTxt(cloud) + "\nどれを使いますか?(選んだあとも、「元に戻す」で、この端末のデータに戻せます)",
-      buttons: [{ label: "クラウドのデータを使う", fn: function () { adopt(cloud, "クラウドのデータを使いました") } }, { label: "この端末のデータを使う", fn: function () { adopt(localS, "この端末のデータを使いました") } }, { label: "両方を統合する(おすすめ)", primary: true, fn: function () { adopt(mergeStates(localS, cloud), "両方のデータを統合しました") } }]
-    });
+      buttons: [{ label: "クラウドのデータを使う", fn: function () { adopt(cloud, "クラウドのデータを使いました") } }, { label: "この端末のデータを使う", fn: function () { adopt(localS, "この端末のデータを使いました") } }, { label: "両方を統合する(おすすめ)", primary: true, fn: function () { adopt(mergeStates(localS, cloud), "両方のデータを統合しました") } }] });
   }
   function loadCloud() {
     setSync("読み込み中…");
@@ -1343,4 +1309,10 @@
 (function () {
   var h = new Date().getHours(), g = h < 5 ? "こんばんは" : h < 11 ? "おはようございます" : h < 17 ? "こんにちは" : "こんばんは";
   var t = document.querySelector(".tagline"); if (t) t.textContent = g + "。今日のことは、ここにぜんぶ。";
+
+  /* ---- ホーム画面に追加できる・オフラインでも開ける(sw.js が担当) ---- */
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    var regSW = function () { navigator.serviceWorker.register("sw.js").catch(function () { }) };
+    if (document.readyState === "complete") regSW(); else window.addEventListener("load", regSW);
+  }
 })();
