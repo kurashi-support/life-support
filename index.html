@@ -18,7 +18,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 
 <body>
@@ -178,6 +178,7 @@
           <h2 id="h-fr">冷蔵庫の中身</h2>
           <button class="btn b-gh sm" id="frSelBtn" type="button">まとめて消す</button>
         </div>
+        <p class="frnote hidden" id="frExpNote" role="status"></p>
         <ul class="chips" id="fridge"></ul>
         <div class="row"><button class="btn b-gh sm" id="remFr" type="button">🔔 期限をカレンダーで通知</button></div>
         <div class="row hidden" id="frBulk">
@@ -357,7 +358,7 @@
           <summary>🍚 ごはん</summary>
           <ul>
             <li><b>今日のご飯</b>: 「夜ご飯を決める」で入力します。「クリア」で消せます。</li>
-            <li><b>冷蔵庫の中身</b>: 食材を入れて「追加」します。賞味期限は、空欄なら、食材の種類から目安を自動で入れます。期限が近いものは色が変わり、ホームのまとめにも出ます。</li>
+            <li><b>冷蔵庫の中身</b>: 食材を入れて「追加」します。賞味期限は、空欄なら、食材の種類から目安を自動で入れます。期限が近いものは色が変わり、ホームのまとめにも出ます。期限が過ぎた食材は、勝手には消えず、「⚠ 期限が○日過ぎています」と表示されたまま、残ります。「整理する」か、×で消してください。</li>
           <li><b>期限・買い時の通知</b>: 冷蔵庫・日用品の「カレンダーで通知」を押すと、カレンダー用のファイルができます。スマホで開いて追加すると、アプリを閉じていても、決めた時刻(例:期限の1日前の朝8時)に、カレンダーから通知が来ます。「Life Support」という専用のカレンダーに追加すると、更新のときに、整理しやすくなります。食材や日用品が変わると、ホームで「カレンダーの更新」をお知らせします。</li>
             <li><b>冷蔵庫から提案</b>: 期限が近い食材を優先して、作れそうな料理を出します。足りない食材は「足りない食材を追加」で買い物リストに入れられます。</li>
             <li><b>食材だけで作れる料理</b>: 冷蔵庫にある食材だけで作れる料理を出します。</li>
@@ -477,7 +478,7 @@
     </footer>
   </div>
 
-  <script src="script.js?v=26"></script>
+  <script src="script.js?v=27"></script>
 
 </body>
 
