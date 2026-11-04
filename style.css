@@ -1601,3 +1601,9 @@ form.row input[type=text] {
 .lrow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 4px 0; font-size: 15px }
 .lrow b { font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap }
 .lrow.warn b { color: var(--rust) }
+
+/* 期限が過ぎた食材のお知らせ */
+.frnote { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--rust-t); border-radius: 12px; padding: 10px 12px; margin: 0 0 10px; font-size: 14px; font-weight: 700 }
+.frnote span { flex: 1 1 200px; min-width: 0 }
+.chips li { flex-wrap: wrap; row-gap: 0; border-radius: 22px; max-width: 100% }   /* 狭い画面で、食材の名前が途中で折り返されないように */
+.chips li > span { min-width: 0; overflow-wrap: anywhere }
