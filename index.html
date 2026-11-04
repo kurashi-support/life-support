@@ -18,7 +18,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 
 <body>
@@ -318,6 +318,7 @@
         <div id="mChart"></div>
         <p class="label" id="mInfo" style="margin:4px 0 0"></p>
         <div id="mCats" style="margin-top:12px"></div>
+        <div id="mLoss" style="margin-top:12px"></div>
         <ul class="rows" id="mList" style="margin-top:12px"></ul>
         <div class="row"><button class="btn b-gh" id="mCsv" type="button">この月をCSVで書き出す</button></div>
         <p class="label" style="margin:8px 0 0">✎で、金額・メモ・カテゴリを直せます。×で消しても、すぐに「元に戻す」を押せば戻せます</p>
@@ -380,6 +381,7 @@
               品物を1行追加」で足せます。いらない行は×で消せます。合計がレシートとちがうときは、差額が表示され、ボタンで調整できます。読み取れないときは「手入力で登録」も使えます。品物ごとに、「冷蔵庫へ」「日用品へ」「入れない」を選べます(自動で選ばれます)。確認したら「今日の支出に登録」を押すと、支出に加えて、冷蔵庫(賞味期限は目安)と日用品にも入ります。
             </li>
             <li><b>固定費・サブスク</b>: 名前・金額・支払日を登録します。毎月の予算から、自動で引かれます。</li>
+            <li><b>食品ロス(推定)</b>: 「月ごとの家計」に出ます。冷蔵庫の食材を消すと、期限内に使い切れたか、期限(目安)を過ぎていたかを、自動で数えます。レシートから入れた食材は、金額も分かるので、「約○円分」と出ます。あくまで推定で、責めるためのものではありません。期限が近い食材は、ホームのアシストが、先に使うものを、お知らせします。</li>
           </ul>
         </details>
       </section>
@@ -475,7 +477,7 @@
     </footer>
   </div>
 
-  <script src="script.js?v=25"></script>
+  <script src="script.js?v=26"></script>
 
 </body>
 
