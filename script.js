@@ -305,10 +305,13 @@
     var l = $("fridge"), n = frSel ? Object.keys(frSel).filter(function (k) { return frSel[k] }).length : 0;
     $("frSelBtn").classList.toggle("hidden", !!frSel || !S.fridge.length); $("frBulk").classList.toggle("hidden", !frSel);
     $("frDel").textContent = "選んだものを消す(" + n + ")"; $("frDel").disabled = !n;
+    var over = S.fridge.filter(function (x) { return x.exp && diff(x.exp) < 0 }), note = $("frExpNote");
+    note.classList.toggle("hidden", !over.length || !!frSel);
+    note.innerHTML = over.length ? '<span>⚠ 期限が過ぎた食材が ' + over.length + '品あります。消すまで、ここに残ります(勝手には消えません)</span><button class="btn b-gh sm" type="button" data-tidy="1">整理する</button>' : "";
     if (!S.fridge.length) { l.innerHTML = '<li style="background:none;padding:0"><p class="empty">冷蔵庫は空です。食材を追加するか、レシートを登録すると自動で入ります</p></li>'; return }
     l.innerHTML = S.fridge.slice().sort(function (a, b) { return (a.exp || "9999").localeCompare(b.exp || "9999") }).map(function (x) {
       var cls = "", lb = "";
-      if (x.exp) { var d = diff(x.exp); lb = (d < 0 ? "期限切れ" : d === 0 ? "今日まで" : "あと" + d + "日") + (x.est ? "(目安)" : ""); cls = d <= 0 ? "bad" : d <= 2 ? "warn" : "" }
+      if (x.exp) { var d = diff(x.exp); lb = (d < 0 ? "⚠ 期限が" + (-d) + "日過ぎています" : d === 0 ? "今日まで" : "あと" + d + "日") + (x.est ? "(目安)" : ""); cls = d <= 0 ? "bad" : d <= 2 ? "warn" : "" }
       if (frSel) {
         var on = !!frSel[x.id];
         return '<li class="' + cls + ' pm' + (on ? " sel" : "") + '"><button type="button" class="pick" data-a="fpick" data-id="' + esc(x.id) + '" aria-pressed="' + on + '"><span class="ck">' + (on ? "✓" : "") + '</span><span>' + esc(x.name) + '</span>' + (lb ? '<small>' + lb + '</small>' : '') + '</button></li>';
@@ -327,7 +330,7 @@
     var soon = S.fridge.filter(function (x) { return x.exp && diff(x.exp) <= 2 }).sort(function (a, b) { return a.exp.localeCompare(b.exp) });
     var due = S.stock.filter(function (k) { return stockState(k).due });
     var d0 = soon.length ? diff(soon[0].exp) : 0;
-    var fl = soon.length ? soon[0].name + "(" + (d0 < 0 ? "期限切れ" : d0 === 0 ? "今日まで" : "あと" + d0 + "日") + ")" + (soon.length > 1 ? " ほか" + (soon.length - 1) + "品" : "") : "近いものはなし";
+    var fl = soon.length ? soon[0].name + "(" + (d0 < 0 ? "期限が過ぎています" : d0 === 0 ? "今日まで" : "あと" + d0 + "日") + ")" + (soon.length > 1 ? " ほか" + (soon.length - 1) + "品" : "") : "近いものはなし";
     var dl = due.length ? due[0].name + (due.length > 1 ? " ほか" + (due.length - 1) + "品" : "") + "が買い時" : "買い時はなし";
     var T = [
       ["やること", left ? "残り " + left + "件" : (S.todos.length ? "ぜんぶ完了" : "なし")],
@@ -384,14 +387,16 @@
   }
   function renderLoss(m) {
     var el = $("mLoss"); if (!el) return; var t = lossStats(m);
-    if (!t.total) { el.innerHTML = '<div class="loss"><b>食品ロス(推定)</b><p class="label" style="margin:4px 0 0">この月は、まだ記録がありません。冷蔵庫の食材を消すと、「期限内に使い切れたか」「期限を過ぎていたか」を、自動で数えます</p></div>'; return }
+    if (!t.total && !(m === today.slice(0, 7) && S.fridge.some(function (x) { return x.exp && diff(x.exp) < 0 }))) { el.innerHTML = '<div class="loss"><b>食品ロス(推定)</b><p class="label" style="margin:4px 0 0">この月は、まだ記録がありません。冷蔵庫の食材を消すと、「期限内に使い切れたか」「期限を過ぎていたか」を、自動で数えます</p></div>'; return }
     var rate = t.total >= 3 ? Math.round(t.ok / t.total * 100) : -1, yenTxt2 = t.ex ? (t.yen ? "(金額が分かる " + t.withP + "品で、約 " + t.yen.toLocaleString("ja-JP") + "円" + (t.withP < t.ex ? "。ほかの " + (t.ex - t.withP) + "品は、金額が不明" : "") + ")" : "(金額は、不明です。レシートから入れた食材は、金額が入ります)") : "";
+    var left = m === today.slice(0, 7) ? S.fridge.filter(function (x) { return x.exp && diff(x.exp) < 0 }) : [], leftYen = left.reduce(function (a, x) { return a + (x.price || 0) }, 0);
     el.innerHTML = '<div class="loss"><b>食品ロス(推定)</b>' +
       '<div class="lrow"><span>期限内に使い切れた食材</span><b>' + t.ok + '品</b></div>' +
+      (left.length ? '<div class="lrow warn"><span>いま冷蔵庫に残っている、期限が過ぎた食材</span><b>' + left.length + '品</b></div>' + (leftYen ? '<p class="label" style="margin:2px 0 0">(金額が分かる分で、約 ' + leftYen.toLocaleString("ja-JP") + '円。消すと、上の数に入ります)</p>' : '<p class="label" style="margin:2px 0 0">(消すと、上の数に入ります)</p>') : "") +
       '<div class="lrow' + (t.ex ? " warn" : "") + '"><span>期限(目安)を過ぎて、消した食材</span><b>' + t.ex + '品</b></div>' +
       (yenTxt2 ? '<p class="label" style="margin:2px 0 0">' + esc(yenTxt2) + '</p>' : "") +
       (rate >= 0 ? '<div class="lrow"><span>期限内に使い切れた割合</span><b>' + rate + '%</b></div>' : "") +
-      '<p class="label" style="margin:6px 0 0">' + (t.ex ? "期限が近い食材は、ホームの「今日の生活アシスト」で、先に使うものを、お知らせします。" : "期限を過ぎた食材は、ありません。この調子です。") + '(推定です。期限を過ぎてから消した食材を、数えています)</p></div>';
+      '<p class="label" style="margin:6px 0 0">' + ((t.ex || left.length) ? "期限が近い食材は、ホームの「今日の生活アシスト」で、先に使うものを、お知らせします。" : "期限を過ぎた食材は、ありません。この調子です。") + '(推定です。期限を過ぎてから消した食材を、数えています)</p></div>';
   }
   /* ---- 削除の「元に戻す」 ---- */
   var toastTimer = null, toastUndo = null;
@@ -771,6 +776,7 @@
   });
 
   /* ---- フォーム ---- */
+  $("frExpNote").addEventListener("click", function (e) { if (e.target.closest("[data-tidy]")) tidyExpired() });
   $("frSelBtn").addEventListener("click", function () { frSel = {}; renderFridge() });
   $("frCancel").addEventListener("click", function () { frSel = null; renderFridge() });
   $("frAll").addEventListener("click", function () { frSel = {}; S.fridge.forEach(function (x) { frSel[x.id] = true }); renderFridge() });
