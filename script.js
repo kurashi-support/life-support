@@ -395,7 +395,7 @@
         });
         if (f.selectAll) {
           var all = document.createElement("button"); all.type = "button"; all.className = "linkbtn"; all.textContent = [].some.call(g.querySelectorAll("input"), function (c) { return !c.checked }) ? "すべて選ぶ" : "すべて解除";
-          all.addEventListener("click", function () { var cs = g.querySelectorAll("input"), on = [].some.call(cs, function (c) { return !c.checked });[].forEach.call(cs, function (c) { c.checked = on }); all.textContent = on ? "すべて解除" : "すべて選ぶ" });
+          all.addEventListener("click", function () { var cs = g.querySelectorAll("input"), on = [].some.call(cs, function (c) { return !c.checked }); [].forEach.call(cs, function (c) { c.checked = on }); all.textContent = on ? "すべて解除" : "すべて選ぶ" });
           box.appendChild(all);
         }
         box.appendChild(g); return;
@@ -541,8 +541,7 @@
   }
   function openReminderDialog(which) {
     var pref = {}, ex = calRead(); try { pref = JSON.parse(localStorage.getItem("ls_cal_pref") || "{}") } catch (e) { }
-    openDialog({
-      title: "期限・買い時を、カレンダーで通知する",
+    openDialog({ title: "期限・買い時を、カレンダーで通知する",
       msg: "いまの冷蔵庫と日用品から、カレンダー用のファイルを作ります。スマホで開いて、カレンダーに追加すると、アプリを開いていなくても、決めた時刻に、通知が来ます。\n" +
         "おすすめ: カレンダーアプリで、「Life Support」という専用のカレンダーを作り、追加するときに、それを選びます。更新するときは、専用カレンダーの予定を消してから、新しいファイルを追加すると、古い予定が残りません。\n" +
         "食材や日用品が変わると、アプリのホームで、「カレンダーの更新」をお知らせします。" + (ex && ex.items ? "\n前回は " + mdOf(ex.at) + " に、" + Object.keys(ex.items).length + "件を書き出しました。" : ""),
@@ -550,16 +549,13 @@
         { id: "lead", type: "select", label: "いつ通知しますか", value: String(pref.lead != null ? pref.lead : 1), options: [{ value: "0", label: "期限・買い時の当日" }, { value: "1", label: "1日前" }, { value: "2", label: "2日前" }, { value: "3", label: "3日前" }] },
         { id: "hour", type: "select", label: "何時に通知しますか", value: String(pref.hour != null ? pref.hour : 8), options: [7, 8, 9, 12, 18].map(function (h) { return { value: String(h), label: h + ":00" } }) },
         { id: "what", type: "checks", label: "通知するもの", options: [{ value: "fridge", label: "冷蔵庫の食材(賞味期限)", checked: which !== "stock" }, { value: "stock", label: "日用品の買い時", checked: which !== "fridge" }] }],
-      buttons: [{ label: "やめる" }, {
-        label: "ファイルを作る", primary: true, fn: function (v) {
-          if (!v.what.length) return "通知するものを、選んでください";
-          var o = { lead: +v.lead, hour: +v.hour, fridge: v.what.indexOf("fridge") >= 0, stock: v.what.indexOf("stock") >= 0 }, r = exportReminders(o);
-          if (!r.count) return "通知できるものが、ありません(期限や買い時が、まだ先の食材・日用品を、登録してください)";
-          showToast(r.count + "件の通知用ファイルを作りました。開いて、カレンダーに追加してください" + (r.skipped ? "(時刻が過ぎたもの " + r.skipped + "件は、除きました)" : ""), null);
-          renderAssist();
-        }
-      }]
-    });
+      buttons: [{ label: "やめる" }, { label: "ファイルを作る", primary: true, fn: function (v) {
+        if (!v.what.length) return "通知するものを、選んでください";
+        var o = { lead: +v.lead, hour: +v.hour, fridge: v.what.indexOf("fridge") >= 0, stock: v.what.indexOf("stock") >= 0 }, r = exportReminders(o);
+        if (!r.count) return "通知できるものが、ありません(期限や買い時が、まだ先の食材・日用品を、登録してください)";
+        showToast(r.count + "件の通知用ファイルを作りました。開いて、カレンダーに追加してください" + (r.skipped ? "(時刻が過ぎたもの " + r.skipped + "件は、除きました)" : ""), null);
+        renderAssist();
+      } }] });
   }
   $("remFr").addEventListener("click", function () { openReminderDialog("fridge") });
   $("remSt").addEventListener("click", function () { openReminderDialog("stock") });
@@ -629,27 +625,19 @@
   function goTab(t) { document.querySelector('.tab[data-t="' + t + '"]').click() }
   function tidyTodos() {
     var u = S.todos.filter(function (t) { return !t.done });
-    openDialog({
-      title: "やることを整理する", msg: "今日はやらないものを選ぶと、リストから外します。外したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (t) { return { value: t.id, label: t.text + (t.date < today ? "(" + (+t.date.slice(5, 7)) + "/" + (+t.date.slice(8)) + "から)" : "") } }) }],
-      buttons: [{ label: "やめる" }, {
-        label: "選んだものを外す", primary: true, fn: function (v) {
-          if (!v.ids.length) return "外すものを選んでください";
-          undoable(v.ids.length + "件を外しました", function () { S.todos = S.todos.filter(function (t) { return v.ids.indexOf(t.id) < 0 }) });
-        }
-      }]
-    });
+    openDialog({ title: "やることを整理する", msg: "今日はやらないものを選ぶと、リストから外します。外したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (t) { return { value: t.id, label: t.text + (t.date < today ? "(" + (+t.date.slice(5, 7)) + "/" + (+t.date.slice(8)) + "から)" : "") } }) }],
+      buttons: [{ label: "やめる" }, { label: "選んだものを外す", primary: true, fn: function (v) {
+        if (!v.ids.length) return "外すものを選んでください";
+        undoable(v.ids.length + "件を外しました", function () { S.todos = S.todos.filter(function (t) { return v.ids.indexOf(t.id) < 0 }) });
+      } }] });
   }
   function tidyExpired() {
     var u = S.fridge.filter(function (x) { return x.exp && diff(x.exp) < 0 });
-    openDialog({
-      title: "期限切れの食材を整理する", msg: "消す食材を選んでください(実際の状態は、パッケージで確認してください)。消したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (x) { return { value: x.id, label: x.name + "(" + (+x.exp.slice(5, 7)) + "/" + (+x.exp.slice(8)) + (x.est ? "・目安" : "") + ")", checked: true } }) }],
-      buttons: [{ label: "やめる" }, {
-        label: "選んだものを消す", primary: true, fn: function (v) {
-          if (!v.ids.length) return "消す食材を選んでください";
-          undoable(v.ids.length + "品を消しました", function () { S.fridge = S.fridge.filter(function (x) { return v.ids.indexOf(x.id) < 0 }); $("sug").innerHTML = "" });
-        }
-      }]
-    });
+    openDialog({ title: "期限切れの食材を整理する", msg: "消す食材を選んでください(実際の状態は、パッケージで確認してください)。消したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (x) { return { value: x.id, label: x.name + "(" + (+x.exp.slice(5, 7)) + "/" + (+x.exp.slice(8)) + (x.est ? "・目安" : "") + ")", checked: true } }) }],
+      buttons: [{ label: "やめる" }, { label: "選んだものを消す", primary: true, fn: function (v) {
+        if (!v.ids.length) return "消す食材を選んでください";
+        undoable(v.ids.length + "品を消しました", function () { S.fridge = S.fridge.filter(function (x) { return v.ids.indexOf(x.id) < 0 }); $("sug").innerHTML = "" });
+      } }] });
   }
   function runAssist(k) {
     if (k === "food") { goTab("meal"); $("mealSug").click(); return }
@@ -699,26 +687,20 @@
   var act = {
     eedit: function (id) {
       var e = S.exp.filter(function (x) { return x.id === id })[0]; if (!e) return;
-      openDialog({
-        title: "支出を直す", fields: [{ id: "amt", type: "number", label: "金額(円・税込)", value: e.amt }, { id: "memo", type: "text", label: "メモ", value: e.memo || "", max: 100 }, { id: "cat", type: "select", label: "カテゴリ", options: CATS, value: e.cat || "その他" }],
-        buttons: [{ label: "やめる" }, {
-          label: "保存", primary: true, fn: function (v) {
-            var n = parseYen(v.amt); if (isNaN(n)) return YEN_MSG;
-            e.amt = n; e.memo = cleanStr(v.memo, 100); if (CATS.indexOf(v.cat) >= 0) e.cat = v.cat; save(); renderAll(); showToast("直しました", null);
-          }
-        }]
-      });
+      openDialog({ title: "支出を直す", fields: [{ id: "amt", type: "number", label: "金額(円・税込)", value: e.amt }, { id: "memo", type: "text", label: "メモ", value: e.memo || "", max: 100 }, { id: "cat", type: "select", label: "カテゴリ", options: CATS, value: e.cat || "その他" }],
+        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) {
+          var n = parseYen(v.amt); if (isNaN(n)) return YEN_MSG;
+          e.amt = n; e.memo = cleanStr(v.memo, 100); if (CATS.indexOf(v.cat) >= 0) e.cat = v.cat; save(); renderAll(); showToast("直しました", null);
+        } }] });
     },
     edel: function (id) { S.exp = by(S.exp, id) },
     tdone: function (id) { S.todos.forEach(function (t) { if (t.id === id) t.done = !t.done }) },
     tdel: function (id) {
       var t = S.todos.filter(function (x) { return x.id === id })[0]; if (!t) return;
       if (t.rid) {
-        openDialog({
-          title: "くり返しのやること", msg: "「" + t.text + "」は、くり返しの設定があります。どちらにしますか?",
+        openDialog({ title: "くり返しのやること", msg: "「" + t.text + "」は、くり返しの設定があります。どちらにしますか?",
           buttons: [{ label: "やめる" }, { label: "今日の分だけ消す", fn: function () { undoable("今日の分を消しました", function () { S.todos = by(S.todos, id) }) } },
-          { label: "今後もやめる", primary: true, fn: function () { undoable("くり返しをやめました", function () { S.rec = by(S.rec, t.rid); S.todos = by(S.todos, id) }) } }]
-        });
+            { label: "今後もやめる", primary: true, fn: function () { undoable("くり返しをやめました", function () { S.rec = by(S.rec, t.rid); S.todos = by(S.todos, id) }) } }] });
         return;
       }
       S.todos = by(S.todos, id);
@@ -734,24 +716,18 @@
     stbuy: function (id) { var k = S.stock.filter(function (x) { return x.id === id })[0]; if (k) addStock(k.name, today) },
     stuse: function (id) {
       var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
-      openDialog({
-        title: "使う量を選ぶ", msg: "目安の日数に反映します(買った間隔が記録されると、自動で、実際の買い方に合っていきます)。",
+      openDialog({ title: "使う量を選ぶ", msg: "目安の日数に反映します(買った間隔が記録されると、自動で、実際の買い方に合っていきます)。",
         fields: [{ id: "use", type: "select", label: "使う量", value: k.use || "ふつう", options: [{ value: "少なめ", label: "少なめ" }, { value: "ふつう", label: "ふつう" }, { value: "多め", label: "多め(髪が長い・使う回数が多いなど)" }, { value: "共有", label: "家族・同居人と共有" }] }],
-        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) { if (USELIST.indexOf(v.use) >= 0) k.use = v.use; save(); renderAll() } }]
-      });
+        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) { if (USELIST.indexOf(v.use) >= 0) k.use = v.use; save(); renderAll() } }] });
     },
     stcycle: function (id) {
       var k = S.stock.filter(function (x) { return x.id === id })[0]; if (!k) return;
-      openDialog({
-        title: "何日ごとに買い足しますか?", fields: [{ id: "n", type: "number", label: "日数(1〜3650)", value: k.manual ? k.cycle : "", note: "空欄にすると、買った間隔から自動で計算します" }],
-        buttons: [{ label: "やめる" }, {
-          label: "保存", primary: true, fn: function (v) {
-            var t = String(v.n).trim(), n = /^\d{1,4}$/.test(t) ? parseInt(t, 10) : NaN;
-            if (t === "") k.manual = false; else if (n >= 1 && n <= 3650) { k.manual = true; k.cycle = n } else return "日数は、1〜3650の整数で入力してください";
-            save(); renderAll();
-          }
-        }]
-      });
+      openDialog({ title: "何日ごとに買い足しますか?", fields: [{ id: "n", type: "number", label: "日数(1〜3650)", value: k.manual ? k.cycle : "", note: "空欄にすると、買った間隔から自動で計算します" }],
+        buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) {
+          var t = String(v.n).trim(), n = /^\d{1,4}$/.test(t) ? parseInt(t, 10) : NaN;
+          if (t === "") k.manual = false; else if (n >= 1 && n <= 3650) { k.manual = true; k.cycle = n } else return "日数は、1〜3650の整数で入力してください";
+          save(); renderAll();
+        } }] });
     },
     stshop: function (id) { S.stock.forEach(function (k) { if (k.id === id && !S.shop.some(function (x) { return x.name === k.name && !x.bought })) S.shop.push({ id: uid(), name: k.name, bought: false }) }) },
     tofridge: function () { S.shop.filter(function (x) { return x.bought }).forEach(function (x) { var st = S.stock.filter(function (y) { return y.name === x.name })[0]; if (st || kindOf(x.name, "") === "日用品") addStock(x.name, today); else addFridge(x.name, today) }); S.shop = S.shop.filter(function (x) { return !x.bought }) },
@@ -801,15 +777,11 @@
     $("expAmt").value = ""; $("expMemo").value = ""; save(); renderMoney();
   });
   $("budgetBtn").addEventListener("click", function () {
-    openDialog({
-      title: "今月の予算", fields: [{ id: "n", type: "number", label: "今月使えるお金の総額(円・固定費を含む)", value: S.budget || "" }],
-      buttons: [{ label: "やめる" }, {
-        label: "保存", primary: true, fn: function (v) {
-          var n = parseYen(v.n, 0); if (isNaN(n)) return "予算は、0〜100,000,000円の整数で入力してください";
-          S.budget = n; save(); renderMoney(); showToast("予算を設定しました", null);
-        }
-      }]
-    });
+    openDialog({ title: "今月の予算", fields: [{ id: "n", type: "number", label: "今月使えるお金の総額(円・固定費を含む)", value: S.budget || "" }],
+      buttons: [{ label: "やめる" }, { label: "保存", primary: true, fn: function (v) {
+        var n = parseYen(v.n, 0); if (isNaN(n)) return "予算は、0〜100,000,000円の整数で入力してください";
+        S.budget = n; save(); renderMoney(); showToast("予算を設定しました", null);
+      } }] });
   });
   $("todoForm").addEventListener("submit", function (e) {
     e.preventDefault(); var text = $("todoIn").value.trim(); if (!text) return;
@@ -881,15 +853,11 @@
       var r = sanitizeState(d);
       if (!r.ok || !Array.isArray(d.todos)) { info("Life Support のバックアップファイルではないようです。「バックアップを書き出す」で作ったファイルを選んでください。", "読み込めませんでした"); return }
       var n = r.state;
-      openDialog({
-        title: "バックアップを読み込みます", msg: "現在のデータを置き換えます。\n" + sumTxt(n) + (r.skipped ? "\n(読み込めない項目 " + r.skipped + "件は、読み飛ばします)" : "") + "\n読み込んだあとも、「元に戻す」で、元のデータに戻せます。",
-        buttons: [{ label: "やめる" }, {
-          label: "読み込む", primary: true, fn: function () {
-            var before = JSON.stringify(S); S = n; rollover(); $("memo").value = S.memo; renderAll();
-            showToast("バックアップを読み込みました", function () { S = withDef(JSON.parse(before)); save(); renderAll(); $("memo").value = S.memo });
-          }
-        }]
-      });
+      openDialog({ title: "バックアップを読み込みます", msg: "現在のデータを置き換えます。\n" + sumTxt(n) + (r.skipped ? "\n(読み込めない項目 " + r.skipped + "件は、読み飛ばします)" : "") + "\n読み込んだあとも、「元に戻す」で、元のデータに戻せます。",
+        buttons: [{ label: "やめる" }, { label: "読み込む", primary: true, fn: function () {
+          var before = JSON.stringify(S); S = n; rollover(); $("memo").value = S.memo; renderAll();
+          showToast("バックアップを読み込みました", function () { S = withDef(JSON.parse(before)); save(); renderAll(); $("memo").value = S.memo });
+        } }] });
     };
     rd.readAsText(f);
   });
@@ -1087,7 +1055,7 @@
     level = AI_THINK ? (level || (["MINIMAL", "LOW", "MEDIUM", "HIGH"].indexOf(ov) >= 0 ? ov : "LOW")) : "plain";
     if (!aiPs[level]) aiPs[level] = Promise.all([import(BASE + "firebase-app.js"), import(BASE + "firebase-ai.js"), RC_SITE_KEY ? import(BASE + "firebase-app-check.js") : Promise.resolve(null)]).then(function (m) {
       var app = m[0].getApp(), Sc = m[1].Schema;
-      if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+      if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || location.protocol === "file:") self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;   /* パソコンで直接開いて試すときだけ、デバッグ用の合図を使う(コンソールに出る番号を、Firebaseに登録すると、試せる)。公開サイトでは、使わない */
       if (RC_SITE_KEY && m[2] && !acDone) { m[2].initializeAppCheck(app, { provider: new m[2].ReCaptchaEnterpriseProvider(RC_SITE_KEY), isTokenAutoRefreshEnabled: true }); acDone = true }
       var ai = m[1].getAI(app, { backend: new m[1].GoogleAIBackend() });
       var gc = {
@@ -1150,8 +1118,16 @@
     }
     return fitTotal(items, total);
   }
+  function parseJSONLoose(txt) {
+    var t = String(txt || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+    try { return JSON.parse(t) } catch (e) {
+      var a = t.indexOf("{"), b = t.lastIndexOf("}");
+      if (a >= 0 && b > a) return JSON.parse(t.slice(a, b + 1));
+      var er = new Error("AIの返事が、JSONの形ではありませんでした: " + t.slice(0, 60)); er.code = "bad-json"; throw er;
+    }
+  }
   function parseAI(txt) {
-    var d = JSON.parse(txt), excl = d.taxIncluded === false;
+    var d = parseJSONLoose(txt), excl = d.taxIncluded === false;
     var items = (d.items || []).map(function (x) {
       var p = Math.round(Number(x.price)), rt = Number(x.rate) === 8 ? 8 : 10, ex = excl ? p * (100 + rt) / 100 : p;
       return { name: String(x.name || "").trim(), aiKind: String(x.kind || "").trim(), ex: ex, price: Math.floor(ex) };
@@ -1176,7 +1152,7 @@
     if (w.status === 404) return "AIのモデルが見つかりません(モデル名の更新が必要な可能性があります)";
     if (w.status === 400) return "AIに送った内容が、受け付けられませんでした";
     if (/Failed to fetch|NetworkError|Load failed/i.test(w.msg) || (w.code === "fetch-error" && !w.status)) return "AIと通信できませんでした。電波を確認するか、ブラウザの拡張機能(広告ブロックなど)をオフにして、もう一度お試しください";
-    return "AIの読み取りに失敗しました";
+    return "AIの読み取りに失敗しました(理由: " + (w.code || "不明") + (w.status ? " HTTP " + w.status : "") + (w.msg ? " / " + w.msg.slice(0, 90) : "") + ")";
   }
   /* 混雑・一時的な通信エラーのときだけ、少し待って、もう一度試す(1回だけ) */
   function callAI(model, parts) {
@@ -1198,7 +1174,13 @@
         return loadAI().then(function (m2) { model = m2; return model.generateContent([AI_PROMPT, img]) });
       });
     }).then(function (r) {
-      var txt = r.response.text(), p = parseAI(txt);
+      var read1 = function (x) { var t = x.response.text(); return { txt: t, p: parseAI(t) } }, a1;
+      try { a1 = read1(r) } catch (e0) { a1 = null }
+      if (a1) return a1;
+      stage("AIの返事が読めなかったため、もう一度、読み取っています");   /* 返事が空・途中で切れた・形がちがう、など */
+      return loadAI("MEDIUM").then(function (m4) { return callAI(m4, [AI_PROMPT, img]) }).then(read1);
+    }).then(function (a1) {
+      var txt = a1.txt, p = a1.p;
       if (!p.gap) return p;
       stage("合計が合わないため、丁寧に読み直しています");
       var q = "前回の読み取り結果:\n" + txt + "\n\n問題: 品物の金額の合計が、レシートの小計・合計より " + Math.abs(p.gap) + "円 " + (p.gap > 0 ? "多い" : "少ない") + "です。写真をもう一度よく見て、読み間違い・抜け・余計な行(合計や税の行を品物にしていないか)を直した結果を、同じ形式のJSONで返してください。";
@@ -1234,7 +1216,7 @@
     rcOrig = { ai: !!ai, retried: !!p.retried, total: p.total || 0, secs: 0, items: rcItems.map(function (x) { return x.name + "|" + x.price }) };   /* 読み取り直後の内容(あとで、どれだけ直したかを数える) */ $("rcRaw").textContent = (note ? "[" + note + "]\n" : "") + p.raw;
     $("rcTotal").value = p.total || ""; $("rcMemo").value = p.store || ""; $("rcDate").value = p.date || today;
     renderRc(); $("rcRes").classList.remove("hidden");
-    $("rcMsg").textContent = !p.items.length ? "品物を読み取れませんでした。レシート全体が写るように、明るい場所で撮り直してください"
+    $("rcMsg").textContent = !p.items.length ? (ai ? (p.total ? "AIで読み取りました。品物の一覧は、見つかりませんでした(支払い画面など、品物が載っていない画面では、合計と店名だけが入ります)。合計を確認して、登録してください" : "AIは、品物も合計も、見つけられませんでした。レシート全体が写るように、明るい場所で撮り直してください") : "品物を読み取れませんでした。レシート全体が写るように、明るい場所で撮り直してください")
       : (ai ? "AIで読み取りました。" : "簡易読み取りです(精度が低いため、必ず内容を確認してください)。") + (p.retried ? "合計が合わなかったため、AIが読み直しました。" : "") + (p.taxNote ? p.taxNote + "。" : "") + (p.date && p.date !== today ? "レシートの日付(" + (+p.date.slice(5, 7)) + "/" + (+p.date.slice(8)) + ")を、支出の日付に入れました。" : "") + (p.suspect ? "合計を読み取れませんでした。レシートの合計を、入力してください。" : "") + "内容を確認して登録してください";
   }
   /* ---- AIの利用上限(429)に達したとき: しばらくAIを呼ばず、すぐ簡易読み取りに切り替える ---- */
@@ -1288,10 +1270,8 @@
     $("rcRes").classList.add("hidden");
     var ok = false; try { ok = localStorage.getItem("ls_ai_ok") === "1" } catch (x) { }
     if (ok) { runRc(f, true); return }
-    openDialog({
-      title: "写真をAIに送ります", msg: "レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n「送らない」を選ぶと、端末の中だけで読み取る簡易読み取りを使います(精度は低めです)。", noEsc: true,
-      buttons: [{ label: "送らない(端末内で読み取る)", fn: function () { runRc(f, false) } }, { label: "送って読み取る", primary: true, fn: function () { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } runRc(f, true) } }]
-    });
+    openDialog({ title: "写真をAIに送ります", msg: "レシートの写真を、GoogleのAI(Gemini)に送って読み取ります。\nカード番号や会員番号などが写っている場合は、隠してから撮ってください。\n「送らない」を選ぶと、端末の中だけで読み取る簡易読み取りを使います(精度は低めです)。", noEsc: true,
+      buttons: [{ label: "送らない(端末内で読み取る)", fn: function () { runRc(f, false) } }, { label: "送って読み取る", primary: true, fn: function () { try { localStorage.setItem("ls_ai_ok", "1") } catch (x) { } runRc(f, true) } }] });
   });
   /* ---- AIの読み取りの成績(この端末にだけ記録。写真や中身は、残さない) ---- */
   function logRc(total) {
@@ -1461,11 +1441,9 @@
     if (!cuid || syncPaused) return; try { localStorage.setItem("ls_dirty", "1") } catch (e) { } setSync("同期中…"); clearTimeout(timer);
     timer = setTimeout(function () { push().then(pushOk).catch(pushFail) }, 700);
   }
-  var AUTHMSG = {
-    "auth/invalid-credential": "メールアドレスまたはパスワードが違います。入力を確認してください", "auth/wrong-password": "パスワードが違います。入力を確認するか、「パスワードを忘れた」を使ってください", "auth/user-not-found": "このメールアドレスは登録されていません。「新規登録」を押してください",
+  var AUTHMSG = { "auth/invalid-credential": "メールアドレスまたはパスワードが違います。入力を確認してください", "auth/wrong-password": "パスワードが違います。入力を確認するか、「パスワードを忘れた」を使ってください", "auth/user-not-found": "このメールアドレスは登録されていません。「新規登録」を押してください",
     "auth/invalid-email": "メールアドレスの形式が正しくありません。(例:name@example.com)", "auth/email-already-in-use": "このメールアドレスは、すでに登録されています。「ログイン」を押してください", "auth/weak-password": "パスワードは、6文字以上にしてください",
-    "auth/network-request-failed": "通信できません。電波の良い場所で、もう一度試してください", "auth/too-many-requests": "試した回数が多すぎます。しばらく待ってから、もう一度試してください", "auth/operation-not-allowed": "メールとパスワードでのログインが、まだ有効になっていません(管理者の設定が必要です)", "auth/user-disabled": "このアカウントは、使えない状態です", "auth/missing-password": "パスワードを入力してください"
-  };
+    "auth/network-request-failed": "通信できません。電波の良い場所で、もう一度試してください", "auth/too-many-requests": "試した回数が多すぎます。しばらく待ってから、もう一度試してください", "auth/operation-not-allowed": "メールとパスワードでのログインが、まだ有効になっていません(管理者の設定が必要です)", "auth/user-disabled": "このアカウントは、使えない状態です", "auth/missing-password": "パスワードを入力してください" };
   function authErr(e) { $("authMsg").textContent = AUTHMSG[e && e.code] || ("うまくいきませんでした。通信を確認して、もう一度お試しください(コード: " + (e && (e.code || e.message) || "不明") + ")") }
   /* ---- ゲスト(この端末)のデータと、クラウドのデータが、ちがうときの扱い ---- */
   function hasData(x) { return !!(x.budget || x.memo || x.exp.length || x.todos.length || x.rec.length || x.sched.length || x.fridge.length || x.shop.length || x.fixed.length || x.stock.length || Object.keys(x.meals).length || Object.keys(x.trash).length || Object.keys(x.codes).length) }
@@ -1488,11 +1466,9 @@
     var backup = JSON.stringify(localS); try { localStorage.setItem("ls_backup_login", backup) } catch (e) { }
     syncPaused = true;
     function adopt(st, msg) { syncPaused = false; useState(st, msg); showToast(msg, function () { S = withDef(JSON.parse(backup)); save(); renderAll(); $("memo").value = S.memo }) }
-    openDialog({
-      title: "データの扱いを選んでください", noEsc: true,
+    openDialog({ title: "データの扱いを選んでください", noEsc: true,
       msg: "この端末のデータと、クラウドのデータが、ちがっています。\nこの端末:" + sumTxt(localS) + "\nクラウド:" + sumTxt(cloud) + "\nどれを使いますか?(選んだあとも、「元に戻す」で、この端末のデータに戻せます)",
-      buttons: [{ label: "クラウドのデータを使う", fn: function () { adopt(cloud, "クラウドのデータを使いました") } }, { label: "この端末のデータを使う", fn: function () { adopt(localS, "この端末のデータを使いました") } }, { label: "両方を統合する(おすすめ)", primary: true, fn: function () { adopt(mergeStates(localS, cloud), "両方のデータを統合しました") } }]
-    });
+      buttons: [{ label: "クラウドのデータを使う", fn: function () { adopt(cloud, "クラウドのデータを使いました") } }, { label: "この端末のデータを使う", fn: function () { adopt(localS, "この端末のデータを使いました") } }, { label: "両方を統合する(おすすめ)", primary: true, fn: function () { adopt(mergeStates(localS, cloud), "両方のデータを統合しました") } }] });
   }
   function loadCloud() {
     setSync("読み込み中…");
