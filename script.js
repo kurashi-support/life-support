@@ -30,7 +30,7 @@
     var n = parseInt(t, 10); return (Math.abs(n) <= MAXYEN && n >= (lo === undefined ? 1 : lo)) ? n : NaN;
   }
   function sanitizeState(d) {
-    var skipped = 0, st = { budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {} };
+    var skipped = 0, st = { budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {}, fl: [] };
     if (!d || typeof d !== "object" || Array.isArray(d)) return { ok: false, state: st, skipped: 0 };
     var arr = function (k, max) { return Array.isArray(d[k]) ? d[k].slice(0, max) : [] };
     var b = okInt(d.budget, 0, MAXYEN * 10); st.budget = b === null ? 0 : b;
@@ -58,7 +58,7 @@
       if (!tx || !dt || !tm) { skipped++; return } st.sched.push({ id: okId(s.id), date: dt, time: tm, text: tx });
     });
     arr("fridge", 1000).forEach(function (f) {
-      f = f || {}; var nm = cleanStr(f.name, 50); if (!nm) { skipped++; return } st.fridge.push({ id: okId(f.id), name: nm, exp: okDate(f.exp), est: f.est === true });
+      f = f || {}; var nm = cleanStr(f.name, 50); if (!nm) { skipped++; return } var fo = { id: okId(f.id), name: nm, exp: okDate(f.exp), est: f.est === true }, fp = okInt(f.price, 1, 1000000); if (fp) fo.price = fp; st.fridge.push(fo);
     });
     arr("shop", 1000).forEach(function (s) {
       s = s || {}; var nm = cleanStr(s.name, 50); if (!nm) { skipped++; return } st.shop.push({ id: okId(s.id), name: nm, bought: s.bought === true });
@@ -66,6 +66,10 @@
     arr("fixed", 200).forEach(function (x) {
       x = x || {}; var nm = cleanStr(x.name, 50), a = okInt(x.amt, 1, MAXYEN), dy = okInt(x.day, 1, 31); if (!nm || a === null || dy === null) { skipped++; return }
       st.fixed.push({ id: okId(x.id), name: nm, amt: a, day: dy });
+    });
+    arr("fl", 1000).forEach(function (e) {   /* 冷蔵庫から消した記録(食品ロスの数え方に使う) */
+      e = e || {}; var dt = okDate(e.d), nm = cleanStr(e.n, 50), kk = e.k === "exp" ? "exp" : e.k === "ok" ? "ok" : "", p = okInt(e.p, 0, 1000000);
+      if (!dt || !nm || !kk) { skipped++; return } st.fl.push({ d: dt, n: nm, p: p === null ? 0 : p, k: kk });
     });
     arr("stock", 500).forEach(function (k) {
       k = k || {}; var nm = cleanStr(k.name, 50); if (!nm) { skipped++; return }
@@ -107,6 +111,7 @@
     if (S.tgen !== today) { S.tgen = today; S.todos = S.todos.filter(function (t) { return t.tid !== "trash" }); var tr = S.trash[dow]; if (tr) S.todos.push({ id: uid(), text: tr + "を出す", done: false, date: today, tid: "trash" }) }
     S.sched = S.sched.filter(function (s) { return s.date >= today });
     Object.keys(S.meals).forEach(function (d) { if (d < today) delete S.meals[d] });
+    S.fl = (S.fl || []).filter(function (e) { return e.d >= addDays(today, -400) });   /* 食品ロスの記録は、約13か月ぶんだけ残す */
     save();
   }
 
@@ -216,11 +221,17 @@
     S.shop = S.shop.filter(function (x) { return !(x.name === name && !x.bought) });
   }
   /* 冷蔵庫: 賞味期限は、食材の種類から目安を自動で入れる */
-  function addFridge(name, date) {
+  function addFridge(name, date, price) {   /* price: レシートの金額(分かるときだけ) */
     var ex = addDays(date, shelfDays(name) || 7); if (ex < today) return false;
     var f = S.fridge.filter(function (x) { return x.name === name })[0];
-    if (f) { f.exp = ex; f.est = true } else S.fridge.push({ id: uid(), name: name, exp: ex, est: true });
+    if (f) { f.exp = ex; f.est = true; if (price > 0) f.price = price } else { var o = { id: uid(), name: name, exp: ex, est: true }; if (price > 0) o.price = price; S.fridge.push(o) }
     return true;
+  }
+  /* 冷蔵庫から消した食材を記録する: 期限内に使い切れたか(ok)、期限を過ぎていたか(exp)。食品ロスの推定に使う */
+  function logOut(items) {
+    if (!S.fl) S.fl = [];
+    items.forEach(function (x) { if (x.exp) S.fl.push({ d: today, n: x.name, p: x.price || 0, k: diff(x.exp) < 0 ? "exp" : "ok" }) });
+    if (S.fl.length > 1000) S.fl = S.fl.slice(-1000);
   }
   function stockState(k) { var el = -diff(k.bought), cc = stockCycle(k), c = cc.c; return { el: el, c: c, src: cc.src, due: el >= c, soon: el >= c * .8 && el < c } }
   function renderStock() {
@@ -360,9 +371,27 @@
       var v = list.filter(function (e) { return (e.cat || "その他") === c }).reduce(function (a, e) { return a + e.amt }, 0), pc = Math.round(v / total * 100);
       return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="background:' + (CATCOL[c] || "#17695F") + ';width:' + pc + '%"></i></div><b>' + yen(v) + '(' + pc + '%)</b></div>' : "";
     }).join("") : "";
+    renderLoss(m);
     $("mList").innerHTML = list.length ? list.map(function (e) {
       return '<li><span class="tx"><small class="d">' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '</small> ' + esc((e.cat || "その他") + " " + (e.memo || "")) + '</span><b>' + yen(e.amt) + '</b><button class="x" type="button" data-a="eedit" data-id="' + esc(e.id) + '" aria-label="直す">✎</button><button class="x" type="button" data-a="edel" data-id="' + esc(e.id) + '" aria-label="削除">×</button></li>';
     }).join("") : '<li><p class="empty">この月の支出は、まだありません。レシートか、ホームの「使った」で記録できます</p></li>';
+  }
+  /* ---- 食品ロス(推定): 冷蔵庫の「期限」と、レシートの「金額」をつないで数える ---- */
+  function lossStats(m) {
+    var L = (S.fl || []).filter(function (e) { return e.d.slice(0, 7) === m }), ok = L.filter(function (e) { return e.k === "ok" }), ex = L.filter(function (e) { return e.k === "exp" });
+    var withP = ex.filter(function (e) { return e.p > 0 });
+    return { ok: ok.length, ex: ex.length, yen: ex.reduce(function (a, e) { return a + (e.p || 0) }, 0), withP: withP.length, total: L.length };
+  }
+  function renderLoss(m) {
+    var el = $("mLoss"); if (!el) return; var t = lossStats(m);
+    if (!t.total) { el.innerHTML = '<div class="loss"><b>食品ロス(推定)</b><p class="label" style="margin:4px 0 0">この月は、まだ記録がありません。冷蔵庫の食材を消すと、「期限内に使い切れたか」「期限を過ぎていたか」を、自動で数えます</p></div>'; return }
+    var rate = t.total >= 3 ? Math.round(t.ok / t.total * 100) : -1, yenTxt2 = t.ex ? (t.yen ? "(金額が分かる " + t.withP + "品で、約 " + t.yen.toLocaleString("ja-JP") + "円" + (t.withP < t.ex ? "。ほかの " + (t.ex - t.withP) + "品は、金額が不明" : "") + ")" : "(金額は、不明です。レシートから入れた食材は、金額が入ります)") : "";
+    el.innerHTML = '<div class="loss"><b>食品ロス(推定)</b>' +
+      '<div class="lrow"><span>期限内に使い切れた食材</span><b>' + t.ok + '品</b></div>' +
+      '<div class="lrow' + (t.ex ? " warn" : "") + '"><span>期限(目安)を過ぎて、消した食材</span><b>' + t.ex + '品</b></div>' +
+      (yenTxt2 ? '<p class="label" style="margin:2px 0 0">' + esc(yenTxt2) + '</p>' : "") +
+      (rate >= 0 ? '<div class="lrow"><span>期限内に使い切れた割合</span><b>' + rate + '%</b></div>' : "") +
+      '<p class="label" style="margin:6px 0 0">' + (t.ex ? "期限が近い食材は、ホームの「今日の生活アシスト」で、先に使うものを、お知らせします。" : "期限を過ぎた食材は、ありません。この調子です。") + '(推定です。期限を過ぎてから消した食材を、数えています)</p></div>';
   }
   /* ---- 削除の「元に戻す」 ---- */
   var toastTimer = null, toastUndo = null;
@@ -592,7 +621,7 @@
       var ra = []; if (undone.length) ra.push({ label: "やることを整理する", run: "todo" }); if (expired.length) ra.push({ label: "期限切れの食材を整理する", run: "expired" });
       out.push({ kind: "resume", pr: 0, icon: "👋", title: "おかえりなさい。" + RESUME_DAYS + "日ぶりです", why: "久しぶりでも大丈夫です。たまっている項目を、ここから片づけられます(元に戻せます)", acts: ra });
     }
-    if (soon.length && !hid("food")) out.push({ kind: "food", pr: 1, icon: "🧊", title: nameList(soon, 3) + " を、今日のうちに使いましょう", why: "賞味期限" + (soon.some(function (x) { return x.est }) ? "(目安を含む)" : "") + "が、2日以内か、過ぎている食材です", acts: [{ label: "使える料理を見る", run: "food" }] });
+    if (soon.length && !hid("food")) out.push({ kind: "food", pr: 1, icon: "🧊", title: nameList(soon, 3) + " を、今日のうちに使いましょう", why: "賞味期限" + (soon.some(function (x) { return x.est }) ? "(目安を含む)" : "") + "が、2日以内か、過ぎている食材です" + (function () { var v = soon.reduce(function (a, x) { return a + (x.price || 0) }, 0); return v ? "(金額が分かる分で、約 " + yenTxt(v) + ")" : "" })(), acts: [{ label: "使える料理を見る", run: "food" }] });
     if (S.budget && !hid("budget")) {
       var m = moneyNow(), net = S.budget - m.fx, low = "";
       if (m.remainMonth < 0) low = "今月の予算を、" + yenTxt(-m.remainMonth) + "こえています";
@@ -636,7 +665,7 @@
     openDialog({ title: "期限切れの食材を整理する", msg: "消す食材を選んでください(実際の状態は、パッケージで確認してください)。消したあとも、「元に戻す」で戻せます。", fields: [{ id: "ids", type: "checks", selectAll: true, options: u.map(function (x) { return { value: x.id, label: x.name + "(" + (+x.exp.slice(5, 7)) + "/" + (+x.exp.slice(8)) + (x.est ? "・目安" : "") + ")", checked: true } }) }],
       buttons: [{ label: "やめる" }, { label: "選んだものを消す", primary: true, fn: function (v) {
         if (!v.ids.length) return "消す食材を選んでください";
-        undoable(v.ids.length + "品を消しました", function () { S.fridge = S.fridge.filter(function (x) { return v.ids.indexOf(x.id) < 0 }); $("sug").innerHTML = "" });
+        undoable(v.ids.length + "品を消しました", function () { logOut(S.fridge.filter(function (x) { return v.ids.indexOf(x.id) >= 0 })); S.fridge = S.fridge.filter(function (x) { return v.ids.indexOf(x.id) < 0 }); $("sug").innerHTML = "" });
       } }] });
   }
   function runAssist(k) {
@@ -707,7 +736,7 @@
     },
     sdel: function (id) { S.sched = by(S.sched, id) },
     fpick: function (id) { if (!frSel) return; if (frSel[id]) delete frSel[id]; else frSel[id] = true },
-    fdel: function (id) { S.fridge = by(S.fridge, id); $("sug").innerHTML = "" },
+    fdel: function (id) { logOut(S.fridge.filter(function (x) { return x.id === id })); S.fridge = by(S.fridge, id); $("sug").innerHTML = "" },
     pick: function (id, b) { S.meals[today] = b.dataset.name; $("sug").innerHTML = "" },
     shdone: function (id) { S.shop.forEach(function (x) { if (x.id === id) x.bought = !x.bought }) },
     shdel: function (id) { S.shop = by(S.shop, id) },
@@ -753,7 +782,7 @@
   $("frDel").addEventListener("click", function () {
     var ids = Object.keys(frSel || {}).filter(function (k) { return frSel[k] }); if (!ids.length) return;
     var snap = JSON.stringify(S), sel = frSel;
-    S.fridge = S.fridge.filter(function (x) { return !sel[x.id] }); frSel = null; $("sug").innerHTML = "";
+    logOut(S.fridge.filter(function (x) { return sel[x.id] })); S.fridge = S.fridge.filter(function (x) { return !sel[x.id] }); frSel = null; $("sug").innerHTML = "";
     save(); renderAll();
     showToast(ids.length + "品を消しました", function () { S = withDef(JSON.parse(snap)); save(); renderAll() });
   });
@@ -1297,7 +1326,7 @@
     var d = $("rcDate").value || today, nf = 0, nd = 0, skip = 0;
     rcItems.forEach(function (x) {
       var nm = cleanStr(x.name, 50); if (!nm || x.price < 0) return;
-      if (x.kind === "食材") { if (addFridge(nm, d)) nf++; else skip++ } else if (x.kind === "日用品") { addStock(nm, d); nd++ }
+      if (x.kind === "食材") { if (addFridge(nm, d, x.price)) nf++; else skip++ } else if (x.kind === "日用品") { addStock(nm, d); nd++ }
     });
     S.exp.push({ id: uid(), date: d, amt: a, memo: cleanStr($("rcMemo").value, 100) || "レシート", cat: $("rcCat").value });
     save(); renderAll(); $("rcRes").classList.add("hidden");
@@ -1456,6 +1485,8 @@
       if (!same) { var ids = {}; m.stock.forEach(function (i) { ids[i.id] = 1 }); if (!ids[k.id]) m.stock.push(k); return }
       var h = same.hist.slice(); k.hist.forEach(function (d) { if (h.indexOf(d) < 0) h.push(d) }); h.sort(); same.hist = h; same.bought = h[h.length - 1];
     });
+    var seen = {}, fk = function (e) { return e.d + "|" + e.n + "|" + e.k + "|" + e.p };
+    (m.fl || []).forEach(function (e) { seen[fk(e)] = 1 }); (x.fl || []).forEach(function (e) { if (!seen[fk(e)]) { m.fl = m.fl || []; m.fl.push(e) } });
     if (!m.budget) m.budget = x.budget;
     if (x.memo && x.memo !== m.memo) m.memo = (m.memo ? m.memo + "\n---\n" : "") + x.memo; m.memo = m.memo.slice(0, 5000);
     ["meals", "trash", "codes"].forEach(function (k) { Object.keys(x[k]).forEach(function (i) { if (!(i in m[k])) m[k][i] = x[k][i] }) });
