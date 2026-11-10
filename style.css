@@ -1607,3 +1607,10 @@ form.row input[type=text] {
 .frnote span { flex: 1 1 200px; min-width: 0 }
 .chips li { flex-wrap: wrap; row-gap: 0; border-radius: 22px; max-width: 100% }   /* 狭い画面で、食材の名前が途中で折り返されないように */
 .chips li > span { min-width: 0; overflow-wrap: anywhere }
+
+/* 先月との比較・6か月の推移・支出の検索 */
+.dchart.trend { gap: 8px; margin-top: 8px }
+.tlab span { flex: 1; text-align: center }
+.loss .bar { margin-top: 4px }
+.mfilter { margin-top: 12px }
+.mfilter input[type=search] { flex: 1 1 150px; min-width: 0 }
