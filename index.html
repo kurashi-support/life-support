@@ -18,7 +18,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=13">
 </head>
 
 <body>
@@ -84,6 +84,32 @@
     </nav>
 
     <main class="grid" id="main">
+      <section class="card full" data-tab="home" aria-labelledby="h-money">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">💴</span>
+          <h2 id="h-money">今日使えるお金</h2>
+          <button class="btn b-gh" id="budgetBtn" type="button">予算を設定</button>
+        </div>
+        <div class="big" id="moneyAmt"></div>
+        <p class="sub" id="moneySub"></p>
+        <div class="bar" id="bar"><i></i></div>
+        <p class="sub" id="moneyMore" style="margin:8px 0 0"></p>
+        <form class="row" id="expForm">
+          <input type="number" id="expAmt" placeholder="金額(税込)" min="1" inputmode="numeric" required
+            style="width:120px">
+          <select id="expCat" aria-label="カテゴリ">
+            <option>食費</option>
+            <option>日用品</option>
+            <option>交通</option>
+            <option>娯楽</option>
+            <option>その他</option>
+          </select>
+          <input type="text" id="expMemo" placeholder="メモ(例:スーパー)">
+          <button class="btn b-pri">使った</button>
+        </form>
+        <div id="cats" style="margin-top:12px"></div>
+        <ul class="rows" id="expList" style="margin-top:8px"></ul>
+      </section>
+
       <section class="card full sumcard" data-tab="home" aria-label="今日のまとめ">
         <div class="sumhead">今日のまとめ</div>
         <div class="sum" id="sum"></div>
@@ -100,31 +126,6 @@
       <section class="card full homeact" data-tab="home" aria-label="レシート">
         <button class="btn b-pri bigbtn" id="homeRc" type="button">📷 レシートを撮る</button>
         <p class="label" style="margin:6px 0 0;text-align:center">撮ると、支出・冷蔵庫・日用品に自動で入ります</p>
-      </section>
-
-      <section class="card full" data-tab="home" aria-labelledby="h-money">
-        <div class="card-head"><span class="icon i-t" aria-hidden="true">💴</span>
-          <h2 id="h-money">今日使えるお金</h2>
-          <button class="btn b-gh" id="budgetBtn" type="button">予算を設定</button>
-        </div>
-        <div class="big" id="moneyAmt"></div>
-        <p class="sub" id="moneySub"></p>
-        <div class="bar" id="bar"><i></i></div>
-        <form class="row" id="expForm">
-          <input type="number" id="expAmt" placeholder="金額(税込)" min="1" inputmode="numeric" required
-            style="width:120px">
-          <select id="expCat" aria-label="カテゴリ">
-            <option>食費</option>
-            <option>日用品</option>
-            <option>交通</option>
-            <option>娯楽</option>
-            <option>その他</option>
-          </select>
-          <input type="text" id="expMemo" placeholder="メモ(例:スーパー)">
-          <button class="btn b-pri">使った</button>
-        </form>
-        <div id="cats" style="margin-top:12px"></div>
-        <ul class="rows" id="expList" style="margin-top:8px"></ul>
       </section>
 
       <section class="card" data-tab="home" aria-labelledby="h-todo">
@@ -320,6 +321,15 @@
         <p class="label" id="mInfo" style="margin:4px 0 0"></p>
         <div id="mCats" style="margin-top:12px"></div>
         <div id="mLoss" style="margin-top:12px"></div>
+        <div id="mCmp" style="margin-top:12px"></div>
+        <div id="mTrend" style="margin-top:12px"></div>
+        <div class="row mfilter">
+          <input type="search" id="mQ" placeholder="お店・メモで探す" aria-label="お店・メモで探す" maxlength="50">
+          <select id="mCat" aria-label="カテゴリ"><option value="">すべて</option><option>食費</option><option>日用品</option><option>交通</option><option>娯楽</option><option>その他</option></select>
+          <select id="mSort" aria-label="並び順"><option value="new">新しい順</option><option value="old">古い順</option><option value="big">金額が大きい順</option><option value="small">金額が小さい順</option></select>
+          <select id="mScope" aria-label="探す範囲"><option value="month">この月</option><option value="all">すべての月</option></select>
+        </div>
+        <p class="label" id="mFound" style="margin:6px 0 0"></p>
         <ul class="rows" id="mList" style="margin-top:12px"></ul>
         <div class="row"><button class="btn b-gh" id="mCsv" type="button">この月をCSVで書き出す</button></div>
         <p class="label" style="margin:8px 0 0">✎で、金額・メモ・カテゴリを直せます。×で消しても、すぐに「元に戻す」を押せば戻せます</p>
@@ -347,7 +357,7 @@
           <ul>
             <li><b>今日の生活アシスト</b>: 保存されているデータから、今日やるとよいこと(期限が近い食材、買い時の日用品、予算など)を、最大3つ提案します。「あとで」「表示しない」も選べます。データがないときは、何も出しません。</li>
           <li><b>今日使えるお金</b>:
-              「予算を設定」に、今月使えるお金の総額(固定費を含む)を入れます。固定費を引いて、残り日数で割った金額が表示されます。使ったら、金額・カテゴリ・メモを入れて「使った」を押します。</li>
+              「予算を設定」に、今月使えるお金の総額(固定費を含む)を入れます。固定費を引いて、残り日数で割った金額が表示されます。使ったら、金額・カテゴリ・メモを入れて「使った」を押します。下には、今月の1日平均の支出、明日以降の1日あたりの金額(今日の残りが回ります)、予算をこえそうなときの注意が出ます。</li>
             <li><b>今日やること</b>: 入力して「追加」。「毎日」「毎週」を選ぶと、くり返し入ります。✓で完了、×で削除です。終わらなかったものは、翌日に持ち越されます。</li>
             <li><b>予定</b>: 日付・時刻・内容を入れて「追加」します。</li>
             <li><b>ゴミ出し</b>: 「曜日を設定」で、曜日ごとのゴミの種類を登録します。当日は「今日は〇〇の日です」と出て、「やること」にも自動で入ります。</li>
@@ -381,6 +391,7 @@
             <li><b>レシート読み取り</b>: 「レシートを撮る・選ぶ」で写真を選ぶと、品物と金額(税込)の一覧が出ます。名前や金額は直せて、足りない品物は「＋
               品物を1行追加」で足せます。いらない行は×で消せます。合計がレシートとちがうときは、差額が表示され、ボタンで調整できます。読み取れないときは「手入力で登録」も使えます。品物ごとに、「冷蔵庫へ」「日用品へ」「入れない」を選べます(自動で選ばれます)。確認したら「今日の支出に登録」を押すと、支出に加えて、冷蔵庫(賞味期限は目安)と日用品にも入ります。
             </li>
+            <li><b>月ごとの家計</b>: 先月との比較、予算の使用率、6か月の推移(棒を押すと、その月を表示)、支出の検索(お店・メモ、カテゴリ、並び順、すべての月)ができます。</li>
             <li><b>固定費・サブスク</b>: 名前・金額・支払日を登録します。毎月の予算から、自動で引かれます。</li>
             <li><b>食品ロス(推定)</b>: 「月ごとの家計」に出ます。冷蔵庫の食材を消すと、期限内に使い切れたか、期限(目安)を過ぎていたかを、自動で数えます。レシートから入れた食材は、金額も分かるので、「約○円分」と出ます。あくまで推定で、責めるためのものではありません。期限が近い食材は、ホームのアシストが、先に使うものを、お知らせします。</li>
           </ul>
@@ -478,7 +489,7 @@
     </footer>
   </div>
 
-  <script src="script.js?v=27"></script>
+  <script src="script.js?v=28"></script>
 
 </body>
 
