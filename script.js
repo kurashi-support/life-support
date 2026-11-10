@@ -116,6 +116,21 @@
   }
 
   /* ---- お金 ---- */
+  /* ---- 今日使えるお金の、くわしい説明: 1日平均・明日以降の1日あたり・ペースの注意(色だけでなく、文字でも伝える) ---- */
+  function moneyMoreHtml(sm, st, left, dim) {
+    var day = dim - left + 1, lines = [];
+    if (sm > 0) lines.push("今月の1日平均の支出: " + yenTxt(Math.round(sm / day)));
+    if (S.budget) {
+      var fx = S.fixed.reduce(function (a, x) { return a + x.amt }, 0), net = S.budget - fx, remainMonth = net - sm, daily = Math.floor((net - (sm - st)) / left), remain = daily - st;
+      if (remain < 0) lines.unshift("⚠ 今日の分を、" + yenTxt(-remain) + "こえています");
+      if (left > 1) {
+        if (remainMonth <= 0) lines.push("今月の予算は、もう使い切っています");
+        else lines.push("明日以降: 1日あたり " + yenTxt(Math.floor(remainMonth / (left - 1))) + (remain > 0 ? "(今日の残り " + yenTxt(remain) + "が、明日以降に回ります)" : remain < 0 ? "(今日の超過を、明日以降でならします)" : ""));
+      }
+      if (day >= 5 && sm > 0 && net > 0) { var proj = Math.round(sm / day * dim); if (proj > net) lines.push("このペースが続くと、月末に約 " + yenTxt(proj - net) + "、予算をこえそうです") }
+    }
+    return lines.map(esc).join("<br>");
+  }
   function renderMoney() {
     var ym = today.slice(0, 7), dim = new Date(+ym.slice(0, 4), +ym.slice(5), 0).getDate(), left = dim - Number(today.slice(8)) + 1;
     var mine = S.exp.filter(function (e) { return e.date.slice(0, 7) === ym });
@@ -134,6 +149,7 @@
       bar.querySelector("i").style.width = (daily > 0 ? Math.min(100, st / daily * 100) : 100) + "%";
       bar.classList.toggle("over", remain < 0);
     }
+    var mm = $("moneyMore"); if (mm) mm.innerHTML = moneyMoreHtml(sm, st, left, dim);
     renderCats(mine, sm);
     $("expList").innerHTML = todayEx.map(function (e) { return '<li><span class="tx">' + esc((e.cat ? e.cat + " " : "") + (e.memo || "支出")) + '</span><b>' + e.amt.toLocaleString("ja-JP") + '円</b><button class="x" type="button" data-a="edel" data-id="' + esc(e.id) + '" aria-label="削除">×</button></li>' }).join("");
   }
@@ -356,6 +372,47 @@
   var viewMonth = "";
   function curMonth() { return viewMonth || today.slice(0, 7) }
   function shiftMonth(m, n) { var d = new Date(+m.slice(0, 4), +m.slice(5) - 1 + n, 1); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") }
+  /* ---- 月ごとの家計: 先月との比較・予算の使用率・6か月の推移・支出の検索 ---- */
+  var mq = { q: "", cat: "", sort: "new", scope: "month" };
+  function sumOf(l) { return l.reduce(function (a, e) { return a + e.amt }, 0) }
+  function renderCompare(m, total, net) {
+    var el = $("mCmp"); if (!el) return;
+    var pm = shiftMonth(m, -1), isNow = m === today.slice(0, 7), cut = isNow ? +today.slice(8) : 31, yen = function (n) { return n.toLocaleString("ja-JP") + "円" };
+    var inM = function (x, up) { return S.exp.filter(function (e) { return e.date.slice(0, 7) === x && +e.date.slice(8) <= up }) };
+    var prev = inM(pm, cut), cur = inM(m, cut), pt = sumOf(prev), ct = sumOf(cur), h = '<div class="loss"><b>先月との比較</b>';
+    if (!prev.length) h += '<p class="label" style="margin:4px 0 0">先月の記録が、ありません</p>';
+    else {
+      var d = ct - pt, best = "", bd = 0;
+      CATS.forEach(function (cname) { var a = sumOf(cur.filter(function (e) { return (e.cat || "その他") === cname })), b = sumOf(prev.filter(function (e) { return (e.cat || "その他") === cname })); if (Math.abs(a - b) > Math.abs(bd)) { bd = a - b; best = cname } });
+      h += '<div class="lrow"><span>' + (isNow ? "先月の同じ日までの支出" : "先月の支出") + '</span><b>' + yen(pt) + '</b></div>' +
+        '<div class="lrow' + (d > 0 ? " warn" : "") + '"><span>' + (isNow ? "今月との差" : "この月との差") + '</span><b>' + (d > 0 ? "+" : d < 0 ? "−" : "") + yen(Math.abs(d)) + '</b></div>' +
+        (Math.abs(bd) >= 500 ? '<p class="label" style="margin:2px 0 0">' + esc(best + "が、先月より " + yen(Math.abs(bd)) + (bd > 0 ? " 増えています" : " 減っています")) + '</p>' : "");
+    }
+    if (S.budget && net > 0) {
+      var use = Math.round(total / net * 100);
+      h += '<div class="lrow"><span>予算の使用率(いまの予算で計算)</span><b>' + use + '%</b></div><div class="bar' + (use > 100 ? " over" : "") + '"><i style="width:' + Math.min(100, use) + '%"></i></div>';
+    }
+    el.innerHTML = h + '</div>';
+  }
+  function renderTrend(m) {
+    var el = $("mTrend"); if (!el) return; var ms = [], i;
+    for (i = 5; i >= 0; i--) ms.push(shiftMonth(m, -i));
+    var vals = ms.map(function (x) { return sumOf(S.exp.filter(function (e) { return e.date.slice(0, 7) === x })) }), mx = Math.max.apply(null, vals.concat([1]));
+    el.innerHTML = '<b style="font-size:15px">6か月の推移</b><div class="dchart trend">' + vals.map(function (v, k) { return '<i' + (ms[k] === m ? ' class="now"' : "") + ' style="height:' + Math.round(v / mx * 100) + '%" data-m="' + ms[k] + '" title="' + (+ms[k].slice(5)) + '月 ' + v.toLocaleString("ja-JP") + '円"></i>' }).join("") +
+      '</div><div class="dlab tlab">' + ms.map(function (x) { return "<span>" + (+x.slice(5)) + "月</span>" }).join("") + '</div><p class="label" style="margin:2px 0 0">棒を押すと、その月を表示します</p>';
+  }
+  function renderMList(m, yen) {
+    var all = mq.scope === "all", q = mq.q.trim().toLowerCase();
+    var base = all ? S.exp.slice() : S.exp.filter(function (e) { return e.date.slice(0, 7) === m });
+    var list = base.filter(function (e) { return (!mq.cat || (e.cat || "その他") === mq.cat) && (!q || ((e.memo || "") + " " + (e.cat || "その他")).toLowerCase().indexOf(q) >= 0) });
+    list.sort(function (a, b) { return mq.sort === "old" ? a.date.localeCompare(b.date) : mq.sort === "big" ? b.amt - a.amt : mq.sort === "small" ? a.amt - b.amt : b.date.localeCompare(a.date) });
+    var shown = list.slice(0, 200), filtered = !!(q || mq.cat || all);
+    $("mFound").textContent = filtered ? "該当 " + list.length + "件・合計 " + yen(sumOf(list)) + (list.length > 200 ? "(先頭の200件を表示)" : "") : "";
+    $("mList").innerHTML = shown.length ? shown.map(function (e) {
+      var yr = e.date.slice(0, 4) !== today.slice(0, 4) ? e.date.slice(2, 4) + "/" : "";
+      return '<li><span class="tx"><small class="d">' + yr + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '</small> ' + esc((e.cat || "その他") + " " + (e.memo || "")) + '</span><b>' + yen(e.amt) + '</b><button class="x" type="button" data-a="eedit" data-id="' + esc(e.id) + '" aria-label="直す">✎</button><button class="x" type="button" data-a="edel" data-id="' + esc(e.id) + '" aria-label="削除">×</button></li>';
+    }).join("") : '<li><p class="empty">' + ((q || mq.cat) ? "条件に合う支出は、ありません" : "この月の支出は、まだありません。レシートか、ホームの「使った」で記録できます") + '</p></li>';
+  }
   function renderMonth() {
     if (!$("mList")) return;
     var m = curMonth(), isNow = m === today.slice(0, 7), yen = function (n) { return n.toLocaleString("ja-JP") + "円" };
@@ -374,10 +431,7 @@
       var v = list.filter(function (e) { return (e.cat || "その他") === c }).reduce(function (a, e) { return a + e.amt }, 0), pc = Math.round(v / total * 100);
       return v ? '<div class="cat"><span>' + c + '</span><div class="bar"><i style="background:' + (CATCOL[c] || "#17695F") + ';width:' + pc + '%"></i></div><b>' + yen(v) + '(' + pc + '%)</b></div>' : "";
     }).join("") : "";
-    renderLoss(m);
-    $("mList").innerHTML = list.length ? list.map(function (e) {
-      return '<li><span class="tx"><small class="d">' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '</small> ' + esc((e.cat || "その他") + " " + (e.memo || "")) + '</span><b>' + yen(e.amt) + '</b><button class="x" type="button" data-a="eedit" data-id="' + esc(e.id) + '" aria-label="直す">✎</button><button class="x" type="button" data-a="edel" data-id="' + esc(e.id) + '" aria-label="削除">×</button></li>';
-    }).join("") : '<li><p class="empty">この月の支出は、まだありません。レシートか、ホームの「使った」で記録できます</p></li>';
+    renderLoss(m); renderCompare(m, total, S.budget - fx); renderTrend(m); renderMList(m, yen);
   }
   /* ---- 食品ロス(推定): 冷蔵庫の「期限」と、レシートの「金額」をつないで数える ---- */
   function lossStats(m) {
@@ -794,6 +848,8 @@
   });
   $("mPrev").addEventListener("click", function () { viewMonth = shiftMonth(curMonth(), -1); renderMonth() });
   $("mNext").addEventListener("click", function () { var n = shiftMonth(curMonth(), 1); if (n <= today.slice(0, 7)) { viewMonth = n; renderMonth() } });
+  $("mTrend").addEventListener("click", function (e) { var b = e.target.closest("i[data-m]"); if (b && b.dataset.m <= today.slice(0, 7)) { viewMonth = b.dataset.m; renderMonth() } });
+  [["mQ", "input", "q"], ["mCat", "change", "cat"], ["mSort", "change", "sort"], ["mScope", "change", "scope"]].forEach(function (p) { $(p[0]).addEventListener(p[1], function () { mq[p[2]] = this.value; renderMonth() }) });
   $("mCsv").addEventListener("click", function () {
     var m = curMonth(), rows = S.exp.filter(function (e) { return e.date.slice(0, 7) === m }).sort(function (a, b) { return a.date.localeCompare(b.date) });
     var csv = "\ufeff日付,カテゴリ,メモ,金額(円)\n" + rows.map(function (e) {
