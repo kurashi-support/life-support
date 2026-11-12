@@ -456,6 +456,23 @@
         </details>
       </section>
 
+      <section class="card full" data-tab="help" aria-labelledby="h-help5">
+        <div class="card-head"><span class="icon i-t" aria-hidden="true">🔒</span>
+          <h2 id="h-help5">個人情報の扱い</h2>
+        </div>
+        <ul class="hp">
+          <li>支出・やること・冷蔵庫などのデータは、お使いの端末(ブラウザ)の中に保存されます。</li>
+          <li>ログインすると、同じデータが、クラウド(Google の Firebase・Cloud Firestore)にも保存され、別の端末でも使えます。メールアドレスとパスワードは、Firebase の認証サービスが管理し、このアプリは、パスワードを保存しません。</li>
+          <li>レシートの写真は、「AIで読み取る」ときだけ、確認のうえで、Google の AI(Gemini)に送られます。アプリには保存しません。「送らない」を選ぶと、端末の中だけで読み取ります。</li>
+          <li>AIを使うときは、不正な利用を防ぐために、Google の App Check(reCAPTCHA)も使われます。</li>
+          <li>バーコードの商品名を調べるときは、バーコードの番号だけが、Open Food Facts に送られます。</li>
+          <li>読み取り用の部品(Tesseract.js など)は配信サービス(jsDelivr)から、文字の形(フォント)は Google Fonts から読み込みます。</li>
+          <li>カレンダー通知のファイルは、端末の中で作られ、外には送られません。</li>
+          <li>このアプリには、広告や、アクセス解析の仕組みは、入れていません。</li>
+          <li>データは、画面の×や、バックアップの読み込みで、消せます。アカウントそのものを消す機能は、まだありません。</li>
+        </ul>
+      </section>
+
       <section class="card full" data-tab="money" aria-labelledby="h-fix">
         <div class="card-head"><span class="icon i-r" aria-hidden="true">🧾</span>
           <h2 id="h-fix">固定費・サブスク</h2><span class="label" id="fixTotal"></span>
