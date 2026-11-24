@@ -1,0 +1,31 @@
+name: 通知(朝の予定・夕方の期限)
+on:
+  schedule:
+    - cron: "3 22 * * *"
+    - cron: "7 8 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "morning(今日の予定) か evening(期限)"
+        type: choice
+        options: [evening, morning]
+        default: evening
+permissions:
+  contents: read
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+        working-directory: push
+      - run: node send.js
+        working-directory: push
+        env:
+          MODE: ${{ github.event_name == 'schedule' && (github.event.schedule == '3 22 * * *' && 'morning' || 'evening') || inputs.mode }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
