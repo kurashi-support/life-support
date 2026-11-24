@@ -1614,3 +1614,11 @@ form.row input[type=text] {
 .loss .bar { margin-top: 4px }
 .mfilter { margin-top: 12px }
 .mfilter input[type=search] { flex: 1 1 150px; min-width: 0 }
+
+/* 診断情報 */
+#diagOut { width: 100%; min-height: 200px; margin-top: 10px; background-image: none; line-height: 1.5; font-family: ui-monospace, Consolas, monospace; font-size: 12px }
+
+/* アプリのアイコン(レシートにチェック)を、ヘッダーとログイン画面にも使う */
+.badge { background: none !important; border-radius: 14px; overflow: hidden; padding: 0; }
+.badge img { width: 100%; height: 100%; display: block; }
+.lico { display: block; width: 56px; height: 56px; border-radius: 14px; margin: 0 0 8px; }
