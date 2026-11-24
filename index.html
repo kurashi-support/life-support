@@ -18,7 +18,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=14">
 </head>
 
 <body>
@@ -473,6 +473,15 @@
         </ul>
       </section>
 
+      <section class="card full" data-tab="help" aria-labelledby="h-help6">
+        <div class="card-head"><span class="icon i-r" aria-hidden="true">🩺</span>
+          <h2 id="h-help6">診断情報(うまく動かないとき)</h2>
+        </div>
+        <p class="label" style="margin:0 0 8px">うまく動かないときに、ボタンを押して、出てきた文章を、作った人に送ってください。名前・メールアドレス・品物の名前など、個人の内容は、入っていません。</p>
+        <div class="row" style="margin-top:0"><button class="btn b-pri" id="diagBtn" type="button">診断情報を表示してコピー</button><button class="btn b-gh" id="diagClear" type="button">エラーの記録を消す</button></div>
+        <textarea id="diagOut" class="hidden" readonly aria-label="診断情報"></textarea>
+      </section>
+
       <section class="card full" data-tab="money" aria-labelledby="h-fix">
         <div class="card-head"><span class="icon i-r" aria-hidden="true">🧾</span>
           <h2 id="h-fix">固定費・サブスク</h2><span class="label" id="fixTotal"></span>
@@ -506,7 +515,8 @@
     </footer>
   </div>
 
-  <script src="script.js?v=28"></script>
+  <script src="script.js?v=30"></script>
+  <script src="push.js?v=2"></script>
 
 </body>
 

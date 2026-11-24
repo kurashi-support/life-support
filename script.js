@@ -7,12 +7,34 @@
 (function () {
   "use strict";
   var $ = function (i) { return document.getElementById(i) }, K = "ls2";
+  /* ---- 版・不具合の調べやすさ ---- */
+  var SCHEMA = 1;   /* 保存データの版(データの形を変えたときに、古いデータを、安全に直すための番号) */
+  var APP_VER = (function () { try { var m = String((document.currentScript || {}).src || "").match(/[?&]v=(\d+)/); return m ? m[1] : "?" } catch (e) { return "?" } })();
+  function logErr(msg, src) {   /* 起きたエラーを、この端末の中に、最大20件、記録する(個人のデータは、入れない) */
+    try { var L = JSON.parse(localStorage.getItem("ls_errors") || "[]"); L.push({ t: new Date().toISOString(), m: String(msg || "").slice(0, 160), s: String(src || "").replace(/^.*\//, "").slice(0, 60) }); localStorage.setItem("ls_errors", JSON.stringify(L.slice(-20))) } catch (e) { }
+  }
+  window.addEventListener("error", function (e) { logErr(e.message, (e.filename || "") + ":" + (e.lineno || "")) });
+  window.addEventListener("unhandledrejection", function (e) { var r = e.reason; logErr("(非同期) " + (r && (r.message || r.code) || r), "") });
   var pad = function (n) { return String(n).padStart(2, "0") };
   var ds = function (d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) };
   var uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
   var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] }) };
   function load(k, f) { try { var r = localStorage.getItem(k); return r === null ? f : JSON.parse(r) } catch (e) { return f } }
-  function save() { try { localStorage.setItem(K, JSON.stringify(S)) } catch (e) { } cloudSave(); try { renderSummary() } catch (e) { } }
+  var SIZE_WARN = 700000, SIZE_MAX = 1000000;   /* クラウドの1つのデータの上限は、約1MB。余裕をみて、700KBで知らせ、1,000KBをこえたら、クラウドへの保存を止める */
+  function sizeCheck(js) {
+    if (js.length < 233000) return;   /* 233,000字未満なら、最大でも約700KB未満(正確な大きさは、大きいときだけ計算) */
+    var bytes = new Blob([js]).size; if (bytes < SIZE_WARN) return;
+    var day = ""; try { day = localStorage.getItem("ls_size_warn") || "" } catch (e) { } if (day === today) return;
+    try { localStorage.setItem("ls_size_warn", today) } catch (e) { }
+    showToast("データの量が、約" + Math.round(bytes / 1000).toLocaleString("ja-JP") + "KB になりました(クラウドに保存できる上限は、約1,000KB)。古い月の支出は、「月ごとの家計」で、CSVに書き出してから、消すと、減らせます", null);
+  }
+  function save() {
+    if (NEWER) { try { renderSummary() } catch (e) { } return }   /* 新しい版のデータは、こわさないよう、保存しない */
+    var js = ""; try { js = JSON.stringify(S); localStorage.setItem(K, js) } catch (e) { }
+    try { sizeCheck(js) } catch (e) { }
+    cloudSave(); try { renderSummary() } catch (e) { }
+    try { if (window.lsOnSave) window.lsOnSave() } catch (e) { }   /* 通知用の期限の一覧を、更新する(push.js) */
+  }
   var today = ds(new Date());
   var diff = function (s) { return Math.round((new Date(s + "T00:00:00") - new Date(today + "T00:00:00")) / 864e5) };
 
@@ -30,7 +52,7 @@
     var n = parseInt(t, 10); return (Math.abs(n) <= MAXYEN && n >= (lo === undefined ? 1 : lo)) ? n : NaN;
   }
   function sanitizeState(d) {
-    var skipped = 0, st = { budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {}, fl: [] };
+    var skipped = 0, st = { budget: 0, exp: [], todos: [], rec: [], meals: {}, sched: [], fridge: [], memo: "", shop: [], trash: {}, fixed: [], stock: [], codes: {}, fl: [], ver: SCHEMA };
     if (!d || typeof d !== "object" || Array.isArray(d)) return { ok: false, state: st, skipped: 0 };
     var arr = function (k, max) { return Array.isArray(d[k]) ? d[k].slice(0, max) : [] };
     var b = okInt(d.budget, 0, MAXYEN * 10); st.budget = b === null ? 0 : b;
@@ -85,6 +107,8 @@
   }
 
   var S = load(K, null);
+  function dataVer(d) { var v = d && typeof d === "object" ? Number(d.ver) : 0; return isFinite(v) ? v : 0 }
+  var NEWER = dataVer(S) > SCHEMA;   /* いまのアプリより、新しい版で作られたデータ: こわさないよう、保存を止める */
   if (!S) { /* 旧バージョンのデータを引き継ぐ */
     S = {
       todos: load("ls_todos", []).map(function (t) { return { id: uid(), text: t.text, done: !!t.done, date: today } }),
@@ -249,6 +273,13 @@
     items.forEach(function (x) { if (x.exp) S.fl.push({ d: today, n: x.name, p: x.price || 0, k: diff(x.exp) < 0 ? "exp" : "ok" }) });
     if (S.fl.length > 1000) S.fl = S.fl.slice(-1000);
   }
+  /* 通知用: 冷蔵庫の期限と、日用品の買い時(買った日 + 目安の日数)を、日付つきで返す。送信側(push/send.js)は、この日付だけを見る */
+  window.lsNotifyItems = function () {
+    var o = [];
+    S.fridge.forEach(function (f) { if (f.exp) o.push({ k: "f", id: String(f.id), n: f.name, d: f.exp }) });
+    S.stock.forEach(function (k) { if (k.bought) o.push({ k: "s", id: String(k.id), n: k.name, d: addDays(k.bought, stockCycle(k).c) }) });
+    return o;
+  };
   function stockState(k) { var el = -diff(k.bought), cc = stockCycle(k), c = cc.c; return { el: el, c: c, src: cc.src, due: el >= c, soon: el >= c * .8 && el < c } }
   function renderStock() {
     var rows = S.stock.slice().sort(function (a, b) { var x = stockState(a), y = stockState(b); return y.el / y.c - x.el / x.c });
@@ -941,6 +972,7 @@
     var rd = new FileReader();
     rd.onload = function () {
       var d; try { d = JSON.parse(rd.result) } catch (x) { info("バックアップ(JSON)のファイルを選んでください。", "読み込めませんでした"); return }
+      if (dataVer(d) > SCHEMA) { info("このバックアップは、新しい版のアプリで作られています。ページを再読み込みして、アプリを新しくしてから、もう一度、読み込んでください。", "読み込めませんでした"); return }
       var r = sanitizeState(d);
       if (!r.ok || !Array.isArray(d.todos)) { info("Life Support のバックアップファイルではないようです。「バックアップを書き出す」で作ったファイルを選んでください。", "読み込めませんでした"); return }
       var n = r.state;
@@ -1339,6 +1371,7 @@
     (useAI ? readAI(f, stage).then(function (p) { stop(); showRc(p, true); if (rcOrig) rcOrig.secs = sec(); $("rcMsg").textContent = $("rcMsg").textContent.replace("AIで読み取りました。", "AIで読み取りました(" + sec() + "秒)。") }, function (err) {
       stop();
       var w = aiWhy(err), human = aiHuman(w); setAiBlock(w);
+      try { localStorage.setItem("ls_ai_last", JSON.stringify({ t: new Date().toISOString(), c: w.code || "", s: w.status || 0, m: String(w.msg || "").slice(0, 120) })) } catch (e) { }
       var why = "AI読み取りエラー: " + (w.code || "不明") + (w.status ? " (HTTP " + w.status + ")" : "") + " / " + w.msg;
       $("rcMsg").textContent = human + "。簡易読み取りに切り替えます…";
       return readTess(f).then(function (p) { showRc(p, false, why); $("rcMsg").textContent = human + "。" + $("rcMsg").textContent });
@@ -1404,6 +1437,33 @@
     if (!warns.length) { registerReceipt(a); return }
     openDialog({ title: "登録する前に、確認してください", msg: warns.join("\n"), buttons: [{ label: "戻って直す" }, { label: "このまま登録する", primary: true, fn: function () { registerReceipt(a) } }] });
   });
+
+  /* ---- 診断情報(うまく動かないとき、作った人に送る。名前や品物など、個人の内容は、入れない) ---- */
+  function buildDiag() {
+    var L = function (k, f) { try { return JSON.parse(localStorage.getItem(k) || "null") || f } catch (e) { return f } }, now = new Date(), st = S, out = [];
+    var bytes = new Blob([JSON.stringify(S)]).size, errs = L("ls_errors", []), ai = L("ls_ai_last", null), log = L("ls_rc_log", []), cal = calRead(), blk = aiBlockUntil(), okAi = false;
+    try { okAi = localStorage.getItem("ls_ai_ok") === "1" } catch (e) { }
+    out.push("Life Support 診断情報", "作成: " + now.toISOString() + "(端末の時刻 " + now.toLocaleString("ja-JP") + ")");
+    out.push("アプリの版: v" + APP_VER + " / データの版: " + SCHEMA + (NEWER ? "(新しい版のデータ・保存を停止中)" : ""));
+    out.push("画面: " + window.innerWidth + "x" + window.innerHeight + " / " + (((window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone) ? "ホーム画面から起動" : "ブラウザ") + " / " + (navigator.onLine ? "オンライン" : "オフライン"));
+    out.push("ブラウザ: " + navigator.userAgent);
+    out.push("ログイン: " + (cuid ? "ログイン中" : "していない") + " / 保存の状態: " + $("sync").textContent);
+    out.push("データの量: 約" + Math.round(bytes / 1000).toLocaleString("ja-JP") + "KB(クラウドの上限の目安: 約1,000KB、警告: " + SIZE_WARN / 1000 + "KB)");
+    out.push("件数: 支出 " + st.exp.length + " / ToDo " + st.todos.length + " / 予定 " + st.sched.length + " / 冷蔵庫 " + st.fridge.length + " / 日用品 " + st.stock.length + " / 買い物 " + st.shop.length + " / 固定費 " + st.fixed.length + " / 食品ロス記録 " + (st.fl || []).length);
+    out.push("AI: " + (okAi ? "送信に同意ずみ" : "未同意") + " / " + (blk ? "利用上限のため休止中(約" + Math.max(1, Math.ceil((blk - Date.now()) / 60000)) + "分後まで)" : "休止なし") + (ai ? " / 最後のエラー: " + ai.c + (ai.s ? " HTTP " + ai.s : "") + " " + ai.m + "(" + ai.t + ")" : " / 最後のエラー: なし"));
+    out.push("AIの成績(直近" + log.length + "回): 直さずに登録できた " + log.filter(function (x) { return !x.c && !x.t }).length + "回");
+    out.push("カレンダー通知: " + (cal && cal.items ? "前回 " + mdOf(cal.at) + " に、" + Object.keys(cal.items).length + "件を書き出し" : "書き出しなし"));
+    out.push("エラーの記録(新しい順、最大10件): " + (errs.length ? "" : "なし"));
+    errs.slice(-10).reverse().forEach(function (e) { out.push("- " + e.t + " " + e.m + (e.s ? " (" + e.s + ")" : "")) });
+    return out.join("\n");
+  }
+  $("diagBtn").addEventListener("click", function () {
+    var t = buildDiag(), ta = $("diagOut"); ta.value = t; ta.classList.remove("hidden");
+    var done = function (ok) { showToast(ok ? "診断情報をコピーしました。作った人に、貼って送ってください" : "コピーできませんでした。下の文字を、選んで、コピーしてください", null) };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { done(true) }, function () { ta.focus(); ta.select(); done(false) });
+    else { ta.focus(); ta.select(); var ok = false; try { ok = document.execCommand("copy") } catch (e) { } done(ok) }
+  });
+  $("diagClear").addEventListener("click", function () { try { localStorage.removeItem("ls_errors"); localStorage.removeItem("ls_ai_last") } catch (e) { } $("diagOut").value = ""; $("diagOut").classList.add("hidden"); showToast("エラーの記録を消しました", null) });
 
   /* ---- バーコード・QR読み取り ---- */
   var scLib = null, scQr = null, scCode = "";
@@ -1522,11 +1582,15 @@
     $("bannerBtn").classList.toggle("hidden", !fn); $("bannerBtn").textContent = label || "もう一度保存";
   }
   $("bannerBtn").addEventListener("click", function () { if (bannerFn) bannerFn() });
-  function push() { return F.setDoc(F.doc(db, "users", cuid), JSON.parse(JSON.stringify(S))) }
-  function pushOk() { try { localStorage.setItem("ls_sync_uid", cuid); localStorage.setItem("ls_dirty", "0") } catch (e) { } setSync("クラウドに保存済み"); showBanner("") }
-  function pushFail() {
+  function push() {
+    var js = JSON.stringify(S);
+    if (js.length >= 233000 && new Blob([js]).size > SIZE_MAX) { var er = new Error("too-large"); er.code = "too-large"; return Promise.reject(er) }   /* 上限をこえると、保存できないので、先に、止めて知らせる */
+    return F.setDoc(F.doc(db, "users", cuid), JSON.parse(js));
+  }
+  function pushOk() { try { localStorage.setItem("ls_sync_uid", cuid); localStorage.setItem("ls_dirty", "0") } catch (e) { } setSync("クラウドに保存済み"); if (!NEWER) showBanner("") }
+  function pushFail(err) {
     setSync("クラウドに保存できませんでした");
-    showBanner("クラウドに保存できませんでした。データは、この端末には保存されています。通信を確認して、「もう一度保存」を押してください。", function () { setSync("同期中…"); push().then(pushOk).catch(pushFail) });
+    showBanner(err && err.code === "too-large" ? "データが大きすぎて、クラウドに保存できません(上限は約1MB)。データは、この端末には保存されています。古い月の支出を、「月ごとの家計」でCSVに書き出してから、消してください。" : "クラウドに保存できませんでした。データは、この端末には保存されています。通信を確認して、「もう一度保存」を押してください。", function () { setSync("同期中…"); push().then(pushOk).catch(pushFail) });
   }
   function cloudSave() {
     if (!cuid || syncPaused) return; try { localStorage.setItem("ls_dirty", "1") } catch (e) { } setSync("同期中…"); clearTimeout(timer);
@@ -1567,10 +1631,11 @@
     setSync("読み込み中…");
     return F.getDoc(F.doc(db, "users", cuid)).then(function (snap) {
       if (!snap.exists()) { save(); return }
+      if (dataVer(snap.data()) > SCHEMA) { NEWER = true; setSync("保存を止めています(新しい版のデータ)"); showBanner("新しい版のアプリで作られたデータです。データを守るため、このアプリでは、保存を止めています。ページを再読み込みして、アプリを新しくしてください。", function () { location.reload() }, "再読み込み"); return }
       var cloud = sanitizeState(snap.data()).state, localS = sanitizeState(S).state, mine = false;
       try { mine = localStorage.getItem("ls_sync_uid") === cuid && localStorage.getItem("ls_dirty") !== "1" } catch (e) { }
       if (!hasData(localS) || mine || JSON.stringify(localS) === JSON.stringify(cloud)) useState(cloud, "クラウドと同期しました"); else askMerge(localS, cloud);
-    }).then(function () { showBanner(""); maybeIntro() }).catch(function () {
+    }).then(function () { if (!NEWER) showBanner(""); maybeIntro() }).catch(function () {
       setSync("読み込めませんでした");
       showBanner("クラウドのデータを読み込めませんでした。通信やFirestoreのルールを確認して、「もう一度読み込む」を押してください。", loadCloud, "もう一度読み込む");
     });
@@ -1614,6 +1679,7 @@
       loadCloud();
     });
   }).catch(function () { setSync("クラウドに接続できません(この端末にのみ保存中)"); setTimeout(maybeIntro, 300) });
+  if (NEWER) showBanner("新しい版のアプリで作られたデータです。データを守るため、このアプリでは、保存を止めています。ページを再読み込みして、アプリを新しくしてください。", function () { location.reload() }, "再読み込み");
 })();
 
 /* ---- あいさつの表示 ---- */
