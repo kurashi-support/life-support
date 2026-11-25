@@ -1,5 +1,5 @@
 /* 通知(Web Push)の、オン・オフ。ログイン中の人だけが使える。
-   宛先は、Firestore の pushSubs/{uid} に保存する。毎朝の送信は、GitHub Actions(push/send.js)。 */
+   宛先は、Firestore の pushSubs/{uid} に保存する。朝・夕方の送信は、GitHub Actions(push/send.js)。 */
 (function () {
   var VAPID = "BMSY0LASP11YGfpS5BHW8PgqARnbFut27zA5wi72fLnZ1IFeHZR5uDCKO5g2eVt1CNFKOVO3W_fQmO4saKdREgs";
   var BASE = "https://www.gstatic.com/firebasejs/12.19.0/";
@@ -12,7 +12,16 @@
   out.parentNode.insertBefore(box, out.nextSibling);
   var msg = document.getElementById("pushMsg"), btn = document.getElementById("pushBtn"), tst = document.getElementById("pushTest");
   var ok = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  msg.style.whiteSpace = "pre-line";
   function say(t) { msg.textContent = t }
+  /* 一度「許可しない」を押すと、ブラウザの決まりで、アプリからは、もう許可の確認を出せない。端末の設定で、許可に変えてもらう */
+  function howTo() {
+    var ua = navigator.userAgent || "", w;
+    if (/iPhone|iPad/.test(ua)) w = "iPhoneの「設定」アプリ →「通知」→「Life Support」を開き、「通知を許可」をオンにします。";
+    else if (/Android/.test(ua)) w = "端末の「設定」→「アプリ」→ このアプリ(またはブラウザ)→「通知」を、オンにします。";
+    else w = "アドレスバーの左の鍵(またはタブのマーク)を押し、「通知」を「許可」に変えます。";
+    return "通知が許可されていません。端末の設定で、許可に変えてください。\n" + w + "\n変えたあと、このアプリを開き直して、下のボタンをもう一度押してください。";
+  }
   if (!ok) {
     btn.classList.add("hidden"); tst.classList.add("hidden");
     say(/iPhone|iPad/.test(navigator.userAgent) ? "通知を使うには、Safariの共有ボタンから「ホーム画面に追加」して、そのアイコンから開いてください(iOS 16.4以上)" : "このブラウザでは、通知を使えません");
@@ -32,7 +41,8 @@
     current().then(function (s) {
       var on = !!s && Notification.permission === "granted";
       btn.textContent = on ? "通知をオフにする" : "通知をオンにする"; btn.dataset.on = on ? "1" : "";
-      say(Notification.permission === "denied" ? "通知がブロックされています。端末の設定で、このアプリの通知を許可してください" : on ? "通知はオンです。期限の前日の夕方(17時ごろ)に、1回だけお知らせします" : "通知はオフです(オンにすると、期限の前日の夕方に、1回だけお知らせします)");
+      if (Notification.permission === "denied") { btn.textContent = "設定を変えたので、もう一度確認"; say(howTo()); return }
+      say(on ? "通知はオンです。朝7時ごろに今日の予定を、期限の前日の17時ごろに期限(推定)を、お知らせします" : "通知はオフです(オンにすると、朝に今日の予定を、期限の前日の夕方に期限をお知らせします)");
     }).catch(function () { say("通知の状態を確認できませんでした") });
   }
   btn.addEventListener("click", function () {
@@ -44,9 +54,10 @@
         .then(function () { return sub && sub.unsubscribe() }).then(refresh).catch(function () { say("オフにできませんでした") }).then(function () { btn.disabled = false });
       return;
     }
+    if (Notification.permission === "denied") { say(howTo()); return }   // まだ「許可しない」のまま(変えたあとなら、ここは通らず、先に進む)
     btn.disabled = true; say("確認しています…");
     Notification.requestPermission().then(function (p) {       // 許可の確認は、ボタンを押した直後に出す(iPhoneの決まり)
-      if (p !== "granted") { say("通知が許可されませんでした"); return }
+      if (p !== "granted") { refresh(); if (p === "denied") say(howTo()); else say("通知は許可されていません。もう一度、ボタンを押してください"); return }
       return fb().then(function (f) {
         var u = f.auth.currentUser; if (!u) { say("通知を使うには、先にログインしてください(クラウド保存)"); return }
         return navigator.serviceWorker.ready.then(function (r) { return r.pushManager.getSubscription().then(function (s) { return s || r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(VAPID) }) }) })
@@ -61,9 +72,10 @@
     }).catch(function (e) { say("オンにできませんでした(" + (e && (e.code || e.message) || "不明") + ")") }).then(function () { btn.disabled = false });
   });
   tst.addEventListener("click", function () {   // サーバーを通さずに、この端末で、通知が出るかだけを試す
+    if (Notification.permission === "denied") { say(howTo()); return }
     Notification.requestPermission().then(function (p) {
       if (p !== "granted") { say("通知が許可されていません"); return }
-      return navigator.serviceWorker.ready.then(function (r) { return r.showNotification("Life Support", { body: "明日期限の商品があります:牛乳・鶏肉\n日用品の買い時は明日です:シャンプー", icon: "icon-192.png", tag: "life-support-test" }) });
+      return navigator.serviceWorker.ready.then(function (r) { return r.showNotification("Life Support", { body: "明日が期限の商品があります(推定):牛乳・鶏肉\n日用品の買い時は明日です(推定):シャンプー", icon: "icon-192.png", tag: "life-support-test" }) });
     }).catch(function () { say("テスト通知を出せませんでした") });
   });
   /* 期限・買い時の一覧(日付つき)を、クラウドに置く。送信側は、この日付だけを見る。通知がオンの端末があるときだけ、保存のたびに更新する */
@@ -76,11 +88,12 @@
         if (!s) return;
         return fb().then(function (f) {
           var u = f.auth.currentUser; if (!u) return;
-          return f.F.setDoc(f.F.doc(f.db, "pushSubs", u.uid), { items: window.lsNotifyItems(), itemsAt: new Date().toISOString() }, { merge: true });
+          return f.F.setDoc(f.F.doc(f.db, "pushSubs", u.uid), { items: window.lsNotifyItems(), sched: window.lsNotifySched ? window.lsNotifySched() : [], itemsAt: new Date().toISOString() }, { merge: true });
         });
       }).catch(function () { });
     }, 3000);
   }
   window.lsOnSave = syncItems;
   navigator.serviceWorker.ready.then(function () { refresh(); syncItems() });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh() });   // 設定を変えて戻ったとき
 })();
